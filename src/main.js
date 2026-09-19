@@ -3,7 +3,14 @@ import './style.css'
 import {
   editorState,
   subscribe,
-  updateReference,
+  getSelectedElement,
+  selectElement,
+  removeElement,
+  updateElement,
+  updateDisplay,
+  setViewScale,
+  setGridEnabled,
+  setSnapEnabled,
 } from './editor/state.js'
 
 import {
@@ -23,49 +30,191 @@ import {
 
 
 // ======================================================
-// APP UI
+// APP
 // ======================================================
 
 document.querySelector('#app').innerHTML = `
   <div class="studio">
 
-    <!-- TOP BAR -->
     <header class="topbar">
 
       <div class="brand">
         <div class="brand-icon">L</div>
 
-        <div>
+        <div class="brand-copy">
           <strong>LCD Mockup Studio</strong>
           <span>Untitled Project</span>
         </div>
       </div>
 
       <div class="toolbar">
-        <button type="button">New</button>
-        <button type="button">Open</button>
-        <button type="button">Save</button>
+
+        <button type="button">
+          New
+        </button>
+
+        <button type="button">
+          Open
+        </button>
+
+        <button type="button">
+          Save
+        </button>
 
         <div class="separator"></div>
 
-        <button type="button" disabled>Undo</button>
-        <button type="button" disabled>Redo</button>
+        <button type="button" disabled>
+          Undo
+        </button>
+
+        <button type="button" disabled>
+          Redo
+        </button>
 
         <div class="separator"></div>
 
         <button
-          class="export-btn"
           type="button"
+          class="export-button"
         >
           Export
         </button>
+
       </div>
 
     </header>
 
 
-    <!-- LEFT SIDEBAR -->
+    <!-- ============================================= -->
+    <!-- LEFT SIDEBAR                                  -->
+    <!-- ============================================= -->
+
     <aside class="sidebar left-sidebar">
+
+      <section class="panel reference-panel">
+
+        <div class="panel-header">
+
+          <div>
+            <div class="panel-title">
+              REFERENCE
+            </div>
+
+            <div class="panel-subtitle">
+              Original screenshot
+            </div>
+          </div>
+
+          <span class="beta-badge">
+            SOURCE
+          </span>
+
+        </div>
+
+
+        <div
+          class="reference-preview empty"
+          id="reference-preview"
+        >
+
+          <img
+            id="reference-preview-image"
+            alt="Reference"
+            hidden
+          >
+
+          <div
+            class="reference-placeholder"
+            id="reference-placeholder"
+          >
+            <strong>No reference image</strong>
+
+            <span>
+              Upload an LCD, HMI or device
+              screenshot.
+            </span>
+          </div>
+
+        </div>
+
+
+        <input
+          id="reference-file-input"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          hidden
+        >
+
+
+        <button
+          class="wide-button primary-button"
+          id="upload-reference"
+          type="button"
+        >
+          Upload Reference
+        </button>
+
+
+        <div
+          class="reference-info"
+          id="reference-info"
+          hidden
+        >
+
+          <strong
+            id="reference-name"
+          ></strong>
+
+          <span
+            id="reference-size"
+          ></span>
+
+        </div>
+
+
+        <button
+          class="wide-button analyze-button"
+          id="analyze-reference"
+          type="button"
+          disabled
+        >
+          ✦ Analyze Image
+        </button>
+
+
+        <div
+          class="analysis-message"
+          id="analysis-message"
+          hidden
+        ></div>
+
+
+        <div
+          class="reference-actions"
+          id="reference-actions"
+          hidden
+        >
+
+          <button
+            class="wide-button"
+            id="match-reference-size"
+            type="button"
+          >
+            Match Document Size
+          </button>
+
+          <button
+            class="wide-button danger-button"
+            id="remove-reference"
+            type="button"
+          >
+            Remove Reference
+          </button>
+
+        </div>
+
+      </section>
+
 
       <section class="panel">
 
@@ -80,57 +229,58 @@ document.querySelector('#app').innerHTML = `
             data-element-type="text"
             type="button"
           >
-            <span class="element-icon">T</span>
-            <span>Text</span>
+            <span class="element-icon">
+              T
+            </span>
+
+            <span>
+              Text
+            </span>
           </button>
+
 
           <button
             class="element-card"
             data-element-type="rectangle"
             type="button"
           >
-            <span class="element-icon">□</span>
-            <span>Rectangle</span>
+            <span class="element-icon">
+              □
+            </span>
+
+            <span>
+              Rectangle
+            </span>
           </button>
+
 
           <button
             class="element-card"
             data-element-type="line"
             type="button"
           >
-            <span class="element-icon">╱</span>
-            <span>Line</span>
+            <span class="element-icon">
+              ─
+            </span>
+
+            <span>
+              Line
+            </span>
           </button>
+
 
           <button
             class="element-card"
             data-element-type="circle"
             type="button"
           >
-            <span class="element-icon">◯</span>
-            <span>Circle</span>
-          </button>
+            <span class="element-icon">
+              ○
+            </span>
 
-          <button
-            class="element-card"
-            data-element-type="image"
-            type="button"
-            disabled
-            title="Coming soon"
-          >
-            <span class="element-icon">▧</span>
-            <span>Image</span>
-          </button>
-
-          <button
-            class="element-card"
-            data-element-type="icon"
-            type="button"
-            disabled
-            title="Coming soon"
-          >
-            <span class="element-icon">⌁</span>
-            <span>Icon</span>
+            <span>
+              Circle
+            </span>
           </button>
 
         </div>
@@ -138,7 +288,6 @@ document.querySelector('#app').innerHTML = `
       </section>
 
 
-      <!-- LAYERS -->
       <section class="panel layers-panel">
 
         <div class="panel-header">
@@ -147,8 +296,71 @@ document.querySelector('#app').innerHTML = `
             LAYERS
           </div>
 
+          <span
+            class="layer-count"
+            id="layer-count"
+          >
+            0
+          </span>
+
+        </div>
+
+        <div
+          class="layers-list"
+          id="layers-list"
+        ></div>
+
+      </section>
+
+    </aside>
+
+
+    <!-- ============================================= -->
+    <!-- WORKSPACE                                     -->
+    <!-- ============================================= -->
+
+    <main class="workspace">
+
+      <div class="workspace-header">
+
+        <div>
+
+          <strong>
+            Editable Mockup
+          </strong>
+
+          <span
+            id="workspace-resolution"
+          ></span>
+
+        </div>
+
+
+        <div class="workspace-actions">
+
           <button
-            class="small-button"
+            id="fit-workspace"
+            type="button"
+          >
+            Fit
+          </button>
+
+          <button
+            id="zoom-out"
+            type="button"
+          >
+            −
+          </button>
+
+          <span
+            class="zoom-label"
+            id="zoom-label"
+          >
+            100%
+          </span>
+
+          <button
+            id="zoom-in"
             type="button"
           >
             +
@@ -156,130 +368,58 @@ document.querySelector('#app').innerHTML = `
 
         </div>
 
-        <div class="layer active">
-          <span class="visibility">◉</span>
-          <span>Display</span>
-        </div>
-
-        <div class="empty-layers">
-          Add an element to begin designing.
-        </div>
-
-      </section>
-
-    </aside>
+      </div>
 
 
-    <!-- WORKSPACE -->
-    <main class="workspace">
+      <div
+        class="canvas-area"
+        id="canvas-area"
+      >
 
-      <div class="workspace-header">
+        <div class="display-frame">
 
-        <div>
-          <strong>Display</strong>
-
-          <span id="workspace-resolution">
-            ${editorState.display.width} ×
-            ${editorState.display.height} px
-          </span>
-        </div>
-
-        <div class="workspace-actions">
-
-          <button
-            id="workspace-reference-button"
-            type="button"
-          >
-            Reference Image
-          </button>
-
-          <button
-            id="workspace-fit-button"
-            type="button"
-          >
-            Fit
-          </button>
+          <div
+            class="display-canvas"
+          ></div>
 
         </div>
 
       </div>
 
 
-      <div class="canvas-area">
-
-        <div class="display-frame">
-
-          <div class="display-canvas"></div>
-
-          <div
-            class="resolution-label"
-            id="canvas-resolution"
-          >
-            ${editorState.display.width} ×
-            ${editorState.display.height}
-          </div>
-
-        </div>
-
+      <div class="workspace-hint">
+        Reference stays on the left.
+        This canvas contains only editable elements.
       </div>
 
     </main>
 
 
-    <!-- RIGHT SIDEBAR -->
+    <!-- ============================================= -->
+    <!-- RIGHT SIDEBAR                                 -->
+    <!-- ============================================= -->
+
     <aside class="sidebar right-sidebar">
 
-      <!-- DISPLAY -->
       <section class="panel">
 
         <div class="panel-title">
           DISPLAY
         </div>
 
-        <label class="field">
-
-          <span>Preset</span>
-
-          <select id="display-preset">
-            <option value="custom">
-              Custom Display
-            </option>
-
-            <option value="5">
-              5 inch
-            </option>
-
-            <option value="7">
-              7 inch
-            </option>
-
-            <option value="10">
-              10 inch
-            </option>
-
-            <option value="15">
-              15 inch
-            </option>
-
-            <option value="20">
-              20 inch
-            </option>
-          </select>
-
-        </label>
-
 
         <div class="field-row">
 
           <label class="field">
 
-            <span>Width</span>
+            <span>
+              Width
+            </span>
 
             <input
               id="display-width"
               type="number"
               min="1"
-              value="${editorState.display.width}"
             >
 
           </label>
@@ -287,13 +427,14 @@ document.querySelector('#app').innerHTML = `
 
           <label class="field">
 
-            <span>Height</span>
+            <span>
+              Height
+            </span>
 
             <input
               id="display-height"
               type="number"
               min="1"
-              value="${editorState.display.height}"
             >
 
           </label>
@@ -303,37 +444,20 @@ document.querySelector('#app').innerHTML = `
 
         <label class="field">
 
-          <span>Orientation</span>
-
-          <select id="display-orientation">
-            <option value="landscape">
-              Landscape
-            </option>
-
-            <option value="portrait">
-              Portrait
-            </option>
-          </select>
-
-        </label>
-
-
-        <label class="field">
-
-          <span>Background</span>
+          <span>
+            Background
+          </span>
 
           <div class="color-field">
 
             <input
               id="display-background"
               type="color"
-              value="${editorState.display.background}"
             >
 
             <input
               id="display-background-text"
               type="text"
-              value="${editorState.display.background.toUpperCase()}"
               readonly
             >
 
@@ -341,169 +465,321 @@ document.querySelector('#app').innerHTML = `
 
         </label>
 
+
+        <div class="document-summary">
+
+          <span>
+            Orientation
+          </span>
+
+          <strong
+            id="display-orientation"
+          ></strong>
+
+        </div>
+
       </section>
 
 
-      <!-- REFERENCE IMAGE -->
-      <section class="panel">
+      <section class="panel properties-panel">
 
         <div class="panel-title">
-          REFERENCE IMAGE
+          PROPERTIES
         </div>
 
 
-        <button
-          class="wide-button"
-          id="upload-reference"
-          type="button"
+        <div
+          class="properties-empty"
+          id="properties-empty"
         >
-          Upload Reference
-        </button>
+          <strong>
+            Nothing selected
+          </strong>
 
-
-        <input
-          id="reference-file-input"
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          hidden
-        >
+          <span>
+            Select an element on the mockup
+            or in Layers.
+          </span>
+        </div>
 
 
         <div
-          class="reference-controls"
-          id="reference-controls"
+          id="properties-content"
           hidden
         >
 
-          <div class="reference-info">
+          <div class="selected-type">
 
-            <strong id="reference-name"></strong>
+            <span>
+              Selected
+            </span>
 
-            <span id="reference-size"></span>
+            <strong
+              id="property-type"
+            ></strong>
 
           </div>
 
 
-          <label class="field">
+          <label
+            class="field"
+            id="property-text-field"
+          >
 
             <span>
-              Opacity
-
-              <strong id="reference-opacity-value">
-                45%
-              </strong>
+              Text
             </span>
 
             <input
-              id="reference-opacity"
-              type="range"
-              min="0"
-              max="1"
-              step="0.05"
-              value="0.45"
+              id="property-text"
+              type="text"
             >
 
           </label>
 
 
-          <label class="reference-toggle">
+          <div class="field-row">
 
-            <input
-              id="reference-visible"
-              type="checkbox"
-              checked
-            >
+            <label class="field">
 
-            Show reference
-
-          </label>
-
-
-          <button
-            class="wide-button"
-            id="fit-reference"
-            type="button"
-          >
-            Fit Canvas to Image
-          </button>
-
-
-          <!-- IMAGE ANALYSIS -->
-          <div class="analysis-section">
-
-            <div class="analysis-header">
-
-              <strong>
-                IMAGE ANALYSIS
-              </strong>
-
-              <span class="beta-badge">
-                BETA
+              <span>
+                X
               </span>
+
+              <input
+                id="property-x"
+                type="number"
+              >
+
+            </label>
+
+
+            <label class="field">
+
+              <span>
+                Y
+              </span>
+
+              <input
+                id="property-y"
+                type="number"
+              >
+
+            </label>
+
+          </div>
+
+
+          <div class="field-row">
+
+            <label class="field">
+
+              <span>
+                Width
+              </span>
+
+              <input
+                id="property-width"
+                type="number"
+                min="1"
+              >
+
+            </label>
+
+
+            <label class="field">
+
+              <span>
+                Height
+              </span>
+
+              <input
+                id="property-height"
+                type="number"
+                min="1"
+              >
+
+            </label>
+
+          </div>
+
+
+          <div
+            id="text-properties"
+          >
+
+            <label class="field">
+
+              <span>
+                Font
+              </span>
+
+              <select
+                id="property-font-family"
+              >
+                <option value="Courier New">
+                  Courier New
+                </option>
+
+                <option value="monospace">
+                  Monospace
+                </option>
+
+                <option value="Arial">
+                  Arial
+                </option>
+
+                <option value="Verdana">
+                  Verdana
+                </option>
+              </select>
+
+            </label>
+
+
+            <div class="field-row">
+
+              <label class="field">
+
+                <span>
+                  Font Size
+                </span>
+
+                <input
+                  id="property-font-size"
+                  type="number"
+                  min="1"
+                >
+
+              </label>
+
+
+              <label class="field">
+
+                <span>
+                  Weight
+                </span>
+
+                <select
+                  id="property-font-weight"
+                >
+                  <option value="400">
+                    Regular
+                  </option>
+
+                  <option value="600">
+                    Semi Bold
+                  </option>
+
+                  <option value="700">
+                    Bold
+                  </option>
+                </select>
+
+              </label>
 
             </div>
 
 
-            <p class="helper">
-              Detect text, lines and interface
-              regions and convert them into
-              editable elements.
-            </p>
+            <label class="field">
+
+              <span>
+                Text Color
+              </span>
+
+              <input
+                id="property-text-color"
+                type="color"
+              >
+
+            </label>
+
+          </div>
 
 
-            <button
-              class="wide-button analyze-button"
-              id="analyze-reference"
-              type="button"
+          <div
+            id="shape-properties"
+          >
+
+            <label
+              class="field"
+              id="property-fill-field"
             >
-              ✦ Analyze Image
-            </button>
+
+              <span>
+                Fill
+              </span>
+
+              <input
+                id="property-fill"
+                type="color"
+              >
+
+            </label>
 
 
-            <div
-              class="analysis-result"
-              id="analysis-result"
-              hidden
-            ></div>
+            <label class="field">
+
+              <span>
+                Stroke / Line Color
+              </span>
+
+              <input
+                id="property-stroke"
+                type="color"
+              >
+
+            </label>
+
+
+            <label class="field">
+
+              <span>
+                Stroke Width
+              </span>
+
+              <input
+                id="property-stroke-width"
+                type="number"
+                min="1"
+                max="50"
+              >
+
+            </label>
 
           </div>
 
 
           <button
             class="wide-button danger-button"
-            id="remove-reference"
+            id="delete-element"
             type="button"
           >
-            Remove Reference
+            Delete Element
           </button>
 
         </div>
-
-
-        <p class="helper">
-          Upload an LCD, HMI or device screenshot
-          and recreate the interface directly on
-          top of it.
-        </p>
 
       </section>
 
     </aside>
 
 
-    <!-- STATUS BAR -->
+    <!-- ============================================= -->
+    <!-- STATUS                                        -->
+    <!-- ============================================= -->
+
     <footer class="statusbar">
 
       <div class="status-left">
 
-        <span id="status-resolution">
-          ${editorState.display.width} ×
-          ${editorState.display.height} px
-        </span>
+        <span
+          id="status-resolution"
+        ></span>
 
-        <span id="status-orientation">
-          Landscape
-        </span>
+        <span
+          id="status-orientation"
+        ></span>
 
       </div>
 
@@ -516,6 +792,7 @@ document.querySelector('#app').innerHTML = `
             type="checkbox"
             checked
           >
+
           Grid
         </label>
 
@@ -526,27 +803,9 @@ document.querySelector('#app').innerHTML = `
             type="checkbox"
             checked
           >
+
           Snap
         </label>
-
-
-        <button
-          id="zoom-out"
-          type="button"
-        >
-          −
-        </button>
-
-        <span id="zoom-value">
-          100%
-        </span>
-
-        <button
-          id="zoom-in"
-          type="button"
-        >
-          +
-        </button>
 
       </div>
 
@@ -557,105 +816,263 @@ document.querySelector('#app').innerHTML = `
 
 
 // ======================================================
-// DOM REFERENCES
+// DOM
 // ======================================================
 
 const canvas =
-  document.querySelector('.display-canvas')
+  document.querySelector(
+    '.display-canvas',
+  )
 
 const canvasArea =
-  document.querySelector('.canvas-area')
-
-const uploadReferenceButton =
-  document.querySelector('#upload-reference')
-
-const workspaceReferenceButton =
-  document.querySelector('#workspace-reference-button')
+  document.querySelector(
+    '#canvas-area',
+  )
 
 const referenceFileInput =
-  document.querySelector('#reference-file-input')
+  document.querySelector(
+    '#reference-file-input',
+  )
 
-const referenceControls =
-  document.querySelector('#reference-controls')
+const uploadReferenceButton =
+  document.querySelector(
+    '#upload-reference',
+  )
+
+const referencePreview =
+  document.querySelector(
+    '#reference-preview',
+  )
+
+const referencePreviewImage =
+  document.querySelector(
+    '#reference-preview-image',
+  )
+
+const referencePlaceholder =
+  document.querySelector(
+    '#reference-placeholder',
+  )
+
+const referenceInfo =
+  document.querySelector(
+    '#reference-info',
+  )
 
 const referenceName =
-  document.querySelector('#reference-name')
+  document.querySelector(
+    '#reference-name',
+  )
 
 const referenceSize =
-  document.querySelector('#reference-size')
-
-const referenceOpacity =
-  document.querySelector('#reference-opacity')
-
-const referenceOpacityValue =
-  document.querySelector('#reference-opacity-value')
-
-const referenceVisible =
-  document.querySelector('#reference-visible')
-
-const fitReferenceButton =
-  document.querySelector('#fit-reference')
-
-const workspaceFitButton =
-  document.querySelector('#workspace-fit-button')
-
-const removeReferenceButton =
-  document.querySelector('#remove-reference')
+  document.querySelector(
+    '#reference-size',
+  )
 
 const analyzeReferenceButton =
-  document.querySelector('#analyze-reference')
+  document.querySelector(
+    '#analyze-reference',
+  )
 
-const analysisResult =
-  document.querySelector('#analysis-result')
+const analysisMessage =
+  document.querySelector(
+    '#analysis-message',
+  )
 
-const displayWidthInput =
-  document.querySelector('#display-width')
+const referenceActions =
+  document.querySelector(
+    '#reference-actions',
+  )
 
-const displayHeightInput =
-  document.querySelector('#display-height')
+const matchReferenceSizeButton =
+  document.querySelector(
+    '#match-reference-size',
+  )
 
-const workspaceResolution =
-  document.querySelector('#workspace-resolution')
+const removeReferenceButton =
+  document.querySelector(
+    '#remove-reference',
+  )
 
-const canvasResolution =
-  document.querySelector('#canvas-resolution')
-
-const statusResolution =
-  document.querySelector('#status-resolution')
-
-const statusOrientation =
-  document.querySelector('#status-orientation')
-
-const zoomValue =
-  document.querySelector('#zoom-value')
-
-const zoomInButton =
-  document.querySelector('#zoom-in')
+const fitWorkspaceButton =
+  document.querySelector(
+    '#fit-workspace',
+  )
 
 const zoomOutButton =
-  document.querySelector('#zoom-out')
+  document.querySelector(
+    '#zoom-out',
+  )
 
+const zoomInButton =
+  document.querySelector(
+    '#zoom-in',
+  )
 
-// ======================================================
-// SAFE VIEW STATE
-// ======================================================
+const zoomLabel =
+  document.querySelector(
+    '#zoom-label',
+  )
 
-// state.js içinde view henüz yoksa uygulama
-// çökmek yerine burada oluşturuyoruz.
+const workspaceResolution =
+  document.querySelector(
+    '#workspace-resolution',
+  )
 
-if (!editorState.view) {
-  editorState.view = {
-    fit: true,
-    scale: 1,
-  }
-}
+const displayWidthInput =
+  document.querySelector(
+    '#display-width',
+  )
 
-if (
-  !Number.isFinite(editorState.view.scale) ||
-  editorState.view.scale <= 0
-) {
-  editorState.view.scale = 1
-}
+const displayHeightInput =
+  document.querySelector(
+    '#display-height',
+  )
+
+const displayBackgroundInput =
+  document.querySelector(
+    '#display-background',
+  )
+
+const displayBackgroundText =
+  document.querySelector(
+    '#display-background-text',
+  )
+
+const displayOrientation =
+  document.querySelector(
+    '#display-orientation',
+  )
+
+const statusResolution =
+  document.querySelector(
+    '#status-resolution',
+  )
+
+const statusOrientation =
+  document.querySelector(
+    '#status-orientation',
+  )
+
+const layersList =
+  document.querySelector(
+    '#layers-list',
+  )
+
+const layerCount =
+  document.querySelector(
+    '#layer-count',
+  )
+
+const propertiesEmpty =
+  document.querySelector(
+    '#properties-empty',
+  )
+
+const propertiesContent =
+  document.querySelector(
+    '#properties-content',
+  )
+
+const propertyType =
+  document.querySelector(
+    '#property-type',
+  )
+
+const propertyTextField =
+  document.querySelector(
+    '#property-text-field',
+  )
+
+const propertyText =
+  document.querySelector(
+    '#property-text',
+  )
+
+const propertyX =
+  document.querySelector(
+    '#property-x',
+  )
+
+const propertyY =
+  document.querySelector(
+    '#property-y',
+  )
+
+const propertyWidth =
+  document.querySelector(
+    '#property-width',
+  )
+
+const propertyHeight =
+  document.querySelector(
+    '#property-height',
+  )
+
+const textProperties =
+  document.querySelector(
+    '#text-properties',
+  )
+
+const propertyFontFamily =
+  document.querySelector(
+    '#property-font-family',
+  )
+
+const propertyFontSize =
+  document.querySelector(
+    '#property-font-size',
+  )
+
+const propertyFontWeight =
+  document.querySelector(
+    '#property-font-weight',
+  )
+
+const propertyTextColor =
+  document.querySelector(
+    '#property-text-color',
+  )
+
+const shapeProperties =
+  document.querySelector(
+    '#shape-properties',
+  )
+
+const propertyFillField =
+  document.querySelector(
+    '#property-fill-field',
+  )
+
+const propertyFill =
+  document.querySelector(
+    '#property-fill',
+  )
+
+const propertyStroke =
+  document.querySelector(
+    '#property-stroke',
+  )
+
+const propertyStrokeWidth =
+  document.querySelector(
+    '#property-stroke-width',
+  )
+
+const deleteElementButton =
+  document.querySelector(
+    '#delete-element',
+  )
+
+const gridToggle =
+  document.querySelector(
+    '#grid-toggle',
+  )
+
+const snapToggle =
+  document.querySelector(
+    '#snap-toggle',
+  )
 
 
 // ======================================================
@@ -671,32 +1088,16 @@ initCanvas(canvas)
 
 document
   .querySelectorAll(
-    '.element-card[data-element-type]',
+    '[data-element-type]',
   )
   .forEach((button) => {
 
     button.addEventListener(
       'click',
       () => {
-
-        if (button.disabled) {
-          return
-        }
-
-        const type =
-          button.dataset.elementType
-
-        if (
-          [
-            'text',
-            'rectangle',
-            'circle',
-            'line',
-          ].includes(type)
-        ) {
-          createElement(type)
-        }
-
+        createElement(
+          button.dataset.elementType,
+        )
       },
     )
 
@@ -704,29 +1105,16 @@ document
 
 
 // ======================================================
-// REFERENCE PICKER
+// REFERENCE
 // ======================================================
-
-function openReferencePicker() {
-  referenceFileInput.click()
-}
-
 
 uploadReferenceButton.addEventListener(
   'click',
-  openReferencePicker,
+  () => {
+    referenceFileInput.click()
+  },
 )
 
-
-workspaceReferenceButton.addEventListener(
-  'click',
-  openReferencePicker,
-)
-
-
-// ======================================================
-// LOAD REFERENCE IMAGE
-// ======================================================
 
 referenceFileInput.addEventListener(
   'change',
@@ -741,10 +1129,32 @@ referenceFileInput.addEventListener(
 
     try {
 
+      analysisMessage.hidden = true
+
       const result =
         await loadReferenceImage(file)
 
-      referenceControls.hidden = false
+      referencePreviewImage.src =
+        result.src
+
+      referencePreviewImage.hidden =
+        false
+
+      referencePlaceholder.hidden =
+        true
+
+      referencePreview.classList.remove(
+        'empty',
+      )
+
+      referenceInfo.hidden =
+        false
+
+      referenceActions.hidden =
+        false
+
+      analyzeReferenceButton.disabled =
+        false
 
       referenceName.textContent =
         file.name
@@ -752,42 +1162,16 @@ referenceFileInput.addEventListener(
       referenceSize.textContent =
         `${result.width} × ${result.height} px`
 
-      referenceOpacity.value =
-        String(
-          editorState.reference.opacity,
-        )
+      /*
+       * Reference dimensions become the
+       * logical document dimensions.
+       *
+       * The image itself still remains
+       * ONLY in the left sidebar.
+       */
 
-      referenceOpacityValue.textContent =
-        `${Math.round(
-          editorState.reference.opacity * 100,
-        )}%`
+      fitCanvasToReference()
 
-      referenceVisible.checked =
-        editorState.reference.visible
-
-
-      // Önce eski analysis sonucunu temizle.
-      analysisResult.hidden = true
-      analysisResult.innerHTML = ''
-
-
-      const shouldFit =
-        window.confirm(
-          `Image detected: ${result.width} × ${result.height} px.\n\nFit the display canvas to this image?`,
-        )
-
-
-      if (shouldFit) {
-
-        // Gerçek document resolution'ı
-        // screenshot resolution'ına dönüşür.
-        fitCanvasToReference()
-
-      }
-
-
-      // Document çözünürlüğü ne olursa olsun
-      // ekranda rahat çalışılabilecek boyuta getir.
       requestAnimationFrame(() => {
         fitCanvasToWorkspace()
       })
@@ -797,13 +1181,12 @@ referenceFileInput.addEventListener(
       console.error(error)
 
       window.alert(
-        error?.message ??
+        error?.message ||
         'Reference image could not be loaded.',
       )
 
     } finally {
 
-      // Aynı dosyanın tekrar seçilebilmesi için.
       referenceFileInput.value = ''
 
     }
@@ -812,56 +1195,9 @@ referenceFileInput.addEventListener(
 )
 
 
-// ======================================================
-// REFERENCE OPACITY
-// ======================================================
-
-referenceOpacity.addEventListener(
-  'input',
-  () => {
-
-    const opacity =
-      Number(referenceOpacity.value)
-
-    updateReference({
-      opacity,
-    })
-
-    referenceOpacityValue.textContent =
-      `${Math.round(opacity * 100)}%`
-
-  },
-)
-
-
-// ======================================================
-// REFERENCE VISIBILITY
-// ======================================================
-
-referenceVisible.addEventListener(
-  'change',
-  () => {
-
-    updateReference({
-      visible:
-        referenceVisible.checked,
-    })
-
-  },
-)
-
-
-// ======================================================
-// FIT DOCUMENT TO REFERENCE RESOLUTION
-// ======================================================
-
-fitReferenceButton.addEventListener(
+matchReferenceSizeButton.addEventListener(
   'click',
   () => {
-
-    if (!editorState.reference.src) {
-      return
-    }
 
     fitCanvasToReference()
 
@@ -873,42 +1209,44 @@ fitReferenceButton.addEventListener(
 )
 
 
-// ======================================================
-// FIT VIEW TO WORKSPACE
-// ======================================================
-
-workspaceFitButton.addEventListener(
-  'click',
-  () => {
-    fitCanvasToWorkspace()
-  },
-)
-
-
-// ======================================================
-// REMOVE REFERENCE
-// ======================================================
-
 removeReferenceButton.addEventListener(
   'click',
   () => {
 
     removeReferenceImage()
 
-    referenceControls.hidden = true
+    referencePreviewImage.removeAttribute(
+      'src',
+    )
 
-    referenceName.textContent = ''
-    referenceSize.textContent = ''
+    referencePreviewImage.hidden =
+      true
 
-    analysisResult.hidden = true
-    analysisResult.innerHTML = ''
+    referencePlaceholder.hidden =
+      false
+
+    referencePreview.classList.add(
+      'empty',
+    )
+
+    referenceInfo.hidden =
+      true
+
+    referenceActions.hidden =
+      true
+
+    analyzeReferenceButton.disabled =
+      true
+
+    analysisMessage.hidden =
+      true
 
   },
 )
 
 
 // ======================================================
-// IMAGE ANALYSIS
+// ANALYSIS
 // ======================================================
 
 analyzeReferenceButton.addEventListener(
@@ -916,147 +1254,162 @@ analyzeReferenceButton.addEventListener(
   () => {
 
     if (!editorState.reference.src) {
-
-      window.alert(
-        'Upload a reference image first.',
-      )
-
       return
     }
 
+    /*
+     * IMPORTANT:
+     *
+     * We are NOT pretending that image
+     * recognition exists yet.
+     *
+     * This button is now connected to the
+     * correct architecture.
+     *
+     * The next implementation step will
+     * connect an analyzer which returns
+     * real element geometry/text data.
+     */
 
-    analyzeReferenceButton.disabled = true
+    analysisMessage.hidden = false
 
-    analyzeReferenceButton.textContent =
-      'Analyzing…'
+    analysisMessage.innerHTML = `
+      <strong>
+        Reference ready.
+      </strong>
 
+      <span>
+        ${editorState.reference.naturalWidth}
+        ×
+        ${editorState.reference.naturalHeight}
+        px
+      </span>
 
-    analysisResult.hidden = false
-
-    analysisResult.innerHTML = `
-      <div class="analysis-loading">
-
-        <strong>
-          Reference ready for analysis
-        </strong>
-
-        <span>
-          ${editorState.reference.naturalWidth}
-          ×
-          ${editorState.reference.naturalHeight}
-          px
-        </span>
-
-        <small>
-          Image loaded successfully.
-          Automatic text and geometry detection
-          is the next analysis-engine step.
-        </small>
-
-      </div>
+      <p>
+        The reference is correctly separated
+        from the editable canvas. The image
+        analysis engine is the next module to
+        connect.
+      </p>
     `
-
-
-    // Henüz gerçek OCR / detection motoru
-    // bağlanmadığı için sahte sonuç üretmiyoruz.
-    window.setTimeout(() => {
-
-      analyzeReferenceButton.disabled = false
-
-      analyzeReferenceButton.textContent =
-        '✦ Analyze Image'
-
-    }, 400)
 
   },
 )
 
 
 // ======================================================
-// FIT / ZOOM
+// DISPLAY
+// ======================================================
+
+displayWidthInput.addEventListener(
+  'change',
+  () => {
+
+    const width =
+      Math.max(
+        1,
+        Number(
+          displayWidthInput.value,
+        ) || 1,
+      )
+
+    updateDisplay({
+      width,
+    })
+
+    fitCanvasToWorkspace()
+
+  },
+)
+
+
+displayHeightInput.addEventListener(
+  'change',
+  () => {
+
+    const height =
+      Math.max(
+        1,
+        Number(
+          displayHeightInput.value,
+        ) || 1,
+      )
+
+    updateDisplay({
+      height,
+    })
+
+    fitCanvasToWorkspace()
+
+  },
+)
+
+
+displayBackgroundInput.addEventListener(
+  'input',
+  () => {
+
+    updateDisplay({
+      background:
+        displayBackgroundInput.value,
+    })
+
+  },
+)
+
+
+// ======================================================
+// ZOOM
 // ======================================================
 
 function fitCanvasToWorkspace() {
-
-  if (!canvasArea) {
-    return
-  }
-
-  const documentWidth =
-    Number(editorState.display.width)
-
-  const documentHeight =
-    Number(editorState.display.height)
-
-
-  if (
-    documentWidth <= 0 ||
-    documentHeight <= 0
-  ) {
-    return
-  }
-
+  const padding = 100
 
   const availableWidth =
     Math.max(
       100,
-      canvasArea.clientWidth - 120,
+      canvasArea.clientWidth -
+      padding,
     )
 
   const availableHeight =
     Math.max(
       100,
-      canvasArea.clientHeight - 120,
+      canvasArea.clientHeight -
+      padding,
     )
 
+  const width =
+    editorState.display.width
+
+  const height =
+    editorState.display.height
+
+  if (
+    width <= 0 ||
+    height <= 0
+  ) {
+    return
+  }
 
   const scaleX =
-    availableWidth / documentWidth
+    availableWidth / width
 
   const scaleY =
-    availableHeight / documentHeight
-
+    availableHeight / height
 
   let scale =
-    Math.min(scaleX, scaleY)
+    Math.min(
+      scaleX,
+      scaleY,
+    )
 
+  /*
+   * Small LCDs such as 249 × 128
+   * can be enlarged for editing.
+   */
 
-  // Örneğin 249×128 LCD ekranlar
-  // editörde büyütülebilsin.
   scale =
-    Math.min(scale, 4)
-
-
-  // Büyük resolution'larda tamamen
-  // kaybolmasını önle.
-  scale =
-    Math.max(scale, 0.1)
-
-
-  editorState.view.scale =
-    scale
-
-  editorState.view.fit =
-    true
-
-  editorState.zoom =
-    scale
-
-
-  renderCanvas()
-
-  updateZoomLabel()
-
-}
-
-
-// ======================================================
-// MANUAL ZOOM
-// ======================================================
-
-function setZoom(scale) {
-
-  const nextScale =
     Math.min(
       4,
       Math.max(
@@ -1065,31 +1418,13 @@ function setZoom(scale) {
       ),
     )
 
-  editorState.view.scale =
-    nextScale
-
-  editorState.view.fit =
-    false
-
-  editorState.zoom =
-    nextScale
-
-  renderCanvas()
-
-  updateZoomLabel()
-
+  setViewScale(scale)
 }
 
 
-zoomInButton.addEventListener(
+fitWorkspaceButton.addEventListener(
   'click',
-  () => {
-
-    setZoom(
-      editorState.view.scale + 0.25,
-    )
-
-  },
+  fitCanvasToWorkspace,
 )
 
 
@@ -1097,8 +1432,26 @@ zoomOutButton.addEventListener(
   'click',
   () => {
 
-    setZoom(
-      editorState.view.scale - 0.25,
+    const current =
+      editorState.view.scale
+
+    setViewScale(
+      current - 0.25,
+    )
+
+  },
+)
+
+
+zoomInButton.addEventListener(
+  'click',
+  () => {
+
+    const current =
+      editorState.view.scale
+
+    setViewScale(
+      current + 0.25,
     )
 
   },
@@ -1106,31 +1459,649 @@ zoomOutButton.addEventListener(
 
 
 // ======================================================
-// ZOOM LABEL
+// GRID / SNAP
 // ======================================================
 
-function updateZoomLabel() {
+gridToggle.addEventListener(
+  'change',
+  () => {
 
-  zoomValue.textContent =
-    `${Math.round(
-      editorState.view.scale * 100,
-    )}%`
+    setGridEnabled(
+      gridToggle.checked,
+    )
 
+  },
+)
+
+
+snapToggle.addEventListener(
+  'change',
+  () => {
+
+    setSnapEnabled(
+      snapToggle.checked,
+    )
+
+  },
+)
+
+
+// ======================================================
+// LAYERS
+// ======================================================
+
+function renderLayers() {
+  layersList.innerHTML = ''
+
+  layerCount.textContent =
+    String(
+      editorState.elements.length,
+    )
+
+  if (
+    editorState.elements.length === 0
+  ) {
+    const empty =
+      document.createElement('div')
+
+    empty.className =
+      'layers-empty'
+
+    empty.textContent =
+      'No editable elements yet.'
+
+    layersList.appendChild(empty)
+
+    return
+  }
+
+  /*
+   * Render topmost layer first.
+   */
+
+  const elements =
+    [...editorState.elements]
+      .reverse()
+
+  elements.forEach(
+    (element) => {
+
+      const button =
+        document.createElement(
+          'button',
+        )
+
+      button.type = 'button'
+
+      button.className =
+        'layer-item'
+
+      if (
+        element.id ===
+        editorState.selectedId
+      ) {
+        button.classList.add(
+          'active',
+        )
+      }
+
+      const icon =
+        document.createElement(
+          'span',
+        )
+
+      icon.className =
+        'layer-icon'
+
+      icon.textContent =
+        getLayerIcon(
+          element.type,
+        )
+
+      const name =
+        document.createElement(
+          'span',
+        )
+
+      name.className =
+        'layer-name'
+
+      name.textContent =
+        element.type === 'text'
+          ? element.text
+          : element.name
+
+      button.append(
+        icon,
+        name,
+      )
+
+      button.addEventListener(
+        'click',
+        () => {
+          selectElement(
+            element.id,
+          )
+        },
+      )
+
+      layersList.appendChild(
+        button,
+      )
+
+    },
+  )
+}
+
+
+function getLayerIcon(type) {
+  if (type === 'text') {
+    return 'T'
+  }
+
+  if (type === 'rectangle') {
+    return '□'
+  }
+
+  if (type === 'circle') {
+    return '○'
+  }
+
+  if (type === 'line') {
+    return '─'
+  }
+
+  return '•'
 }
 
 
 // ======================================================
-// UI SYNC
+// PROPERTIES
+// ======================================================
+
+function renderProperties() {
+  const element =
+    getSelectedElement()
+
+  if (!element) {
+
+    propertiesEmpty.hidden =
+      false
+
+    propertiesContent.hidden =
+      true
+
+    return
+  }
+
+  propertiesEmpty.hidden =
+    true
+
+  propertiesContent.hidden =
+    false
+
+  propertyType.textContent =
+    element.type
+
+  propertyX.value =
+    element.x
+
+  propertyY.value =
+    element.y
+
+  propertyWidth.value =
+    element.width
+
+  propertyHeight.value =
+    element.height
+
+  const isText =
+    element.type === 'text'
+
+  const isShape =
+    [
+      'rectangle',
+      'circle',
+      'line',
+    ].includes(
+      element.type,
+    )
+
+  propertyTextField.hidden =
+    !isText
+
+  textProperties.hidden =
+    !isText
+
+  shapeProperties.hidden =
+    !isShape
+
+  if (isText) {
+
+    propertyText.value =
+      element.text
+
+    propertyFontFamily.value =
+      element.fontFamily
+
+    propertyFontSize.value =
+      element.fontSize
+
+    propertyFontWeight.value =
+      String(
+        element.fontWeight,
+      )
+
+    propertyTextColor.value =
+      element.color
+
+  }
+
+  if (isShape) {
+
+    const isLine =
+      element.type === 'line'
+
+    propertyFillField.hidden =
+      isLine
+
+    if (!isLine) {
+      propertyFill.value =
+        normalizeColor(
+          element.fill,
+          '#324638',
+        )
+    }
+
+    propertyStroke.value =
+      normalizeColor(
+        isLine
+          ? element.color
+          : element.stroke,
+        '#a8d9a8',
+      )
+
+    propertyStrokeWidth.value =
+      element.strokeWidth || 1
+
+  }
+}
+
+
+function normalizeColor(
+  value,
+  fallback,
+) {
+  if (
+    typeof value === 'string' &&
+    /^#[0-9a-f]{6}$/i.test(value)
+  ) {
+    return value
+  }
+
+  return fallback
+}
+
+
+function updateSelectedElement(
+  changes,
+) {
+  const element =
+    getSelectedElement()
+
+  if (!element) {
+    return
+  }
+
+  updateElement(
+    element.id,
+    changes,
+  )
+}
+
+
+propertyText.addEventListener(
+  'input',
+  () => {
+
+    updateSelectedElement({
+      text:
+        propertyText.value,
+    })
+
+  },
+)
+
+
+propertyX.addEventListener(
+  'change',
+  () => {
+
+    updateSelectedElement({
+      x:
+        Number(
+          propertyX.value,
+        ) || 0,
+    })
+
+  },
+)
+
+
+propertyY.addEventListener(
+  'change',
+  () => {
+
+    updateSelectedElement({
+      y:
+        Number(
+          propertyY.value,
+        ) || 0,
+    })
+
+  },
+)
+
+
+propertyWidth.addEventListener(
+  'change',
+  () => {
+
+    updateSelectedElement({
+      width:
+        Math.max(
+          1,
+          Number(
+            propertyWidth.value,
+          ) || 1,
+        ),
+    })
+
+  },
+)
+
+
+propertyHeight.addEventListener(
+  'change',
+  () => {
+
+    updateSelectedElement({
+      height:
+        Math.max(
+          1,
+          Number(
+            propertyHeight.value,
+          ) || 1,
+        ),
+    })
+
+  },
+)
+
+
+propertyFontFamily.addEventListener(
+  'change',
+  () => {
+
+    updateSelectedElement({
+      fontFamily:
+        propertyFontFamily.value,
+    })
+
+  },
+)
+
+
+propertyFontSize.addEventListener(
+  'change',
+  () => {
+
+    updateSelectedElement({
+      fontSize:
+        Math.max(
+          1,
+          Number(
+            propertyFontSize.value,
+          ) || 1,
+        ),
+    })
+
+  },
+)
+
+
+propertyFontWeight.addEventListener(
+  'change',
+  () => {
+
+    updateSelectedElement({
+      fontWeight:
+        Number(
+          propertyFontWeight.value,
+        ),
+    })
+
+  },
+)
+
+
+propertyTextColor.addEventListener(
+  'input',
+  () => {
+
+    updateSelectedElement({
+      color:
+        propertyTextColor.value,
+    })
+
+  },
+)
+
+
+propertyFill.addEventListener(
+  'input',
+  () => {
+
+    updateSelectedElement({
+      fill:
+        propertyFill.value,
+    })
+
+  },
+)
+
+
+propertyStroke.addEventListener(
+  'input',
+  () => {
+
+    const element =
+      getSelectedElement()
+
+    if (!element) {
+      return
+    }
+
+    if (
+      element.type === 'line'
+    ) {
+
+      updateSelectedElement({
+        color:
+          propertyStroke.value,
+      })
+
+      return
+    }
+
+    updateSelectedElement({
+      stroke:
+        propertyStroke.value,
+    })
+
+  },
+)
+
+
+propertyStrokeWidth.addEventListener(
+  'change',
+  () => {
+
+    updateSelectedElement({
+      strokeWidth:
+        Math.max(
+          1,
+          Number(
+            propertyStrokeWidth.value,
+          ) || 1,
+        ),
+    })
+
+  },
+)
+
+
+deleteElementButton.addEventListener(
+  'click',
+  () => {
+
+    const element =
+      getSelectedElement()
+
+    if (!element) {
+      return
+    }
+
+    removeElement(
+      element.id,
+    )
+
+  },
+)
+
+
+// ======================================================
+// KEYBOARD
+// ======================================================
+
+window.addEventListener(
+  'keydown',
+  (event) => {
+
+    const target =
+      event.target
+
+    const isTyping =
+      target instanceof
+        HTMLInputElement ||
+      target instanceof
+        HTMLTextAreaElement ||
+      target instanceof
+        HTMLSelectElement
+
+    if (isTyping) {
+      return
+    }
+
+    const element =
+      getSelectedElement()
+
+    if (!element) {
+      return
+    }
+
+    if (
+      event.key === 'Delete' ||
+      event.key === 'Backspace'
+    ) {
+
+      removeElement(
+        element.id,
+      )
+
+      event.preventDefault()
+
+      return
+    }
+
+    const amount =
+      event.shiftKey
+        ? 5
+        : 1
+
+    let x =
+      element.x
+
+    let y =
+      element.y
+
+    if (
+      event.key === 'ArrowLeft'
+    ) {
+      x -= amount
+    } else if (
+      event.key === 'ArrowRight'
+    ) {
+      x += amount
+    } else if (
+      event.key === 'ArrowUp'
+    ) {
+      y -= amount
+    } else if (
+      event.key === 'ArrowDown'
+    ) {
+      y += amount
+    } else {
+      return
+    }
+
+    x = Math.max(
+      0,
+      Math.min(
+        editorState.display.width -
+          element.width,
+        x,
+      ),
+    )
+
+    y = Math.max(
+      0,
+      Math.min(
+        editorState.display.height -
+          element.height,
+        y,
+      ),
+    )
+
+    updateElement(
+      element.id,
+      {
+        x,
+        y,
+      },
+    )
+
+    event.preventDefault()
+
+  },
+)
+
+
+// ======================================================
+// UI
 // ======================================================
 
 function updateInterface() {
-
   const width =
     editorState.display.width
 
   const height =
     editorState.display.height
 
+  const orientation =
+    width >= height
+      ? 'Landscape'
+      : 'Portrait'
 
   displayWidthInput.value =
     width
@@ -1138,30 +2109,54 @@ function updateInterface() {
   displayHeightInput.value =
     height
 
+  displayBackgroundInput.value =
+    editorState.display.background
+
+  displayBackgroundText.value =
+    editorState.display.background
+      .toUpperCase()
+
+  displayOrientation.textContent =
+    orientation
 
   workspaceResolution.textContent =
     `${width} × ${height} px`
 
-  canvasResolution.textContent =
-    `${width} × ${height}`
-
   statusResolution.textContent =
     `${width} × ${height} px`
 
-
   statusOrientation.textContent =
-    width >= height
-      ? 'Landscape'
-      : 'Portrait'
+    orientation
 
+  zoomLabel.textContent =
+    `${Math.round(
+      editorState.view.scale * 100,
+    )}%`
 
-  updateZoomLabel()
+  gridToggle.checked =
+    editorState.grid.enabled
 
+  snapToggle.checked =
+    editorState.grid.snap
+
+  renderLayers()
+
+  renderProperties()
 }
 
 
 // ======================================================
-// WINDOW RESIZE
+// SUBSCRIBE
+// ======================================================
+
+subscribe(() => {
+  renderCanvas()
+  updateInterface()
+})
+
+
+// ======================================================
+// RESIZE
 // ======================================================
 
 let resizeTimer = null
@@ -1170,17 +2165,13 @@ window.addEventListener(
   'resize',
   () => {
 
-    if (!editorState.view.fit) {
-      return
-    }
-
-    window.clearTimeout(resizeTimer)
+    clearTimeout(
+      resizeTimer,
+    )
 
     resizeTimer =
-      window.setTimeout(
-        () => {
-          fitCanvasToWorkspace()
-        },
+      setTimeout(
+        fitCanvasToWorkspace,
         100,
       )
 
@@ -1189,22 +2180,13 @@ window.addEventListener(
 
 
 // ======================================================
-// STATE SUBSCRIPTION
-// ======================================================
-
-subscribe(() => {
-
-  renderCanvas()
-
-  updateInterface()
-
-})
-
-
-// ======================================================
-// INITIAL RENDER
+// INITIAL
 // ======================================================
 
 renderCanvas()
 
 updateInterface()
+
+requestAnimationFrame(() => {
+  fitCanvasToWorkspace()
+})

@@ -10,21 +10,14 @@ export const editorState = {
     fileName: null,
     naturalWidth: 0,
     naturalHeight: 0,
-    opacity: 0.45,
-    visible: true,
-    locked: true,
   },
 
   elements: [],
-
   selectedId: null,
 
-  zoom: 1,
-
   view: {
-    fit: true,
     scale: 1,
-    },
+  },
 
   grid: {
     enabled: true,
@@ -44,13 +37,18 @@ export function subscribe(listener) {
 }
 
 export function notify() {
-  listeners.forEach((listener) => listener(editorState))
+  listeners.forEach((listener) => {
+    listener(editorState)
+  })
 }
 
 export function getSelectedElement() {
-  return editorState.elements.find(
-    (element) => element.id === editorState.selectedId,
-  ) || null
+  return (
+    editorState.elements.find(
+      (element) =>
+        element.id === editorState.selectedId,
+    ) || null
+  )
 }
 
 export function selectElement(id) {
@@ -65,9 +63,10 @@ export function addElement(element) {
 }
 
 export function removeElement(id) {
-  editorState.elements = editorState.elements.filter(
-    (element) => element.id !== id,
-  )
+  editorState.elements =
+    editorState.elements.filter(
+      (element) => element.id !== id,
+    )
 
   if (editorState.selectedId === id) {
     editorState.selectedId = null
@@ -76,10 +75,21 @@ export function removeElement(id) {
   notify()
 }
 
-export function updateElement(id, changes, shouldNotify = true) {
-  const element = editorState.elements.find(
-    (item) => item.id === id,
-  )
+export function clearElements() {
+  editorState.elements = []
+  editorState.selectedId = null
+  notify()
+}
+
+export function updateElement(
+  id,
+  changes,
+  shouldNotify = true,
+) {
+  const element =
+    editorState.elements.find(
+      (item) => item.id === id,
+    )
 
   if (!element) return
 
@@ -90,12 +100,37 @@ export function updateElement(id, changes, shouldNotify = true) {
   }
 }
 
-export function updateReference(changes) {
-  Object.assign(editorState.reference, changes)
+export function updateDisplay(changes) {
+  Object.assign(
+    editorState.display,
+    changes,
+  )
+
   notify()
 }
 
-export function updateDisplay(changes) {
-  Object.assign(editorState.display, changes)
+export function updateReference(changes) {
+  Object.assign(
+    editorState.reference,
+    changes,
+  )
+
+  notify()
+}
+
+export function setViewScale(scale) {
+  editorState.view.scale =
+    Math.max(0.1, Math.min(8, scale))
+
+  notify()
+}
+
+export function setGridEnabled(enabled) {
+  editorState.grid.enabled = enabled
+  notify()
+}
+
+export function setSnapEnabled(enabled) {
+  editorState.grid.snap = enabled
   notify()
 }
