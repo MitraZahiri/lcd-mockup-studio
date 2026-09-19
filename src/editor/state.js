@@ -21,6 +21,11 @@ export const editorState = {
 
   zoom: 1,
 
+  view: {
+    fit: true,
+    scale: 1,
+    },
+
   grid: {
     enabled: true,
     snap: true,

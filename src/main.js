@@ -42,18 +42,21 @@ document.querySelector('#app').innerHTML = `
       </div>
 
       <div class="toolbar">
-        <button>New</button>
-        <button>Open</button>
-        <button>Save</button>
+        <button type="button">New</button>
+        <button type="button">Open</button>
+        <button type="button">Save</button>
 
         <div class="separator"></div>
 
-        <button disabled>Undo</button>
-        <button disabled>Redo</button>
+        <button type="button" disabled>Undo</button>
+        <button type="button" disabled>Redo</button>
 
         <div class="separator"></div>
 
-        <button class="export-btn">
+        <button
+          class="export-btn"
+          type="button"
+        >
           Export
         </button>
       </div>
@@ -75,6 +78,7 @@ document.querySelector('#app').innerHTML = `
           <button
             class="element-card"
             data-element-type="text"
+            type="button"
           >
             <span class="element-icon">T</span>
             <span>Text</span>
@@ -83,6 +87,7 @@ document.querySelector('#app').innerHTML = `
           <button
             class="element-card"
             data-element-type="rectangle"
+            type="button"
           >
             <span class="element-icon">□</span>
             <span>Rectangle</span>
@@ -91,6 +96,7 @@ document.querySelector('#app').innerHTML = `
           <button
             class="element-card"
             data-element-type="line"
+            type="button"
           >
             <span class="element-icon">╱</span>
             <span>Line</span>
@@ -99,6 +105,7 @@ document.querySelector('#app').innerHTML = `
           <button
             class="element-card"
             data-element-type="circle"
+            type="button"
           >
             <span class="element-icon">◯</span>
             <span>Circle</span>
@@ -107,6 +114,7 @@ document.querySelector('#app').innerHTML = `
           <button
             class="element-card"
             data-element-type="image"
+            type="button"
             disabled
             title="Coming soon"
           >
@@ -117,6 +125,7 @@ document.querySelector('#app').innerHTML = `
           <button
             class="element-card"
             data-element-type="icon"
+            type="button"
             disabled
             title="Coming soon"
           >
@@ -129,6 +138,7 @@ document.querySelector('#app').innerHTML = `
       </section>
 
 
+      <!-- LAYERS -->
       <section class="panel layers-panel">
 
         <div class="panel-header">
@@ -225,7 +235,6 @@ document.querySelector('#app').innerHTML = `
         <div class="panel-title">
           DISPLAY
         </div>
-
 
         <label class="field">
 
@@ -368,11 +377,9 @@ document.querySelector('#app').innerHTML = `
 
           <div class="reference-info">
 
-            <strong id="reference-name">
-            </strong>
+            <strong id="reference-name"></strong>
 
-            <span id="reference-size">
-            </span>
+            <span id="reference-size"></span>
 
           </div>
 
@@ -381,6 +388,7 @@ document.querySelector('#app').innerHTML = `
 
             <span>
               Opacity
+
               <strong id="reference-opacity-value">
                 45%
               </strong>
@@ -420,6 +428,47 @@ document.querySelector('#app').innerHTML = `
           </button>
 
 
+          <!-- IMAGE ANALYSIS -->
+          <div class="analysis-section">
+
+            <div class="analysis-header">
+
+              <strong>
+                IMAGE ANALYSIS
+              </strong>
+
+              <span class="beta-badge">
+                BETA
+              </span>
+
+            </div>
+
+
+            <p class="helper">
+              Detect text, lines and interface
+              regions and convert them into
+              editable elements.
+            </p>
+
+
+            <button
+              class="wide-button analyze-button"
+              id="analyze-reference"
+              type="button"
+            >
+              ✦ Analyze Image
+            </button>
+
+
+            <div
+              class="analysis-result"
+              id="analysis-result"
+              hidden
+            ></div>
+
+          </div>
+
+
           <button
             class="wide-button danger-button"
             id="remove-reference"
@@ -433,8 +482,8 @@ document.querySelector('#app').innerHTML = `
 
         <p class="helper">
           Upload an LCD, HMI or device screenshot
-          and recreate the interface directly on top
-          of it.
+          and recreate the interface directly on
+          top of it.
         </p>
 
       </section>
@@ -463,25 +512,41 @@ document.querySelector('#app').innerHTML = `
 
         <label>
           <input
+            id="grid-toggle"
             type="checkbox"
             checked
           >
           Grid
         </label>
 
+
         <label>
           <input
+            id="snap-toggle"
             type="checkbox"
             checked
           >
           Snap
         </label>
 
-        <button type="button">−</button>
 
-        <span>100%</span>
+        <button
+          id="zoom-out"
+          type="button"
+        >
+          −
+        </button>
 
-        <button type="button">+</button>
+        <span id="zoom-value">
+          100%
+        </span>
+
+        <button
+          id="zoom-in"
+          type="button"
+        >
+          +
+        </button>
 
       </div>
 
@@ -497,6 +562,9 @@ document.querySelector('#app').innerHTML = `
 
 const canvas =
   document.querySelector('.display-canvas')
+
+const canvasArea =
+  document.querySelector('.canvas-area')
 
 const uploadReferenceButton =
   document.querySelector('#upload-reference')
@@ -534,6 +602,12 @@ const workspaceFitButton =
 const removeReferenceButton =
   document.querySelector('#remove-reference')
 
+const analyzeReferenceButton =
+  document.querySelector('#analyze-reference')
+
+const analysisResult =
+  document.querySelector('#analysis-result')
+
 const displayWidthInput =
   document.querySelector('#display-width')
 
@@ -551,6 +625,37 @@ const statusResolution =
 
 const statusOrientation =
   document.querySelector('#status-orientation')
+
+const zoomValue =
+  document.querySelector('#zoom-value')
+
+const zoomInButton =
+  document.querySelector('#zoom-in')
+
+const zoomOutButton =
+  document.querySelector('#zoom-out')
+
+
+// ======================================================
+// SAFE VIEW STATE
+// ======================================================
+
+// state.js içinde view henüz yoksa uygulama
+// çökmek yerine burada oluşturuyoruz.
+
+if (!editorState.view) {
+  editorState.view = {
+    fit: true,
+    scale: 1,
+  }
+}
+
+if (
+  !Number.isFinite(editorState.view.scale) ||
+  editorState.view.scale <= 0
+) {
+  editorState.view.scale = 1
+}
 
 
 // ======================================================
@@ -570,33 +675,36 @@ document
   )
   .forEach((button) => {
 
-    button.addEventListener('click', () => {
+    button.addEventListener(
+      'click',
+      () => {
 
-      if (button.disabled) {
-        return
-      }
+        if (button.disabled) {
+          return
+        }
 
-      const type =
-        button.dataset.elementType
+        const type =
+          button.dataset.elementType
 
-      if (
-        [
-          'text',
-          'rectangle',
-          'circle',
-          'line',
-        ].includes(type)
-      ) {
-        createElement(type)
-      }
+        if (
+          [
+            'text',
+            'rectangle',
+            'circle',
+            'line',
+          ].includes(type)
+        ) {
+          createElement(type)
+        }
 
-    })
+      },
+    )
 
   })
 
 
 // ======================================================
-// REFERENCE IMAGE
+// REFERENCE PICKER
 // ======================================================
 
 function openReferencePicker() {
@@ -615,6 +723,10 @@ workspaceReferenceButton.addEventListener(
   openReferencePicker,
 )
 
+
+// ======================================================
+// LOAD REFERENCE IMAGE
+// ======================================================
 
 referenceFileInput.addEventListener(
   'change',
@@ -641,7 +753,9 @@ referenceFileInput.addEventListener(
         `${result.width} × ${result.height} px`
 
       referenceOpacity.value =
-        String(editorState.reference.opacity)
+        String(
+          editorState.reference.opacity,
+        )
 
       referenceOpacityValue.textContent =
         `${Math.round(
@@ -651,14 +765,32 @@ referenceFileInput.addEventListener(
       referenceVisible.checked =
         editorState.reference.visible
 
+
+      // Önce eski analysis sonucunu temizle.
+      analysisResult.hidden = true
+      analysisResult.innerHTML = ''
+
+
       const shouldFit =
         window.confirm(
           `Image detected: ${result.width} × ${result.height} px.\n\nFit the display canvas to this image?`,
         )
 
+
       if (shouldFit) {
+
+        // Gerçek document resolution'ı
+        // screenshot resolution'ına dönüşür.
         fitCanvasToReference()
+
       }
+
+
+      // Document çözünürlüğü ne olursa olsun
+      // ekranda rahat çalışılabilecek boyuta getir.
+      requestAnimationFrame(() => {
+        fitCanvasToWorkspace()
+      })
 
     } catch (error) {
 
@@ -671,7 +803,7 @@ referenceFileInput.addEventListener(
 
     } finally {
 
-      // Aynı dosyanın tekrar seçilebilmesini sağlar.
+      // Aynı dosyanın tekrar seçilebilmesi için.
       referenceFileInput.value = ''
 
     }
@@ -679,6 +811,10 @@ referenceFileInput.addEventListener(
   },
 )
 
+
+// ======================================================
+// REFERENCE OPACITY
+// ======================================================
 
 referenceOpacity.addEventListener(
   'input',
@@ -698,6 +834,10 @@ referenceOpacity.addEventListener(
 )
 
 
+// ======================================================
+// REFERENCE VISIBILITY
+// ======================================================
+
 referenceVisible.addEventListener(
   'change',
   () => {
@@ -711,6 +851,10 @@ referenceVisible.addEventListener(
 )
 
 
+// ======================================================
+// FIT DOCUMENT TO REFERENCE RESOLUTION
+// ======================================================
+
 fitReferenceButton.addEventListener(
   'click',
   () => {
@@ -721,23 +865,29 @@ fitReferenceButton.addEventListener(
 
     fitCanvasToReference()
 
+    requestAnimationFrame(() => {
+      fitCanvasToWorkspace()
+    })
+
   },
 )
 
+
+// ======================================================
+// FIT VIEW TO WORKSPACE
+// ======================================================
 
 workspaceFitButton.addEventListener(
   'click',
   () => {
-
-    if (!editorState.reference.src) {
-      return
-    }
-
-    fitCanvasToReference()
-
+    fitCanvasToWorkspace()
   },
 )
 
+
+// ======================================================
+// REMOVE REFERENCE
+// ======================================================
 
 removeReferenceButton.addEventListener(
   'click',
@@ -750,8 +900,223 @@ removeReferenceButton.addEventListener(
     referenceName.textContent = ''
     referenceSize.textContent = ''
 
+    analysisResult.hidden = true
+    analysisResult.innerHTML = ''
+
   },
 )
+
+
+// ======================================================
+// IMAGE ANALYSIS
+// ======================================================
+
+analyzeReferenceButton.addEventListener(
+  'click',
+  () => {
+
+    if (!editorState.reference.src) {
+
+      window.alert(
+        'Upload a reference image first.',
+      )
+
+      return
+    }
+
+
+    analyzeReferenceButton.disabled = true
+
+    analyzeReferenceButton.textContent =
+      'Analyzing…'
+
+
+    analysisResult.hidden = false
+
+    analysisResult.innerHTML = `
+      <div class="analysis-loading">
+
+        <strong>
+          Reference ready for analysis
+        </strong>
+
+        <span>
+          ${editorState.reference.naturalWidth}
+          ×
+          ${editorState.reference.naturalHeight}
+          px
+        </span>
+
+        <small>
+          Image loaded successfully.
+          Automatic text and geometry detection
+          is the next analysis-engine step.
+        </small>
+
+      </div>
+    `
+
+
+    // Henüz gerçek OCR / detection motoru
+    // bağlanmadığı için sahte sonuç üretmiyoruz.
+    window.setTimeout(() => {
+
+      analyzeReferenceButton.disabled = false
+
+      analyzeReferenceButton.textContent =
+        '✦ Analyze Image'
+
+    }, 400)
+
+  },
+)
+
+
+// ======================================================
+// FIT / ZOOM
+// ======================================================
+
+function fitCanvasToWorkspace() {
+
+  if (!canvasArea) {
+    return
+  }
+
+  const documentWidth =
+    Number(editorState.display.width)
+
+  const documentHeight =
+    Number(editorState.display.height)
+
+
+  if (
+    documentWidth <= 0 ||
+    documentHeight <= 0
+  ) {
+    return
+  }
+
+
+  const availableWidth =
+    Math.max(
+      100,
+      canvasArea.clientWidth - 120,
+    )
+
+  const availableHeight =
+    Math.max(
+      100,
+      canvasArea.clientHeight - 120,
+    )
+
+
+  const scaleX =
+    availableWidth / documentWidth
+
+  const scaleY =
+    availableHeight / documentHeight
+
+
+  let scale =
+    Math.min(scaleX, scaleY)
+
+
+  // Örneğin 249×128 LCD ekranlar
+  // editörde büyütülebilsin.
+  scale =
+    Math.min(scale, 4)
+
+
+  // Büyük resolution'larda tamamen
+  // kaybolmasını önle.
+  scale =
+    Math.max(scale, 0.1)
+
+
+  editorState.view.scale =
+    scale
+
+  editorState.view.fit =
+    true
+
+  editorState.zoom =
+    scale
+
+
+  renderCanvas()
+
+  updateZoomLabel()
+
+}
+
+
+// ======================================================
+// MANUAL ZOOM
+// ======================================================
+
+function setZoom(scale) {
+
+  const nextScale =
+    Math.min(
+      4,
+      Math.max(
+        0.1,
+        scale,
+      ),
+    )
+
+  editorState.view.scale =
+    nextScale
+
+  editorState.view.fit =
+    false
+
+  editorState.zoom =
+    nextScale
+
+  renderCanvas()
+
+  updateZoomLabel()
+
+}
+
+
+zoomInButton.addEventListener(
+  'click',
+  () => {
+
+    setZoom(
+      editorState.view.scale + 0.25,
+    )
+
+  },
+)
+
+
+zoomOutButton.addEventListener(
+  'click',
+  () => {
+
+    setZoom(
+      editorState.view.scale - 0.25,
+    )
+
+  },
+)
+
+
+// ======================================================
+// ZOOM LABEL
+// ======================================================
+
+function updateZoomLabel() {
+
+  zoomValue.textContent =
+    `${Math.round(
+      editorState.view.scale * 100,
+    )}%`
+
+}
 
 
 // ======================================================
@@ -766,11 +1131,13 @@ function updateInterface() {
   const height =
     editorState.display.height
 
+
   displayWidthInput.value =
     width
 
   displayHeightInput.value =
     height
+
 
   workspaceResolution.textContent =
     `${width} × ${height} px`
@@ -781,12 +1148,44 @@ function updateInterface() {
   statusResolution.textContent =
     `${width} × ${height} px`
 
+
   statusOrientation.textContent =
     width >= height
       ? 'Landscape'
       : 'Portrait'
 
+
+  updateZoomLabel()
+
 }
+
+
+// ======================================================
+// WINDOW RESIZE
+// ======================================================
+
+let resizeTimer = null
+
+window.addEventListener(
+  'resize',
+  () => {
+
+    if (!editorState.view.fit) {
+      return
+    }
+
+    window.clearTimeout(resizeTimer)
+
+    resizeTimer =
+      window.setTimeout(
+        () => {
+          fitCanvasToWorkspace()
+        },
+        100,
+      )
+
+  },
+)
 
 
 // ======================================================

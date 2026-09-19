@@ -69,7 +69,7 @@ function handlePointerMove(event) {
 
   if (!element) return
 
-  const zoom = editorState.zoom || 1
+  const zoom = editorState.view.scale || 1
 
   let deltaX =
     (event.clientX - dragState.startMouseX) / zoom
@@ -146,11 +146,20 @@ export function renderCanvas() {
   canvasElement.style.backgroundColor =
     editorState.display.background
 
-    canvasElement.style.width =
-    `${editorState.display.width}px`
+    const scale =
+        editorState.view.scale || 1
 
-    canvasElement.style.height =
-    `${editorState.display.height}px`
+        canvasElement.style.width =
+        `${editorState.display.width}px`
+
+        canvasElement.style.height =
+        `${editorState.display.height}px`
+
+        canvasElement.style.transform =
+        `scale(${scale})`
+
+        canvasElement.style.transformOrigin =
+        'center center'
 
   canvasElement.innerHTML = ''
 
