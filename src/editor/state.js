@@ -5,6 +5,16 @@ export const editorState = {
     background: '#18211b',
   },
 
+  reference: {
+    src: null,
+    fileName: null,
+    naturalWidth: 0,
+    naturalHeight: 0,
+    opacity: 0.45,
+    visible: true,
+    locked: true,
+  },
+
   elements: [],
 
   selectedId: null,
@@ -73,4 +83,14 @@ export function updateElement(id, changes, shouldNotify = true) {
   if (shouldNotify) {
     notify()
   }
+}
+
+export function updateReference(changes) {
+  Object.assign(editorState.reference, changes)
+  notify()
+}
+
+export function updateDisplay(changes) {
+  Object.assign(editorState.display, changes)
+  notify()
 }

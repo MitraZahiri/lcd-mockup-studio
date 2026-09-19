@@ -57,8 +57,6 @@ function handlePointerDown(event) {
     startY: element.y,
   }
 
-  target.setPointerCapture?.(event.pointerId)
-
   event.preventDefault()
 }
 
@@ -117,6 +115,27 @@ function handlePointerMove(event) {
   renderCanvas()
 }
 
+function renderReferenceImage() {
+  const reference = editorState.reference
+
+  if (
+    !reference.src ||
+    !reference.visible
+  ) {
+    return
+  }
+
+  const image = document.createElement('img')
+
+  image.className = 'reference-image'
+  image.src = reference.src
+  image.alt = ''
+
+  image.style.opacity = reference.opacity
+
+  canvasElement.appendChild(image)
+}
+
 function handlePointerUp() {
   dragState = null
 }
@@ -127,7 +146,15 @@ export function renderCanvas() {
   canvasElement.style.backgroundColor =
     editorState.display.background
 
+    canvasElement.style.width =
+    `${editorState.display.width}px`
+
+    canvasElement.style.height =
+    `${editorState.display.height}px`
+
   canvasElement.innerHTML = ''
+
+  renderReferenceImage()
 
   for (const element of editorState.elements) {
     const node = renderElement(element)

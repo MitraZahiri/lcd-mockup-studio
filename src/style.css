@@ -586,3 +586,97 @@ button {
   width: 100%;
   pointer-events: none;
 }
+
+/* REFERENCE IMAGE */
+
+.reference-image {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: fill;
+
+  pointer-events: none;
+
+  user-select: none;
+
+  z-index: 0;
+}
+
+.canvas-element {
+  z-index: 2;
+}
+
+.reference-controls {
+  margin-top: 12px;
+
+  padding-top: 12px;
+
+  border-top: 1px solid #303740;
+}
+
+.reference-info {
+  margin-bottom: 12px;
+
+  padding: 8px;
+
+  border-radius: 6px;
+
+  background: #11161b;
+}
+
+.reference-info strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: #d9dfe5;
+
+  font-size: 11px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reference-info span {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #68727d;
+
+  font-size: 10px;
+}
+
+.reference-controls input[type="range"] {
+  width: 100%;
+}
+
+.reference-toggle {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-bottom: 12px;
+
+  color: #9aa4ae;
+
+  font-size: 11px;
+}
+
+.reference-controls .wide-button {
+  margin-top: 7px;
+}
+
+.danger-button {
+  color: #df9999;
+}
+
+.danger-button:hover {
+  border-color: #b85c5c;
+}
