@@ -13,6 +13,7 @@ export const editorState = {
   },
 
   elements: [],
+
   selectedId: null,
 
   view: {
@@ -26,7 +27,13 @@ export const editorState = {
   },
 }
 
+
+// ======================================================
+// SUBSCRIBERS
+// ======================================================
+
 const listeners = new Set()
+
 
 export function subscribe(listener) {
   listeners.add(listener)
@@ -36,11 +43,17 @@ export function subscribe(listener) {
   }
 }
 
+
 export function notify() {
   listeners.forEach((listener) => {
     listener(editorState)
   })
 }
+
+
+// ======================================================
+// SELECTION
+// ======================================================
 
 export function getSelectedElement() {
   return (
@@ -51,35 +64,112 @@ export function getSelectedElement() {
   )
 }
 
+
 export function selectElement(id) {
   editorState.selectedId = id
+
   notify()
 }
 
-export function addElement(element) {
+
+// ======================================================
+// ELEMENTS
+// ======================================================
+
+export function addElement(
+  element,
+  shouldNotify = true,
+) {
   editorState.elements.push(element)
-  editorState.selectedId = element.id
+
+  editorState.selectedId =
+    element.id
+
+  if (shouldNotify) {
+    notify()
+  }
+}
+
+
+export function addElements(elements) {
+  if (!Array.isArray(elements)) {
+    return
+  }
+
+  editorState.elements.push(
+    ...elements,
+  )
+
+  if (elements.length > 0) {
+    editorState.selectedId =
+      elements[
+        elements.length - 1
+      ].id
+  }
+
   notify()
 }
+
 
 export function removeElement(id) {
   editorState.elements =
     editorState.elements.filter(
-      (element) => element.id !== id,
+      (element) =>
+        element.id !== id,
     )
 
-  if (editorState.selectedId === id) {
+  if (
+    editorState.selectedId === id
+  ) {
     editorState.selectedId = null
   }
 
   notify()
 }
 
+
 export function clearElements() {
   editorState.elements = []
+
   editorState.selectedId = null
+
   notify()
 }
+
+
+// ======================================================
+// ANALYSIS ELEMENTS
+// ======================================================
+
+export function removeAnalysisElements(
+  shouldNotify = true,
+) {
+  editorState.elements =
+    editorState.elements.filter(
+      (element) =>
+        element.source !== 'analysis',
+    )
+
+  const selectedStillExists =
+    editorState.elements.some(
+      (element) =>
+        element.id ===
+        editorState.selectedId,
+    )
+
+  if (!selectedStillExists) {
+    editorState.selectedId = null
+  }
+
+  if (shouldNotify) {
+    notify()
+  }
+}
+
+
+// ======================================================
+// ELEMENT UPDATE
+// ======================================================
 
 export function updateElement(
   id,
@@ -88,19 +178,32 @@ export function updateElement(
 ) {
   const element =
     editorState.elements.find(
-      (item) => item.id === id,
+      (item) =>
+        item.id === id,
     )
 
-  if (!element) return
+  if (!element) {
+    return
+  }
 
-  Object.assign(element, changes)
+  Object.assign(
+    element,
+    changes,
+  )
 
   if (shouldNotify) {
     notify()
   }
 }
 
-export function updateDisplay(changes) {
+
+// ======================================================
+// DISPLAY
+// ======================================================
+
+export function updateDisplay(
+  changes,
+) {
   Object.assign(
     editorState.display,
     changes,
@@ -109,7 +212,14 @@ export function updateDisplay(changes) {
   notify()
 }
 
-export function updateReference(changes) {
+
+// ======================================================
+// REFERENCE
+// ======================================================
+
+export function updateReference(
+  changes,
+) {
   Object.assign(
     editorState.reference,
     changes,
@@ -118,19 +228,57 @@ export function updateReference(changes) {
   notify()
 }
 
-export function setViewScale(scale) {
+
+// ======================================================
+// VIEW
+// ======================================================
+
+export function setViewScale(
+  scale,
+) {
+  const numericScale =
+    Number(scale)
+
+  if (
+    !Number.isFinite(
+      numericScale,
+    )
+  ) {
+    return
+  }
+
   editorState.view.scale =
-    Math.max(0.1, Math.min(8, scale))
+    Math.max(
+      0.1,
+      Math.min(
+        8,
+        numericScale,
+      ),
+    )
 
   notify()
 }
 
-export function setGridEnabled(enabled) {
-  editorState.grid.enabled = enabled
+
+// ======================================================
+// GRID
+// ======================================================
+
+export function setGridEnabled(
+  enabled,
+) {
+  editorState.grid.enabled =
+    Boolean(enabled)
+
   notify()
 }
 
-export function setSnapEnabled(enabled) {
-  editorState.grid.snap = enabled
+
+export function setSnapEnabled(
+  enabled,
+) {
+  editorState.grid.snap =
+    Boolean(enabled)
+
   notify()
 }
