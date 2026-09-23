@@ -1,4 +1,9 @@
 import {
+  createWorker,
+  PSM,
+} from 'tesseract.js'
+
+import {
   editorState,
 } from '../editor/state.js'
 
@@ -7,19 +12,22 @@ import {
 // LCD IMAGE ANALYZER
 // ======================================================
 //
-// First-stage, browser-local analyzer.
+// Pipeline:
 //
-// Responsibilities:
-// - Load the reference image
-// - Convert pixels to grayscale
-// - Estimate light/dark polarity
-// - Build a binary foreground mask
-// - Detect horizontal divider lines
-// - Detect connected foreground components
-// - Merge nearby components into text-like regions
+// Reference image
+//   -> grayscale
+//   -> Otsu threshold
+//   -> LCD polarity detection
+//   -> horizontal line detection
+//   -> OCR preprocessing
+//   -> Tesseract OCR
+//   -> OCR bounding boxes
+//   -> original LCD coordinates
+//   -> editable editor elements
 //
-// It deliberately does NOT pretend to perform OCR.
-// Text-like regions are returned as editable placeholders.
+// OCR is performed on an enlarged copy of the LCD.
+// Returned element coordinates always use the original
+// logical display resolution.
 //
 // ======================================================
 
@@ -54,16 +62,14 @@ export async function analyzeReferenceImage() {
     )
   }
 
-  const canvas =
-    document.createElement(
-      'canvas',
+  const sourceCanvas =
+    createCanvas(
+      width,
+      height,
     )
 
-  canvas.width = width
-  canvas.height = height
-
   const context =
-    canvas.getContext(
+    sourceCanvas.getContext(
       '2d',
       {
         willReadFrequently: true,
@@ -75,6 +81,9 @@ export async function analyzeReferenceImage() {
       'Canvas image analysis is not available.',
     )
   }
+
+  context.imageSmoothingEnabled =
+    false
 
   context.drawImage(
     image,
@@ -108,7 +117,7 @@ export async function analyzeReferenceImage() {
       threshold,
     )
 
-  const mask =
+  const binaryMask =
     createBinaryMask(
       grayscale,
       threshold,
@@ -116,68 +125,44 @@ export async function analyzeReferenceImage() {
     )
 
   removeIsolatedNoise(
-    mask,
+    binaryMask,
     width,
     height,
   )
 
   const horizontalLines =
     detectHorizontalLines(
-      mask,
+      binaryMask,
       width,
       height,
     )
 
-  const lineMask =
-    createLineMask(
+  const ocrResult =
+    await recognizeLcdText({
+      image,
       width,
       height,
-      horizontalLines,
+      threshold,
+      polarity,
+    })
+
+  const textElements =
+    ocrResult.regions.map(
+      ocrRegionToElement,
     )
 
-  const components =
-    findConnectedComponents(
-      mask,
-      lineMask,
-      width,
-      height,
-    )
-
-  const usefulComponents =
-    filterComponents(
-      components,
-      width,
-      height,
-    )
-
-  const textRegions =
-    mergeIntoTextRegions(
-      usefulComponents,
-      width,
-      height,
+  const lineElements =
+    horizontalLines.map(
+      lineToElement,
     )
 
   const elements = [
-    ...horizontalLines.map(
-      lineToElement,
-    ),
-
-    ...textRegions.map(
-      regionToElement,
-    ),
+    ...textElements,
+    ...lineElements,
   ]
 
   elements.sort(
-    (a, b) => {
-      if (
-        Math.abs(a.y - b.y) >
-        3
-      ) {
-        return a.y - b.y
-      }
-
-      return a.x - b.x
-    },
+    sortElements,
   )
 
   return {
@@ -187,15 +172,24 @@ export async function analyzeReferenceImage() {
     threshold,
     polarity,
 
+    ocrText:
+      ocrResult.text,
+
     stats: {
       components:
-        usefulComponents.length,
+        textElements.length,
 
       textRegions:
-        textRegions.length,
+        textElements.length,
+
+      detectedRegions:
+        textElements.length,
+
+      ocrWords:
+        ocrResult.wordCount,
 
       horizontalLines:
-        horizontalLines.length,
+        lineElements.length,
 
       elements:
         elements.length,
@@ -210,6 +204,7 @@ export async function analyzeReferenceImage() {
 // IMAGE LOADING
 // ======================================================
 
+
 function loadImage(src) {
   return new Promise(
     (resolve, reject) => {
@@ -223,7 +218,7 @@ function loadImage(src) {
       image.onerror = () => {
         reject(
           new Error(
-            'Reference image could not be read by the analyzer.',
+            'Reference image could not be read.',
           ),
         )
       }
@@ -234,9 +229,26 @@ function loadImage(src) {
 }
 
 
+function createCanvas(
+  width,
+  height,
+) {
+  const canvas =
+    document.createElement(
+      'canvas',
+    )
+
+  canvas.width = width
+  canvas.height = height
+
+  return canvas
+}
+
+
 // ======================================================
 // GRAYSCALE
 // ======================================================
+
 
 function createGrayscale(data) {
   const pixelCount =
@@ -280,11 +292,13 @@ function createGrayscale(data) {
 // OTSU THRESHOLD
 // ======================================================
 
+
 function calculateOtsuThreshold(
   grayscale,
 ) {
   const histogram =
-    new Array(256).fill(0)
+    new Array(256)
+      .fill(0)
 
   for (
     let index = 0;
@@ -383,15 +397,16 @@ function calculateOtsuThreshold(
 
 
 // ======================================================
-// POLARITY
+// LCD POLARITY
 // ======================================================
+
 
 function detectPolarity(
   grayscale,
   threshold,
 ) {
-  let dark = 0
-  let light = 0
+  let darkPixels = 0
+  let lightPixels = 0
 
   for (
     let index = 0;
@@ -402,29 +417,24 @@ function detectPolarity(
       grayscale[index] <=
       threshold
     ) {
-      dark += 1
+      darkPixels += 1
     } else {
-      light += 1
+      lightPixels += 1
     }
   }
 
-  /*
-   * LCD screenshots normally have
-   * relatively few foreground pixels.
-   *
-   * Whichever side is less common is
-   * considered foreground.
-   */
-
-  return dark <= light
-    ? 'dark-on-light'
-    : 'light-on-dark'
+  return (
+    darkPixels <= lightPixels
+      ? 'dark-on-light'
+      : 'light-on-dark'
+  )
 }
 
 
 // ======================================================
 // BINARY MASK
 // ======================================================
+
 
 function createBinaryMask(
   grayscale,
@@ -464,8 +474,9 @@ function createBinaryMask(
 
 
 // ======================================================
-// SIMPLE NOISE CLEANUP
+// NOISE CLEANUP
 // ======================================================
+
 
 function removeIsolatedNoise(
   mask,
@@ -540,8 +551,9 @@ function removeIsolatedNoise(
 
 
 // ======================================================
-// HORIZONTAL LINES
+// HORIZONTAL LINE DETECTION
 // ======================================================
+
 
 function detectHorizontalLines(
   mask,
@@ -572,9 +584,11 @@ function detectHorizontalLines(
     ) {
       const foreground =
         x < width
-          ? mask[
-              y * width + x
-            ] === 1
+          ? (
+              mask[
+                y * width + x
+              ] === 1
+            )
           : false
 
       if (
@@ -589,7 +603,8 @@ function detectHorizontalLines(
         runStart !== -1
       ) {
         const runWidth =
-          x - runStart
+          x -
+          runStart
 
         if (
           runWidth >=
@@ -600,6 +615,7 @@ function detectHorizontalLines(
             y,
             width:
               runWidth,
+            height: 1,
           })
         }
 
@@ -617,6 +633,12 @@ function detectHorizontalLines(
 function mergeLineCandidates(
   candidates,
 ) {
+  if (
+    candidates.length === 0
+  ) {
+    return []
+  }
+
   const lines = []
 
   for (
@@ -628,37 +650,45 @@ function mergeLineCandidates(
         lines.length - 1
       ]
 
-    const similarX =
-      previous &&
+    if (!previous) {
+      lines.push({
+        ...candidate,
+      })
+
+      continue
+    }
+
+    const closeVertically =
+      candidate.y <=
+      previous.y +
+      previous.height +
+      1
+
+    const similarStart =
       Math.abs(
-        previous.x -
-        candidate.x,
+        candidate.x -
+        previous.x,
       ) <= 3
 
     const similarWidth =
-      previous &&
       Math.abs(
-        previous.width -
-        candidate.width,
+        candidate.width -
+        previous.width,
       ) <= 5
 
-    const adjacentY =
-      previous &&
-      candidate.y <=
-        previous.y +
-        previous.height +
-        1
-
     if (
-      previous &&
-      similarX &&
-      similarWidth &&
-      adjacentY
+      closeVertically &&
+      similarStart &&
+      similarWidth
     ) {
-      previous.height =
-        candidate.y -
-        previous.y +
-        1
+      const bottom =
+        Math.max(
+          previous.y +
+          previous.height,
+
+          candidate.y +
+          candidate.height,
+        )
 
       previous.x =
         Math.min(
@@ -672,20 +702,15 @@ function mergeLineCandidates(
           candidate.width,
         )
 
+      previous.height =
+        bottom -
+        previous.y
+
       continue
     }
 
     lines.push({
-      x:
-        candidate.x,
-
-      y:
-        candidate.y,
-
-      width:
-        candidate.width,
-
-      height: 1,
+      ...candidate,
     })
   }
 
@@ -696,319 +721,516 @@ function mergeLineCandidates(
 }
 
 
-function createLineMask(
+// ======================================================
+// OCR
+// ======================================================
+
+
+async function recognizeLcdText({
+  image,
   width,
   height,
-  lines,
-) {
-  const lineMask =
-    new Uint8Array(
-      width * height,
+  threshold,
+  polarity,
+}) {
+  const scale =
+    chooseOcrScale(
+      width,
+      height,
     )
 
-  for (
-    const line
-    of lines
-  ) {
-    const startY =
-      Math.max(
-        0,
-        line.y - 1,
+  const ocrCanvas =
+    createOcrCanvas({
+      image,
+      width,
+      height,
+      scale,
+      threshold,
+      polarity,
+    })
+
+  let worker = null
+
+  try {
+    worker =
+      await createWorker(
+        'eng',
+        1,
+        {
+          logger: (message) => {
+            if (
+              message?.status
+            ) {
+              console.debug(
+                '[LCD OCR]',
+                message.status,
+                message.progress ?? '',
+              )
+            }
+          },
+        },
       )
 
-    const endY =
-      Math.min(
-        height - 1,
-        line.y +
-        line.height,
+    await worker.setParameters({
+      tessedit_pageseg_mode:
+        PSM.SPARSE_TEXT,
+
+      preserve_interword_spaces:
+        '1',
+
+      user_defined_dpi:
+        '300',
+    })
+
+    const result =
+      await worker.recognize(
+        ocrCanvas,
+        {},
+        {
+          text: true,
+          blocks: true,
+        },
       )
 
-    const startX =
-      Math.max(
-        0,
-        line.x,
+    const text =
+      cleanOcrText(
+        result.data?.text ?? '',
       )
 
-    const endX =
-      Math.min(
-        width - 1,
-        line.x +
-        line.width,
+    console.log(
+      '[LCD OCR TEXT]',
+      text,
+    )
+
+    const words =
+      extractWordsFromBlocks(
+        result.data?.blocks ?? [],
+        scale,
+        width,
+        height,
       )
 
-    for (
-      let y = startY;
-      y <= endY;
-      y += 1
-    ) {
-      for (
-        let x = startX;
-        x <= endX;
-        x += 1
-      ) {
-        lineMask[
-          y * width + x
-        ] = 1
-      }
+    console.log(
+      '[LCD OCR WORDS]',
+      words,
+    )
+
+    const regions =
+      mergeWordsIntoTextRegions(
+        words,
+        width,
+        height,
+      )
+
+    return {
+      text,
+      words,
+      regions,
+
+      wordCount:
+        words.length,
+    }
+  } catch (error) {
+    console.error(
+      'LCD OCR failed:',
+      error,
+    )
+
+    throw new Error(
+      'OCR could not analyze the LCD text. Check the browser console for details.',
+    )
+  } finally {
+    if (worker) {
+      await worker.terminate()
     }
   }
-
-  return lineMask
 }
 
 
 // ======================================================
-// CONNECTED COMPONENTS
+// OCR SCALE
 // ======================================================
 
-function findConnectedComponents(
-  mask,
-  lineMask,
+
+function chooseOcrScale(
   width,
   height,
 ) {
-  const visited =
-    new Uint8Array(
-      width * height,
+  const longestSide =
+    Math.max(
+      width,
+      height,
     )
 
-  const components = []
+  if (
+    longestSide <= 320
+  ) {
+    return 6
+  }
 
-  const directions = [
-    [-1, -1],
-    [0, -1],
-    [1, -1],
+  if (
+    longestSide <= 640
+  ) {
+    return 4
+  }
 
-    [-1, 0],
-    [1, 0],
+  if (
+    longestSide <= 1200
+  ) {
+    return 2
+  }
 
-    [-1, 1],
-    [0, 1],
-    [1, 1],
-  ]
+  return 1
+}
+
+
+// ======================================================
+// OCR PREPROCESSING
+// ======================================================
+
+
+function createOcrCanvas({
+  image,
+  width,
+  height,
+  scale,
+  threshold,
+  polarity,
+}) {
+  const canvas =
+    createCanvas(
+      width * scale,
+      height * scale,
+    )
+
+  const context =
+    canvas.getContext(
+      '2d',
+      {
+        willReadFrequently: true,
+      },
+    )
+
+  if (!context) {
+    throw new Error(
+      'OCR preprocessing canvas is not available.',
+    )
+  }
+
+  /*
+   * Pixel LCD screenshots should not be blurred
+   * while being enlarged.
+   */
+  context.imageSmoothingEnabled =
+    false
+
+  context.drawImage(
+    image,
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  )
+
+  const imageData =
+    context.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+    )
+
+  const data =
+    imageData.data
+
+  const darkForeground =
+    polarity ===
+    'dark-on-light'
+
+  /*
+   * Tesseract works more consistently when
+   * foreground text is black and background
+   * is white.
+   */
+  for (
+    let index = 0;
+    index < data.length;
+    index += 4
+  ) {
+    const gray =
+      Math.round(
+        data[index] * 0.299 +
+        data[index + 1] * 0.587 +
+        data[index + 2] * 0.114,
+      )
+
+    const foreground =
+      darkForeground
+        ? gray <= threshold
+        : gray > threshold
+
+    const output =
+      foreground
+        ? 0
+        : 255
+
+    data[index] =
+      output
+
+    data[index + 1] =
+      output
+
+    data[index + 2] =
+      output
+
+    data[index + 3] =
+      255
+  }
+
+  context.putImageData(
+    imageData,
+    0,
+    0,
+  )
+
+  return canvas
+}
+
+
+// ======================================================
+// OCR TSV PARSER
+// ======================================================
+
+
+function extractWordsFromBlocks(
+  blocks,
+  scale,
+  originalWidth,
+  originalHeight,
+) {
+  const words = []
 
   for (
-    let y = 0;
-    y < height;
-    y += 1
+    const block
+    of blocks
   ) {
+    const paragraphs =
+      block?.paragraphs ?? []
+
     for (
-      let x = 0;
-      x < width;
-      x += 1
+      const paragraph
+      of paragraphs
     ) {
-      const startIndex =
-        y * width + x
+      const lines =
+        paragraph?.lines ?? []
 
-      if (
-        visited[
-          startIndex
-        ] ||
-        mask[
-          startIndex
-        ] === 0 ||
-        lineMask[
-          startIndex
-        ] === 1
+      for (
+        const line
+        of lines
       ) {
-        continue
-      }
-
-      const stack = [
-        [x, y],
-      ]
-
-      visited[
-        startIndex
-      ] = 1
-
-      let minX = x
-      let maxX = x
-
-      let minY = y
-      let maxY = y
-
-      let pixels = 0
-
-      while (
-        stack.length > 0
-      ) {
-        const [
-          currentX,
-          currentY,
-        ] = stack.pop()
-
-        pixels += 1
-
-        minX =
-          Math.min(
-            minX,
-            currentX,
-          )
-
-        maxX =
-          Math.max(
-            maxX,
-            currentX,
-          )
-
-        minY =
-          Math.min(
-            minY,
-            currentY,
-          )
-
-        maxY =
-          Math.max(
-            maxY,
-            currentY,
-          )
+        const lineWords =
+          line?.words ?? []
 
         for (
-          const [
-            offsetX,
-            offsetY,
-          ]
-          of directions
+          const word
+          of lineWords
         ) {
-          const nextX =
-            currentX +
-            offsetX
+          const text =
+            sanitizeRecognizedText(
+              word?.text ?? '',
+            )
 
-          const nextY =
-            currentY +
-            offsetY
+          if (!text) {
+            continue
+          }
 
+          const confidence =
+            Number(
+              word?.confidence ?? 0,
+            )
+
+          /*
+           * Pixel LCD characters often receive
+           * lower confidence than normal fonts.
+           */
           if (
-            nextX < 0 ||
-            nextX >= width ||
-            nextY < 0 ||
-            nextY >= height
+            !Number.isFinite(
+              confidence,
+            ) ||
+            confidence < 15
           ) {
             continue
           }
 
-          const nextIndex =
-            nextY *
-            width +
-            nextX
+          const bbox =
+            word?.bbox
+
+          if (!bbox) {
+            continue
+          }
+
+          const rawX0 =
+            Number(
+              bbox.x0,
+            )
+
+          const rawY0 =
+            Number(
+              bbox.y0,
+            )
+
+          const rawX1 =
+            Number(
+              bbox.x1,
+            )
+
+          const rawY1 =
+            Number(
+              bbox.y1,
+            )
 
           if (
-            visited[
-              nextIndex
-            ] ||
-            mask[
-              nextIndex
-            ] === 0 ||
-            lineMask[
-              nextIndex
-            ] === 1
+            ![
+              rawX0,
+              rawY0,
+              rawX1,
+              rawY1,
+            ].every(
+              Number.isFinite,
+            )
           ) {
             continue
           }
 
-          visited[
-            nextIndex
-          ] = 1
+          const x =
+            clamp(
+              Math.round(
+                rawX0 /
+                scale,
+              ),
+              0,
+              originalWidth - 1,
+            )
 
-          stack.push([
-            nextX,
-            nextY,
-          ])
+          const y =
+            clamp(
+              Math.round(
+                rawY0 /
+                scale,
+              ),
+              0,
+              originalHeight - 1,
+            )
+
+          const width =
+            Math.max(
+              1,
+
+              Math.round(
+                (
+                  rawX1 -
+                  rawX0
+                ) /
+                scale,
+              ),
+            )
+
+          const height =
+            Math.max(
+              1,
+
+              Math.round(
+                (
+                  rawY1 -
+                  rawY0
+                ) /
+                scale,
+              ),
+            )
+
+          words.push({
+            text,
+
+            confidence,
+
+            x,
+            y,
+
+            width:
+              Math.min(
+                width,
+                originalWidth - x,
+              ),
+
+            height:
+              Math.min(
+                height,
+                originalHeight - y,
+              ),
+          })
         }
       }
-
-      components.push({
-        x:
-          minX,
-
-        y:
-          minY,
-
-        width:
-          maxX -
-          minX +
-          1,
-
-        height:
-          maxY -
-          minY +
-          1,
-
-        pixels,
-      })
     }
   }
 
-  return components
+  return words
 }
 
-
 // ======================================================
-// COMPONENT FILTER
+// OCR TEXT CLEANUP
 // ======================================================
 
-function filterComponents(
-  components,
-  width,
-  height,
+
+function cleanOcrText(
+  value,
 ) {
-  const maximumArea =
-    width *
-    height *
-    0.25
+  return String(value)
+    .replace(
+      /\r/g,
+      '',
+    )
+    .replace(
+      /[ \t]+\n/g,
+      '\n',
+    )
+    .replace(
+      /\n{3,}/g,
+      '\n\n',
+    )
+    .trim()
+}
 
-  return components.filter(
-    (component) => {
-      const area =
-        component.width *
-        component.height
 
-      if (
-        component.pixels < 2
-      ) {
-        return false
-      }
-
-      if (
-        area >
-        maximumArea
-      ) {
-        return false
-      }
-
-      if (
-        component.width >=
-          width * 0.8 &&
-        component.height >=
-          height * 0.8
-      ) {
-        return false
-      }
-
-      return true
-    },
-  )
+function sanitizeRecognizedText(
+  value,
+) {
+  return String(value)
+    .replace(
+      /\s+/g,
+      ' ',
+    )
+    .trim()
 }
 
 
 // ======================================================
-// TEXT REGION MERGING
+// MERGE OCR WORDS INTO EDITABLE TEXT REGIONS
 // ======================================================
 
-function mergeIntoTextRegions(
-  components,
-  width,
-  height,
+
+function mergeWordsIntoTextRegions(
+  words,
+  displayWidth,
+  displayHeight,
 ) {
   if (
-    components.length === 0
+    words.length === 0
   ) {
     return []
   }
 
   const sorted =
-    [...components]
+    [...words]
       .sort(
         (a, b) => {
           const centerA =
@@ -1023,7 +1245,7 @@ function mergeIntoTextRegions(
             Math.abs(
               centerA -
               centerB,
-            ) > 4
+            ) > 3
           ) {
             return (
               centerA -
@@ -1031,19 +1253,22 @@ function mergeIntoTextRegions(
             )
           }
 
-          return a.x - b.x
+          return (
+            a.x -
+            b.x
+          )
         },
       )
 
   const rows = []
 
   for (
-    const component
+    const word
     of sorted
   ) {
     const centerY =
-      component.y +
-      component.height / 2
+      word.y +
+      word.height / 2
 
     let bestRow = null
     let bestDistance =
@@ -1062,11 +1287,12 @@ function mergeIntoTextRegions(
       const tolerance =
         Math.max(
           3,
+
           Math.min(
             row.averageHeight,
-            component.height,
+            word.height,
           ) *
-          0.65,
+          0.7,
         )
 
       if (
@@ -1075,57 +1301,64 @@ function mergeIntoTextRegions(
         distance <
           bestDistance
       ) {
+        bestRow = row
+
         bestDistance =
           distance
-
-        bestRow = row
       }
     }
 
     if (!bestRow) {
       rows.push({
         centerY,
-        averageHeight:
-          component.height,
 
-        components: [
-          component,
+        averageHeight:
+          word.height,
+
+        words: [
+          word,
         ],
       })
 
       continue
     }
 
-    bestRow.components.push(
-      component,
+    bestRow.words.push(
+      word,
     )
 
     bestRow.centerY =
-      bestRow.components
+      bestRow.words
         .reduce(
           (
             total,
             item,
-          ) =>
-            total +
-            item.y +
-            item.height / 2,
+          ) => {
+            return (
+              total +
+              item.y +
+              item.height / 2
+            )
+          },
           0,
         ) /
-      bestRow.components.length
+      bestRow.words.length
 
     bestRow.averageHeight =
-      bestRow.components
+      bestRow.words
         .reduce(
           (
             total,
             item,
-          ) =>
-            total +
-            item.height,
+          ) => {
+            return (
+              total +
+              item.height
+            )
+          },
           0,
         ) /
-      bestRow.components.length
+      bestRow.words.length
   }
 
   const regions = []
@@ -1134,23 +1367,24 @@ function mergeIntoTextRegions(
     const row
     of rows
   ) {
-    const rowComponents =
-      [...row.components]
+    const rowWords =
+      [...row.words]
         .sort(
           (a, b) =>
-            a.x - b.x,
+            a.x -
+            b.x,
         )
 
     let current = null
 
     for (
-      const component
-      of rowComponents
+      const word
+      of rowWords
     ) {
       if (!current) {
         current =
-          createRegion(
-            component,
+          createTextRegion(
+            word,
           )
 
         continue
@@ -1161,35 +1395,29 @@ function mergeIntoTextRegions(
         current.width
 
       const gap =
-        component.x -
+        word.x -
         currentRight
-
-      const typicalHeight =
-        Math.max(
-          current.height,
-          component.height,
-        )
-
-      /*
-       * Character spacing can be relatively
-       * large in low-resolution LCD fonts.
-       */
 
       const maximumGap =
         Math.max(
           3,
+
           Math.round(
-            typicalHeight *
-            0.85,
+            Math.max(
+              current.height,
+              word.height,
+            ) *
+            1.25,
           ),
         )
 
       if (
-        gap <= maximumGap
+        gap <=
+        maximumGap
       ) {
-        expandRegion(
+        mergeWordIntoRegion(
           current,
-          component,
+          word,
         )
       } else {
         regions.push(
@@ -1197,8 +1425,8 @@ function mergeIntoTextRegions(
         )
 
         current =
-          createRegion(
-            component,
+          createTextRegion(
+            word,
           )
       }
     }
@@ -1210,112 +1438,91 @@ function mergeIntoTextRegions(
     }
   }
 
-  return regions
-    .filter(
-      (region) => {
-        if (
-          region.width < 2 ||
-          region.height < 2
-        ) {
-          return false
-        }
+  return regions.map(
+    (region) => {
+      const x =
+        clamp(
+          region.x,
+          0,
+          displayWidth - 1,
+        )
 
-        if (
-          region.width >
-            width * 0.95 &&
-          region.height >
-            height * 0.5
-        ) {
-          return false
-        }
+      const y =
+        clamp(
+          region.y,
+          0,
+          displayHeight - 1,
+        )
 
-        return true
-      },
-    )
-    .map(
-      (region) => {
-        const padding = 1
+      return {
+        ...region,
 
-        const x =
+        x,
+        y,
+
+        width:
           Math.max(
-            0,
-            region.x -
-            padding,
-          )
+            1,
 
-        const y =
+            Math.min(
+              region.width,
+              displayWidth - x,
+            ),
+          ),
+
+        height:
           Math.max(
-            0,
-            region.y -
-            padding,
-          )
+            1,
 
-        const right =
-          Math.min(
-            width,
-            region.x +
-            region.width +
-            padding,
-          )
-
-        const bottom =
-          Math.min(
-            height,
-            region.y +
-            region.height +
-            padding,
-          )
-
-        return {
-          x,
-          y,
-
-          width:
-            right - x,
-
-          height:
-            bottom - y,
-
-          componentCount:
-            region.componentCount,
-        }
-      },
-    )
+            Math.min(
+              region.height,
+              displayHeight - y,
+            ),
+          ),
+      }
+    },
+  )
 }
 
 
-function createRegion(
-  component,
+function createTextRegion(
+  word,
 ) {
   return {
     x:
-      component.x,
+      word.x,
 
     y:
-      component.y,
+      word.y,
 
     width:
-      component.width,
+      word.width,
 
     height:
-      component.height,
+      word.height,
 
-    componentCount: 1,
+    text:
+      word.text,
+
+    confidence:
+      word.confidence,
+
+    wordCount: 1,
   }
 }
 
 
-function expandRegion(
+function mergeWordIntoRegion(
   region,
-  component,
+  word,
 ) {
   const right =
     Math.max(
       region.x +
       region.width,
 
-      component.x +
-      component.width,
+      word.x +
+      word.width,
     )
 
   const bottom =
@@ -1323,21 +1530,31 @@ function expandRegion(
       region.y +
       region.height,
 
-      component.y +
-      component.height,
+      word.y +
+      word.height,
     )
 
-  region.x =
+  const top =
     Math.min(
-      region.x,
-      component.x,
+      region.y,
+      word.y,
+    )
+
+  region.text =
+    `${region.text} ${word.text}`
+
+  region.confidence =
+    (
+      region.confidence *
+      region.wordCount +
+      word.confidence
+    ) /
+    (
+      region.wordCount + 1
     )
 
   region.y =
-    Math.min(
-      region.y,
-      component.y,
-    )
+    top
 
   region.width =
     right -
@@ -1345,9 +1562,9 @@ function expandRegion(
 
   region.height =
     bottom -
-    region.y
+    top
 
-  region.componentCount += 1
+  region.wordCount += 1
 }
 
 
@@ -1355,11 +1572,76 @@ function expandRegion(
 // EDITOR ELEMENT CONVERSION
 // ======================================================
 
+
+function ocrRegionToElement(
+  region,
+) {
+  const fontSize =
+    Math.max(
+      5,
+
+      Math.round(
+        region.height *
+        1.05,
+      ),
+    )
+
+  return {
+    type:
+      'text',
+
+    name:
+      'OCR Text',
+
+    x:
+      region.x,
+
+    y:
+      region.y,
+
+    width:
+      Math.max(
+        8,
+        region.width,
+      ),
+
+    height:
+      Math.max(
+        6,
+        region.height,
+      ),
+
+    text:
+      region.text,
+
+    fontSize,
+
+    fontFamily:
+      'monospace',
+
+    fontWeight:
+      700,
+
+    color:
+      '#a8d9a8',
+
+    confidence:
+      Math.round(
+        region.confidence,
+      ),
+
+    source:
+      'analysis',
+  }
+}
+
+
 function lineToElement(
   line,
 ) {
   return {
-    type: 'line',
+    type:
+      'line',
 
     name:
       'Detected Line',
@@ -1397,59 +1679,50 @@ function lineToElement(
 }
 
 
-function regionToElement(
-  region,
+// ======================================================
+// SORTING
+// ======================================================
+
+
+function sortElements(
+  a,
+  b,
 ) {
-  const fontSize =
-    Math.max(
-      5,
-      Math.round(
-        region.height *
-        0.9,
-      ),
+  if (
+    Math.abs(
+      a.y -
+      b.y,
+    ) > 3
+  ) {
+    return (
+      a.y -
+      b.y
     )
-
-  return {
-    type: 'text',
-
-    name:
-      'Detected Text',
-
-    x:
-      region.x,
-
-    y:
-      region.y,
-
-    width:
-      Math.max(
-        8,
-        region.width,
-      ),
-
-    height:
-      Math.max(
-        6,
-        region.height,
-      ),
-
-    /*
-     * OCR will replace this later.
-     */
-    text:
-      'TEXT',
-
-    fontSize,
-
-    fontFamily:
-      'monospace',
-
-    fontWeight: 700,
-
-    color:
-      '#a8d9a8',
-
-    source:
-      'analysis',
   }
+
+  return (
+    a.x -
+    b.x
+  )
+}
+
+
+// ======================================================
+// HELPERS
+// ======================================================
+
+
+function clamp(
+  value,
+  minimum,
+  maximum,
+) {
+  return Math.min(
+    maximum,
+
+    Math.max(
+      minimum,
+      value,
+    ),
+  )
 }
