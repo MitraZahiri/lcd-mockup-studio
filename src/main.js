@@ -185,7 +185,7 @@ document.querySelector('#app').innerHTML = `
           type="button"
           disabled
         >
-          âœ¦ Analyze Image
+          ✦ Analyze Image
         </button>
 
 
@@ -252,7 +252,7 @@ document.querySelector('#app').innerHTML = `
             type="button"
           >
             <span class="element-icon">
-              â–¡
+              □
             </span>
 
             <span>
@@ -267,7 +267,7 @@ document.querySelector('#app').innerHTML = `
             type="button"
           >
             <span class="element-icon">
-              â”€
+              ─
             </span>
 
             <span>
@@ -282,7 +282,7 @@ document.querySelector('#app').innerHTML = `
             type="button"
           >
             <span class="element-icon">
-              â—‹
+              ○
             </span>
 
             <span>
@@ -1273,19 +1273,29 @@ analyzeReferenceButton.addEventListener(
     analyzeReferenceButton.textContent =
       'Analyzing...'
 
-    analysisMessage.hidden =
-      false
+    analysisMessage.hidden = false
 
-    analysisMessage.innerHTML = `
-      <strong>
-        Analyzing image...
-      </strong>
+analysisMessage.innerHTML = `
+  <strong>
+    Analysis complete.
+  </strong>
 
-      <span>
-        Detecting LCD foreground,
-        text-like regions and divider lines.
-      </span>
-    `
+  <span>
+    ${result.width} × ${result.height} px
+  </span>
+
+  <p>
+    ${result.stats.elements} editable elements created:
+    ${result.stats.textRegions} OCR text regions and
+    ${result.stats.horizontalLines} horizontal lines.
+  </p>
+
+  <p>
+    Recognized text is editable.
+    Select any text element on the mockup or in Layers
+    to correct OCR results.
+  </p>
+`
 
     try {
 
