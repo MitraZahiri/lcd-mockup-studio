@@ -4,36 +4,94 @@ import {
 } from './state.js'
 
 function createId() {
-  return crypto.randomUUID
-    ? crypto.randomUUID()
-    : `element-${Date.now()}-${Math.random()}`
+  if (crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+
+  return `element-${Date.now()}-${Math.random()}`
 }
 
-function centerPosition(width, height) {
+function getAdaptiveSize(
+  preferredWidth,
+  preferredHeight,
+) {
+  const width = Math.min(
+    preferredWidth,
+    Math.max(
+      20,
+      editorState.display.width * 0.5,
+    ),
+  )
+
+  const height = Math.min(
+    preferredHeight,
+    Math.max(
+      10,
+      editorState.display.height * 0.25,
+    ),
+  )
+
   return {
-    x: Math.round((editorState.display.width - width) / 2),
-    y: Math.round((editorState.display.height - height) / 2),
+    width: Math.round(width),
+    height: Math.round(height),
+  }
+}
+
+function getCenterPosition(width, height) {
+  return {
+    x: Math.max(
+      0,
+      Math.round(
+        (editorState.display.width - width) / 2,
+      ),
+    ),
+
+    y: Math.max(
+      0,
+      Math.round(
+        (editorState.display.height - height) / 2,
+      ),
+    ),
   }
 }
 
 export function createElement(type) {
-  let element
+  let element = null
 
   if (type === 'text') {
-    const position = centerPosition(220, 50)
+    const size =
+      getAdaptiveSize(220, 50)
+
+    const position =
+      getCenterPosition(
+        size.width,
+        size.height,
+      )
+
+    const fontSize = Math.max(
+      8,
+      Math.min(
+        28,
+        Math.round(
+          editorState.display.height * 0.08,
+        ),
+      ),
+    )
 
     element = {
       id: createId(),
       type: 'text',
       name: 'Text',
+
       x: position.x,
       y: position.y,
-      width: 220,
-      height: 50,
+
+      width: size.width,
+      height: size.height,
 
       text: 'NEW TEXT',
 
-      fontSize: 28,
+      fontSize,
       fontFamily: 'Courier New',
       fontWeight: 700,
 
@@ -42,7 +100,14 @@ export function createElement(type) {
   }
 
   if (type === 'rectangle') {
-    const position = centerPosition(180, 100)
+    const size =
+      getAdaptiveSize(180, 100)
+
+    const position =
+      getCenterPosition(
+        size.width,
+        size.height,
+      )
 
     element = {
       id: createId(),
@@ -52,8 +117,8 @@ export function createElement(type) {
       x: position.x,
       y: position.y,
 
-      width: 180,
-      height: 100,
+      width: size.width,
+      height: size.height,
 
       fill: '#324638',
       stroke: '#a8d9a8',
@@ -62,7 +127,23 @@ export function createElement(type) {
   }
 
   if (type === 'circle') {
-    const position = centerPosition(100, 100)
+    const preferred = Math.min(
+      100,
+      editorState.display.width * 0.25,
+      editorState.display.height * 0.4,
+    )
+
+    const diameter =
+      Math.max(
+        20,
+        Math.round(preferred),
+      )
+
+    const position =
+      getCenterPosition(
+        diameter,
+        diameter,
+      )
 
     element = {
       id: createId(),
@@ -72,17 +153,24 @@ export function createElement(type) {
       x: position.x,
       y: position.y,
 
-      width: 100,
-      height: 100,
+      width: diameter,
+      height: diameter,
 
       fill: 'transparent',
       stroke: '#a8d9a8',
-      strokeWidth: 3,
+      strokeWidth: 2,
     }
   }
 
   if (type === 'line') {
-    const position = centerPosition(180, 20)
+    const size =
+      getAdaptiveSize(180, 12)
+
+    const position =
+      getCenterPosition(
+        size.width,
+        size.height,
+      )
 
     element = {
       id: createId(),
@@ -92,11 +180,11 @@ export function createElement(type) {
       x: position.x,
       y: position.y,
 
-      width: 180,
-      height: 20,
+      width: size.width,
+      height: size.height,
 
       color: '#a8d9a8',
-      strokeWidth: 3,
+      strokeWidth: 2,
     }
   }
 
@@ -105,4 +193,37 @@ export function createElement(type) {
   }
 
   addElement(element)
+}
+
+export function createElementFromAnalysis(data) {
+  const element = {
+    id: createId(),
+
+    type: data.type,
+    name:
+      data.name ||
+      data.type ||
+      'Element',
+
+    x: Math.round(data.x || 0),
+    y: Math.round(data.y || 0),
+
+    width: Math.max(
+      1,
+      Math.round(data.width || 20),
+    ),
+
+    height: Math.max(
+      1,
+      Math.round(data.height || 10),
+    ),
+
+    ...data,
+  }
+
+  element.id = createId()
+
+  addElement(element)
+
+  return element
 }

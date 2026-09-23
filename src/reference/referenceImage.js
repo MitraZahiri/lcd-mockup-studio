@@ -1,68 +1,115 @@
 import {
   editorState,
-  updateReference,
   updateDisplay,
+  updateReference,
 } from '../editor/state.js'
 
 let currentObjectUrl = null
 
-export function loadReferenceImage(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) {
-      reject(new Error('No file selected.'))
-      return
-    }
+export function loadReferenceImage(
+  file,
+) {
+  return new Promise(
+    (resolve, reject) => {
+      if (!file) {
+        reject(
+          new Error(
+            'No file selected.',
+          ),
+        )
 
-    if (!file.type.startsWith('image/')) {
-      reject(new Error('Please select an image file.'))
-      return
-    }
+        return
+      }
 
-    if (currentObjectUrl) {
-      URL.revokeObjectURL(currentObjectUrl)
-    }
+      if (
+        !file.type.startsWith(
+          'image/',
+        )
+      ) {
+        reject(
+          new Error(
+            'Please select an image file.',
+          ),
+        )
 
-    currentObjectUrl = URL.createObjectURL(file)
+        return
+      }
 
-    const image = new Image()
+      if (currentObjectUrl) {
+        URL.revokeObjectURL(
+          currentObjectUrl,
+        )
+      }
 
-    image.onload = () => {
-      updateReference({
-        src: currentObjectUrl,
-        fileName: file.name,
-        naturalWidth: image.naturalWidth,
-        naturalHeight: image.naturalHeight,
-        visible: true,
-      })
+      currentObjectUrl =
+        URL.createObjectURL(file)
 
-      resolve({
-        width: image.naturalWidth,
-        height: image.naturalHeight,
-      })
-    }
+      const image =
+        new Image()
 
-    image.onerror = () => {
-      reject(new Error('Image could not be loaded.'))
-    }
+      image.onload = () => {
+        updateReference({
+          src: currentObjectUrl,
 
-    image.src = currentObjectUrl
-  })
+          fileName:
+            file.name,
+
+          naturalWidth:
+            image.naturalWidth,
+
+          naturalHeight:
+            image.naturalHeight,
+        })
+
+        resolve({
+          width:
+            image.naturalWidth,
+
+          height:
+            image.naturalHeight,
+
+          src:
+            currentObjectUrl,
+        })
+      }
+
+      image.onerror = () => {
+        reject(
+          new Error(
+            'Image could not be loaded.',
+          ),
+        )
+      }
+
+      image.src =
+        currentObjectUrl
+    },
+  )
 }
 
 export function fitCanvasToReference() {
-  const reference = editorState.reference
+  const reference =
+    editorState.reference
 
-  if (!reference.src) return
+  if (!reference.src) {
+    return
+  }
 
   updateDisplay({
-    width: reference.naturalWidth,
-    height: reference.naturalHeight,
+    width:
+      reference.naturalWidth,
+
+    height:
+      reference.naturalHeight,
   })
 }
 
 export function removeReferenceImage() {
   if (currentObjectUrl) {
-    URL.revokeObjectURL(currentObjectUrl)
+    URL.revokeObjectURL(
+      currentObjectUrl,
+    )
+
     currentObjectUrl = null
   }
 
