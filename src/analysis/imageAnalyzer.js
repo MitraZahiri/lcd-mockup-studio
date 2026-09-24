@@ -739,12 +739,26 @@ async function recognizeLcdText({
       height,
     )
 
+  /*
+   * Padding is expressed in original LCD pixels.
+   *
+   * Small LCD text often touches the physical
+   * edges of the screenshot. Tesseract performs
+   * better when text has some white space around it.
+   */
+  const padding =
+    chooseOcrPadding(
+      width,
+      height,
+    )
+
   const ocrCanvas =
     createOcrCanvas({
       image,
       width,
       height,
       scale,
+      padding,
       threshold,
       polarity,
     })
@@ -806,6 +820,7 @@ async function recognizeLcdText({
       extractWordsFromBlocks(
         result.data?.blocks ?? [],
         scale,
+        padding,
         width,
         height,
       )
@@ -847,11 +862,7 @@ async function recognizeLcdText({
 }
 
 
-// ======================================================
-// OCR SCALE
-// ======================================================
-
-
+//
 function chooseOcrScale(
   width,
   height,
@@ -882,6 +893,40 @@ function chooseOcrScale(
 
   return 1
 }
+//
+
+// ======================================================
+// OCR SCALE
+// ======================================================
+
+
+function chooseOcrPadding(
+  width,
+  height,
+) {
+  const shortestSide =
+    Math.min(
+      width,
+      height,
+    )
+
+  /*
+   * Padding uses logical LCD pixels.
+   *
+   * Keep it proportional so the same OCR pipeline
+   * works with tiny LCDs as well as larger HMI
+   * screenshots.
+   */
+  return Math.max(
+    8,
+    Math.min(
+      24,
+      Math.round(
+        shortestSide * 0.12,
+      ),
+    ),
+  )
+}
 
 
 // ======================================================
@@ -894,13 +939,26 @@ function createOcrCanvas({
   width,
   height,
   scale,
+  padding,
   threshold,
   polarity,
 }) {
+  const scaledPadding =
+    padding * scale
+
+  const scaledWidth =
+    width * scale
+
+  const scaledHeight =
+    height * scale
+
   const canvas =
     createCanvas(
-      width * scale,
-      height * scale,
+      scaledWidth +
+        scaledPadding * 2,
+
+      scaledHeight +
+        scaledPadding * 2,
     )
 
   const context =
@@ -918,26 +976,50 @@ function createOcrCanvas({
   }
 
   /*
-   * Pixel LCD screenshots should not be blurred
-   * while being enlarged.
+   * OCR expects dark text on a light background.
+   *
+   * The white border is important for characters
+   * touching the physical edges of an LCD capture.
    */
-  context.imageSmoothingEnabled =
-    false
+  context.fillStyle =
+    '#ffffff'
 
-  context.drawImage(
-    image,
+  context.fillRect(
     0,
     0,
     canvas.width,
     canvas.height,
   )
 
+  /*
+   * Pixel LCD screenshots must remain sharp when
+   * enlarged. Bilinear interpolation can destroy
+   * individual dot-matrix character pixels.
+   */
+  context.imageSmoothingEnabled =
+    false
+
+  context.drawImage(
+    image,
+
+    scaledPadding,
+    scaledPadding,
+
+    scaledWidth,
+    scaledHeight,
+  )
+
+  /*
+   * Only threshold the actual LCD image.
+   *
+   * The padding must remain pure white.
+   */
   const imageData =
     context.getImageData(
-      0,
-      0,
-      canvas.width,
-      canvas.height,
+      scaledPadding,
+      scaledPadding,
+      scaledWidth,
+      scaledHeight,
     )
 
   const data =
@@ -948,9 +1030,8 @@ function createOcrCanvas({
     'dark-on-light'
 
   /*
-   * Tesseract works more consistently when
-   * foreground text is black and background
-   * is white.
+   * Convert the LCD image into a strict
+   * black-on-white binary image.
    */
   for (
     let index = 0;
@@ -989,8 +1070,8 @@ function createOcrCanvas({
 
   context.putImageData(
     imageData,
-    0,
-    0,
+    scaledPadding,
+    scaledPadding,
   )
 
   return canvas
@@ -1005,10 +1086,14 @@ function createOcrCanvas({
 function extractWordsFromBlocks(
   blocks,
   scale,
+  padding,
   originalWidth,
   originalHeight,
 ) {
   const words = []
+
+  const scaledPadding =
+    padding * scale
 
   for (
     const block
@@ -1050,8 +1135,9 @@ function extractWordsFromBlocks(
             )
 
           /*
-           * Pixel LCD characters often receive
-           * lower confidence than normal fonts.
+           * Dot-matrix and pixel LCD fonts can have
+           * significantly lower OCR confidence than
+           * normal printed fonts.
            */
           if (
             !Number.isFinite(
@@ -1102,11 +1188,88 @@ function extractWordsFromBlocks(
             continue
           }
 
+          /*
+           * Tesseract coordinates include the white
+           * OCR padding.
+           *
+           * Remove that padding before converting the
+           * bounding box back to logical LCD pixels.
+           */
+          const logicalX0 =
+            (
+              rawX0 -
+              scaledPadding
+            ) /
+            scale
+
+          const logicalY0 =
+            (
+              rawY0 -
+              scaledPadding
+            ) /
+            scale
+
+          const logicalX1 =
+            (
+              rawX1 -
+              scaledPadding
+            ) /
+            scale
+
+          const logicalY1 =
+            (
+              rawY1 -
+              scaledPadding
+            ) /
+            scale
+
+          /*
+           * Completely ignore OCR results that live
+           * only inside the artificial white border.
+           */
+          if (
+            logicalX1 <= 0 ||
+            logicalY1 <= 0 ||
+            logicalX0 >=
+              originalWidth ||
+            logicalY0 >=
+              originalHeight
+          ) {
+            continue
+          }
+
+          const x0 =
+            clamp(
+              logicalX0,
+              0,
+              originalWidth,
+            )
+
+          const y0 =
+            clamp(
+              logicalY0,
+              0,
+              originalHeight,
+            )
+
+          const x1 =
+            clamp(
+              logicalX1,
+              0,
+              originalWidth,
+            )
+
+          const y1 =
+            clamp(
+              logicalY1,
+              0,
+              originalHeight,
+            )
+
           const x =
             clamp(
-              Math.round(
-                rawX0 /
-                scale,
+              Math.floor(
+                x0,
               ),
               0,
               originalWidth - 1,
@@ -1114,38 +1277,29 @@ function extractWordsFromBlocks(
 
           const y =
             clamp(
-              Math.round(
-                rawY0 /
-                scale,
+              Math.floor(
+                y0,
               ),
               0,
               originalHeight - 1,
             )
 
-          const width =
-            Math.max(
-              1,
-
-              Math.round(
-                (
-                  rawX1 -
-                  rawX0
-                ) /
-                scale,
+          const right =
+            clamp(
+              Math.ceil(
+                x1,
               ),
+              x + 1,
+              originalWidth,
             )
 
-          const height =
-            Math.max(
-              1,
-
-              Math.round(
-                (
-                  rawY1 -
-                  rawY0
-                ) /
-                scale,
+          const bottom =
+            clamp(
+              Math.ceil(
+                y1,
               ),
+              y + 1,
+              originalHeight,
             )
 
           words.push({
@@ -1157,15 +1311,15 @@ function extractWordsFromBlocks(
             y,
 
             width:
-              Math.min(
-                width,
-                originalWidth - x,
+              Math.max(
+                1,
+                right - x,
               ),
 
             height:
-              Math.min(
-                height,
-                originalHeight - y,
+              Math.max(
+                1,
+                bottom - y,
               ),
           })
         }
