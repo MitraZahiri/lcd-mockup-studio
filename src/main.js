@@ -1336,7 +1336,7 @@ analyzeReferenceButton.addEventListener(
         </span>
 
         <p>
-          ${result.stats.elements}
+          ${result.stats.totalElements}
           editable elements created:
           ${result.stats.textRegions}
           OCR text regions and
