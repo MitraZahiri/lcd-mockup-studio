@@ -1,5 +1,6 @@
 ﻿import './style.css'
 import { initProjectControls } from './project/projectControls.js'
+import { initPngExport } from './export/pngExport.js'
 
 import {
   editorState,
@@ -84,8 +85,9 @@ document.querySelector('#app').innerHTML = `
         <button
           type="button"
           class="export-button"
+          id="export-png"
         >
-          Export
+          Export PNG
         </button>
 
       </div>
@@ -2318,3 +2320,5 @@ initProjectControls({
   fitWorkspace: fitCanvasToWorkspace,
   isAnalyzing: () => analysisInProgress || referenceLoading,
 })
+
+initPngExport(editorState)
