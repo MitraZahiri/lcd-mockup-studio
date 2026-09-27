@@ -1,4 +1,5 @@
 ﻿import './style.css'
+import { initProjectControls } from './project/projectControls.js'
 
 import {
   editorState,
@@ -50,21 +51,21 @@ document.querySelector('#app').innerHTML = `
 
         <div class="brand-copy">
           <strong>LCD Mockup Studio</strong>
-          <span>Untitled Project</span>
+          <span id="project-title">Untitled Project</span>
         </div>
       </div>
 
       <div class="toolbar">
 
-        <button type="button">
+        <button type="button" id="new-project">
           New
         </button>
 
-        <button type="button">
+        <button type="button" id="open-project">
           Open
         </button>
 
-        <button type="button">
+        <button type="button" id="save-project">
           Save
         </button>
 
@@ -89,6 +90,7 @@ document.querySelector('#app').innerHTML = `
 
       </div>
 
+      <input id="project-file-input" type="file" accept=".json,.lcd.json,application/json" hidden>
     </header>
 
 
@@ -779,6 +781,7 @@ document.querySelector('#app').innerHTML = `
     <footer class="statusbar">
 
       <div class="status-left">
+        <span id="project-status" role="status" aria-live="polite"></span>
 
         <span
           id="status-resolution"
@@ -1115,6 +1118,25 @@ document
 // REFERENCE
 // ======================================================
 
+let referenceLoading = false
+let analysisInProgress = false
+
+function refreshReferenceInterface() {
+  const ref = editorState.reference
+  const hasReference = Boolean(ref.src)
+  if (hasReference) referencePreviewImage.src = ref.src
+  else referencePreviewImage.removeAttribute('src')
+  referencePreviewImage.hidden = !hasReference
+  referencePlaceholder.hidden = hasReference
+  referencePreview.classList.toggle('empty', !hasReference)
+  referenceInfo.hidden = referenceActions.hidden = !hasReference
+  analyzeReferenceButton.disabled = !hasReference
+  referenceName.textContent = ref.fileName || ''
+  referenceSize.textContent = hasReference
+    ? `${ref.naturalWidth} × ${ref.naturalHeight} px` : ''
+  analysisMessage.hidden = true
+}
+
 uploadReferenceButton.addEventListener(
   'click',
   () => {
@@ -1134,6 +1156,7 @@ referenceFileInput.addEventListener(
       return
     }
 
+    referenceLoading = true
     try {
 
       analysisMessage.hidden = true
@@ -1195,6 +1218,7 @@ referenceFileInput.addEventListener(
     } finally {
 
       referenceFileInput.value = ''
+      referenceLoading = false
 
     }
 
@@ -1264,6 +1288,7 @@ analyzeReferenceButton.addEventListener(
       return
     }
 
+    analysisInProgress = true
     const originalLabel =
       analyzeReferenceButton.textContent
 
@@ -1375,6 +1400,7 @@ analyzeReferenceButton.addEventListener(
 
       analyzeReferenceButton.textContent =
         originalLabel
+      analysisInProgress = false
 
     }
 
@@ -2284,4 +2310,11 @@ updateInterface()
 
 requestAnimationFrame(() => {
   fitCanvasToWorkspace()
+})
+
+
+initProjectControls({
+  refreshReference: refreshReferenceInterface,
+  fitWorkspace: fitCanvasToWorkspace,
+  isAnalyzing: () => analysisInProgress || referenceLoading,
 })
