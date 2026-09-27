@@ -195,7 +195,10 @@ export function createElement(type) {
   addElement(element)
 }
 
-export function createElementFromAnalysis(data) {
+export function createElementFromAnalysis(
+  data,
+  shouldNotify = true,
+) {
   const element = {
     id: createId(),
 
@@ -223,7 +226,7 @@ export function createElementFromAnalysis(data) {
 
   element.id = createId()
 
-  addElement(element)
+  addElement(element, shouldNotify)
 
   return element
 }

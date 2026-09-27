@@ -2,6 +2,7 @@ import {
   editorState,
   selectElement,
   updateElement,
+  notify,
 } from './state.js'
 
 let canvasElement = null
@@ -22,6 +23,16 @@ export function initCanvas(canvas) {
 
   window.addEventListener(
     'pointerup',
+    handlePointerUp,
+  )
+
+  window.addEventListener(
+    'pointercancel',
+    handlePointerUp,
+  )
+
+  window.addEventListener(
+    'blur',
     handlePointerUp,
   )
 }
@@ -148,7 +159,12 @@ function handlePointerMove(event) {
 }
 
 function handlePointerUp() {
+  if (!dragState) {
+    return
+  }
+
   dragState = null
+  notify()
 }
 
 export function renderCanvas() {

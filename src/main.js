@@ -356,7 +356,7 @@ document.querySelector('#app').innerHTML = `
             id="zoom-out"
             type="button"
           >
-            âˆ’
+            −
           </button>
 
           <span
@@ -1167,7 +1167,7 @@ referenceFileInput.addEventListener(
         file.name
 
       referenceSize.textContent =
-        `${result.width} Ã— ${result.height} px`
+        `${result.width} × ${result.height} px`
 
       /*
        * Reference dimensions become the
@@ -1500,7 +1500,7 @@ function fitCanvasToWorkspace() {
     )
 
   /*
-   * Small LCDs such as 249 Ã— 128
+   * Small LCDs such as 249 × 128
    * can be enlarged for editing.
    */
 
@@ -1695,18 +1695,18 @@ function getLayerIcon(type) {
   }
 
   if (type === 'rectangle') {
-    return 'â–¡'
+    return '□'
   }
 
   if (type === 'circle') {
-    return 'â—‹'
+    return '○'
   }
 
   if (type === 'line') {
-    return 'â”€'
+    return '─'
   }
 
-  return 'â€¢'
+  return '•'
 }
 
 
@@ -2215,10 +2215,10 @@ function updateInterface() {
     orientation
 
   workspaceResolution.textContent =
-    `${width} Ã— ${height} px`
+    `${width} × ${height} px`
 
   statusResolution.textContent =
-    `${width} Ã— ${height} px`
+    `${width} × ${height} px`
 
   statusOrientation.textContent =
     orientation
