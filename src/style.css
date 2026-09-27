@@ -148,7 +148,7 @@ button {
   background: #303740;
 }
 
-.export-btn {
+.export-button {
   background: #8be28b !important;
   color: #101710 !important;
   font-weight: 700;
@@ -249,7 +249,14 @@ button {
   min-height: 250px;
 }
 
-.layer {
+.layer-item {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
   display: flex;
   align-items: center;
 
@@ -263,7 +270,7 @@ button {
   font-size: 12px;
 }
 
-.layer.active {
+.layer-item.active {
   background: #26332a;
   color: #b8efbd;
 }
@@ -272,7 +279,7 @@ button {
   color: #77818c;
 }
 
-.empty-layers {
+.layers-empty {
   margin-top: 18px;
 
   color: #5f6974;
@@ -757,4 +764,70 @@ button {
 .display-canvas {
   flex-shrink: 0;
   will-change: transform;
+}
+
+/* Editor controls and reference preview */
+
+.layer-item:hover {
+  background: #252d29;
+}
+
+.layer-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+button:focus-visible {
+  outline: 2px solid #8be28b;
+  outline-offset: 2px;
+}
+
+.reference-preview {
+  margin: 12px 0;
+  padding: 8px;
+  border: 1px solid #303740;
+  border-radius: 6px;
+  background: #11161b;
+}
+
+.reference-preview img {
+  max-width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.reference-placeholder {
+  padding: 16px 4px;
+  color: #aeb7c1;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.reference-placeholder strong,
+.reference-placeholder span {
+  display: block;
+}
+
+.reference-panel > .wide-button,
+.reference-actions > .wide-button {
+  margin-bottom: 8px;
+}
+
+.analysis-message {
+  margin: 8px 0;
+  padding: 10px;
+  color: #aeb7c1;
+  background: #11161b;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.display-canvas.grid-enabled {
+  background-image:
+    linear-gradient(rgba(168, 217, 168, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168, 217, 168, 0.15) 1px, transparent 1px);
+  background-size: var(--grid-size, 10px) var(--grid-size, 10px);
 }
