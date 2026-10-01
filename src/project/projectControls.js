@@ -1,4 +1,9 @@
-import { editorState, subscribe, notify } from '../editor/state.js'
+import {
+  editorState,
+  subscribe,
+  notify,
+  resetHistory,
+} from '../editor/state.js'
 import { MAX_PROJECT_BYTES, parseProject, snapshotProject, validateProject } from './projectFormat.js'
 
 const emptyReference = () => ({ src: null, fileName: null, naturalWidth: 0, naturalHeight: 0 })
@@ -38,6 +43,7 @@ export function initProjectControls({ refreshReference, fitWorkspace, isAnalyzin
   let busy = false
   const fingerprint = () => JSON.stringify(snapshotProject(editorState, name))
   let saved = fingerprint()
+  resetHistory()
   const dirty = () => fingerprint() !== saved
   const updateTitle = () => { title.textContent = `${name}${dirty() ? ' *' : ''}` }
   subscribe(updateTitle)
@@ -69,6 +75,7 @@ export function initProjectControls({ refreshReference, fitWorkspace, isAnalyzin
     saved = fingerprint()
     if (previousSource?.startsWith('blob:')) URL.revokeObjectURL(previousSource)
     refreshReference()
+    resetHistory()
     notify()
     requestAnimationFrame(fitWorkspace)
   }

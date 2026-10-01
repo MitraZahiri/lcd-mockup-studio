@@ -15,6 +15,10 @@ import {
   setViewScale,
   setGridEnabled,
   setSnapEnabled,
+  canUndo,
+  canRedo,
+  undo,
+  redo,
 } from './editor/state.js'
 
 import {
@@ -72,11 +76,11 @@ document.querySelector('#app').innerHTML = `
 
         <div class="separator"></div>
 
-        <button type="button" disabled>
+        <button type="button" id="undo-button" disabled title="Undo (Ctrl+Z)">
           Undo
         </button>
 
-        <button type="button" disabled>
+        <button type="button" id="redo-button" disabled title="Redo (Ctrl+Shift+Z)">
           Redo
         </button>
 
@@ -1085,7 +1089,24 @@ const snapToggle =
   document.querySelector(
     '#snap-toggle',
   )
+const undoButton = document.querySelector('#undo-button')
+const redoButton = document.querySelector('#redo-button')
 
+function updateHistoryButtons() {
+  undoButton.disabled = !canUndo()
+  redoButton.disabled = !canRedo()
+}
+
+undoButton.addEventListener('click', () => {
+  undo()
+})
+
+redoButton.addEventListener('click', () => {
+  redo()
+})
+
+subscribe(updateHistoryButtons)
+updateHistoryButtons()
 
 // ======================================================
 // CANVAS
@@ -2144,6 +2165,27 @@ window.addEventListener(
 
       event.preventDefault()
 
+      return
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+      event.preventDefault()
+
+      if (event.shiftKey) {
+        redo()
+      } else {
+        undo()
+      }
+
+      return
+    }
+
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      event.key.toLowerCase() === 'y'
+    ) {
+      event.preventDefault()
+      redo()
       return
     }
 
