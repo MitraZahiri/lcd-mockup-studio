@@ -139,7 +139,6 @@ export function initProjectControls({ refreshReference, fitWorkspace, isAnalyzin
       setTimeout(() => URL.revokeObjectURL(url), 1000)
       name = nextName
       saved = savedFingerprint
-      resetHistory()
       updateTitle()
       status.textContent = 'Project download started'
     } catch (error) {
