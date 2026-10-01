@@ -2169,25 +2169,25 @@ window.addEventListener(
     }
 
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
-  event.preventDefault()
+      event.preventDefault()
 
-  if (event.shiftKey) {
-    redo()
-  } else {
-    undo()
-  }
+      if (event.shiftKey) {
+        redo()
+      } else {
+        undo()
+      }
 
-  return
-}
+      return
+    }
 
-if (
-  (event.ctrlKey || event.metaKey) &&
-  event.key.toLowerCase() === 'y'
-) {
-  event.preventDefault()
-  redo()
-  return
-}
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      event.key.toLowerCase() === 'y'
+    ) {
+      event.preventDefault()
+      redo()
+      return
+    }
 
     const amount =
       event.shiftKey
