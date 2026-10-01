@@ -1,460 +1,421 @@
-# LCD Mockup Studio
+# 📺 LCD Mockup Studio
 
-A browser-based editor for recreating LCD, HMI, embedded display, and device screen interfaces from reference images.
+### Turn a real LCD / HMI screen into an editable mockup.
 
-LCD Mockup Studio allows users to upload a screenshot of a device display, analyze its visual structure, reconstruct detected content as editable elements, and continue designing directly in the browser.
+**Upload → Analyze → Edit → Export**
 
-The project is designed to remain generic and device-independent. It is not tied to a specific LCD manufacturer, product, resolution, or interface.
+LCD Mockup Studio is a browser-based tool for turning screenshots or photos of embedded displays into clean, editable mockups.
 
----
+Instead of manually redrawing every label, line and shape, the idea is simple:
 
-## Project Status
-
-🚧 **Active Development**
-
-The core editor and the first working image-analysis/OCR pipeline are now functional.
-
-Current milestone:
-
-**Reference Image → Image Analysis → OCR → Editable Mockup**
+> **Give it a real display image. Let the tool analyze it. Then refine the result and export it.**
 
 ---
 
-## What Works Today
+## ✨ What can it do?
 
-### Reference Images
-
-- Upload PNG, JPEG, and WebP reference images
-- Display the original screenshot in a dedicated reference panel
-- Automatically detect the reference resolution
-- Match the editable document size to the uploaded image
-- Keep the original reference separate from the editable canvas
-- Remove or replace the reference image
-
-### Editable Mockup Canvas
-
-- Independent editable display canvas
-- Logical LCD resolution preserved
-- Automatic fit-to-workspace
-- Zoom controls
-- Grid display
-- Snap controls
-- Landscape and portrait document support
-- Custom display background color
-
-Small displays such as `249 × 128` can be enlarged in the editor while preserving their original logical resolution.
-
-### Editable Elements
-
-The editor currently supports:
-
-- Text
-- Rectangle
-- Line
-- Circle
-
-Elements can be:
-
-- Selected
-- Moved
-- Edited
-- Resized through properties
-- Deleted
-- Managed through the Layers panel
-
-### Keyboard Controls
-
-- `Delete` / `Backspace` — delete selected element
-- `Arrow Keys` — move selected element by 1 pixel
-- `Shift + Arrow Keys` — move selected element by 5 pixels
-
----
-
-## Reference Image Analysis
-
-LCD Mockup Studio includes a local image-analysis pipeline designed specifically for device screenshots.
-
-The current pipeline performs:
+LCD Mockup Studio is built around a simple workflow:
 
 ```text
-Reference Image
-      ↓
-Grayscale Conversion
-      ↓
-Otsu Threshold Detection
-      ↓
-LCD Polarity Detection
-      ↓
-Binary Image Generation
-      ↓
-Noise Cleanup
-      ↓
-Horizontal Line Detection
-      ↓
-OCR Preprocessing
-      ↓
-Tesseract OCR
-      ↓
-Text Bounding Boxes
-      ↓
-Original LCD Coordinate Mapping
-      ↓
-Editable Editor Elements
+        📷 Reference Image
+                │
+                ▼
+        🔍 Image Analysis
+                │
+                ▼
+             🔤 OCR
+                │
+                ▼
+       🧩 Editable Elements
+                │
+                ▼
+          ✏️ Manual Editing
+                │
+                ▼
+           🖼️ PNG Export
 ```
 
-The analysis result is not treated as a final design.
+### Currently supported
 
-Instead, it creates an **editable starting point** that the user can manually correct and refine.
-
----
-
-## OCR
-
-OCR is powered by **Tesseract.js** and runs directly in the browser.
-
-The OCR pipeline has been adapted for small LCD and embedded-display screenshots.
-
-Current OCR features include:
-
-- Automatic OCR scaling for small displays
-- Pixel-preserving image enlargement
-- Black-on-white OCR normalization
-- LCD foreground/background polarity handling
-- OCR whitespace padding
-- Improved recognition near display edges
-- OCR word bounding boxes
-- Conversion from OCR coordinates back to original LCD coordinates
-- Editable text generation
-- OCR confidence information
-
-OCR results remain fully editable because recognition of small pixel and dot-matrix fonts will not always be perfect.
-
-For example, a detected label can be selected after analysis and corrected manually without modifying the original reference image.
+* 🖼️ Upload PNG, JPEG and WebP reference images
+* 📐 Detect display dimensions
+* 🔍 Analyze reference images
+* 🔤 OCR text using Tesseract.js
+* 📝 Create and edit text elements
+* ▭ Rectangles
+* ─ Lines
+* ○ Circles
+* 🗂️ Layers and element selection
+* 🎯 Grid and snapping
+* 🔎 Zoom and Fit View
+* ↔️ Keyboard-based element movement
+* 🎨 Display background and orientation controls
+* 💾 New / Open / Save projects
+* 📦 `.lcd.json` project files
+* 🖨️ Native-resolution PNG export
 
 ---
 
-## OCR Coordinate System
+# 🚀 The idea
 
-OCR may analyze an enlarged version of the reference image to improve recognition.
+Working with embedded displays often means dealing with screenshots, photographs, old documentation, prototypes or hardware that isn't easily available anymore.
+
+Recreating those interfaces manually can be surprisingly tedious.
+
+LCD Mockup Studio is an attempt to make that process much faster.
+
+### Instead of this:
+
+```text
+Screenshot
+   ↓
+Look at it
+   ↓
+Manually measure everything
+   ↓
+Draw every line
+   ↓
+Type every label
+   ↓
+Adjust positions
+   ↓
+Export
+```
+
+### You get:
+
+```text
+Screenshot
+   ↓
+Upload
+   ↓
+Analyze
+   ↓
+Edit
+   ↓
+Export
+```
+
+The goal isn't to replace a full design application.
+
+The goal is to make **LCD / HMI recreation ridiculously convenient.**
+
+---
+
+# 🧪 Example workflow
+
+Imagine you have an old embedded display:
+
+```text
+┌───────────────────────────────┐
+│       TEMPERATURE             │
+│                               │
+│          23.5 °C              │
+│                               │
+│  ───────────────────────────  │
+│                               │
+│       STATUS: READY           │
+└───────────────────────────────┘
+```
+
+Upload the image.
+
+The application can analyze the reference and detect useful information such as:
+
+* text
+* lines
+* display dimensions
+* visual structure
+
+You can then refine the generated elements manually.
+
+Finally:
+
+```text
+LCD Mockup Studio
+       │
+       ▼
+    PNG Export
+       │
+       ▼
+   Native Resolution
+```
+
+So if the original display is **249 × 128**, the exported image can remain **249 × 128**.
+
+---
+
+# 🧠 A small but important detail
+
+OCR sometimes works better when the image is temporarily enlarged during analysis.
+
+That does **not** mean the final display resolution changes.
 
 For example:
 
 ```text
-Original LCD
+Original display
 249 × 128
+     │
+     ├── Editor resolution → 249 × 128
+     │
+     └── OCR working image → temporarily enlarged
+                              │
+                              ▼
+                           OCR result
 ```
 
-may internally be enlarged for OCR processing.
+The logical display size remains the original size.
 
-However, generated editor elements are mapped back to:
+This is especially useful for small LCDs where text can be only a few pixels high.
+
+---
+
+# 🖥️ Editor
+
+The editor is intentionally simple.
 
 ```text
-249 × 128
+┌─────────────────────────────────────────────────────┐
+│ LCD Mockup Studio                                   │
+├─────────────────────────────────────────────────────┤
+│ New  Open  Save   Undo  Redo          Export PNG    │
+├──────────────┬───────────────────────┬──────────────┤
+│              │                       │              │
+│  Reference   │                       │  Properties  │
+│              │      LCD Canvas       │              │
+│  Analysis    │                       │              │
+│              │                       │              │
+│  Elements    │                       │  Layers      │
+│              │                       │              │
+└──────────────┴───────────────────────┴──────────────┘
 ```
 
-This means OCR processing resolution and document resolution remain independent.
-
-The editor always works with the original logical LCD coordinate system.
+The interface is designed around the display itself rather than around a large collection of design tools.
 
 ---
 
-## OCR Edge Padding
+# ⌨️ Keyboard shortcuts
 
-Small device screenshots often contain text extremely close to the edge of the display.
+| Shortcut               | Action                        |
+| ---------------------- | ----------------------------- |
+| `Delete` / `Backspace` | Delete selected element       |
+| `Arrow Keys`           | Move selected element by 1 px |
+| `Shift + Arrow`        | Move selected element by 5 px |
+| `Ctrl/Cmd + S`         | Save project                  |
 
-OCR engines can have difficulty detecting characters touching image boundaries.
+---
 
-LCD Mockup Studio therefore adds temporary whitespace around the OCR image before recognition.
+# 💾 Projects
+
+Projects can be saved as:
 
 ```text
-        OCR Padding
-┌───────────────────────────────┐
-│                               │
-│   ┌───────────────────────┐   │
-│   │                       │   │
-│   │      LCD IMAGE        │   │
-│   │                       │   │
-│   └───────────────────────┘   │
-│                               │
-└───────────────────────────────┘
+.lcd.json
 ```
 
-The padding exists only during OCR processing.
+A project can contain the display configuration, elements and reference information needed to continue editing later.
 
-It is removed mathematically when OCR bounding boxes are converted back into LCD coordinates.
-
----
-
-## Horizontal Line Detection
-
-The analysis engine also detects long horizontal interface lines independently from OCR.
-
-Detected lines are converted into editable line elements.
-
-This allows interface separators and similar LCD geometry to be reconstructed separately from text.
-
----
-
-## Editor Layout
-
-The application uses a three-panel workflow:
+That means the workflow doesn't have to end with a PNG.
 
 ```text
-┌──────────────────┬──────────────────────────────┬──────────────────┐
-│ REFERENCE        │ EDITABLE MOCKUP             │ PROPERTIES       │
-│                  │                              │                  │
-│ Original image   │ Reconstructed interface      │ Selected element │
-│                  │                              │ settings         │
-│ Analyze Image    │ Editable elements            │                  │
-│                  │                              │                  │
-│ ELEMENTS         │                              │ Display settings │
-│ LAYERS           │                              │                  │
-└──────────────────┴──────────────────────────────┴──────────────────┘
+Reference
+    ↓
+Project
+    ↓
+Edit tomorrow
+    ↓
+Export later
 ```
 
-The reference image always stays separate from the reconstructed mockup.
-
-This prevents the original screenshot from becoming part of the editable design.
-
 ---
 
-## Design Philosophy
+# 🖨️ Export
 
-LCD Mockup Studio is intended to be:
+PNG export is designed to preserve the actual display resolution.
 
-**Simple**
-
-The editor should be easier to use than a general-purpose design application.
-
-**Precise**
-
-Device interfaces often require pixel-level positioning.
-
-**Generic**
-
-The application should work with many types of:
-
-- LCD displays
-- HMI screens
-- Embedded displays
-- Industrial interfaces
-- Control panels
-- Device screens
-- Custom display resolutions
-
-**Editable**
-
-Image analysis should produce normal editor elements rather than a flattened screenshot.
-
-**Browser Based**
-
-The core workflow should work directly in a modern browser.
-
----
-
-## Technologies
-
-Current project stack:
-
-- JavaScript
-- HTML
-- CSS
-- Vite
-- Canvas API
-- Tesseract.js
-- Git
-- GitHub
-
-Image analysis and OCR currently run locally in the browser.
-
----
-
-## Development Progress
-
-### Foundation
-
-- [x] Create Vite project
-- [x] Configure Git repository
-- [x] Create GitHub repository
-- [x] Build initial application layout
-
-### Editor
-
-- [x] Three-panel workspace
-- [x] Editable canvas
-- [x] Display resolution controls
-- [x] Display background control
-- [x] Canvas zoom
-- [x] Fit canvas to workspace
-- [x] Grid
-- [x] Snap
-- [x] Layers panel
-- [x] Element selection
-- [x] Element movement
-- [x] Properties panel
-- [x] Keyboard movement
-- [x] Element deletion
-
-### Elements
-
-- [x] Text
-- [x] Rectangle
-- [x] Line
-- [x] Circle
-
-### Reference Workflow
-
-- [x] Reference image upload
-- [x] Reference preview
-- [x] Reference resolution detection
-- [x] Match document to reference resolution
-- [x] Keep reference separate from editable canvas
-- [x] Remove reference image
-
-### Image Analysis
-
-- [x] Grayscale conversion
-- [x] Otsu threshold calculation
-- [x] LCD polarity detection
-- [x] Binary mask generation
-- [x] Noise cleanup
-- [x] Horizontal line detection
-- [x] Analysis element generation
-
-### OCR
-
-- [x] Integrate Tesseract.js
-- [x] OCR preprocessing
-- [x] Automatic OCR scaling
-- [x] Pixel-preserving scaling
-- [x] OCR text recognition
-- [x] OCR bounding-box extraction
-- [x] OCR-to-LCD coordinate conversion
-- [x] OCR text converted to editable elements
-- [x] OCR edge-padding support
-- [x] Improved edge text detection
-- [x] Preserve logical display resolution
-
----
-
-## Roadmap
-
-### v0.1 — Core Editor
-
-The first release focuses on building a reliable editing foundation.
-
-Planned features include:
-
-- [ ] Improved text editing
-- [ ] More font controls
-- [ ] Font categories
-- [ ] Custom font upload
-- [ ] `.ttf` support
-- [ ] `.otf` support
-- [ ] `.woff` / `.woff2` support
-- [ ] Better resizing controls
-- [ ] Copy
-- [ ] Paste
-- [ ] Duplicate
-- [ ] Undo
-- [ ] Redo
-- [ ] Project save/load
-- [ ] PNG export
-- [ ] JPG export
-- [ ] SVG export
-- [ ] Project JSON export
-
-### v0.2 — Advanced Elements & Analysis
-
-Planned improvements:
-
-- [ ] Icon elements
-- [ ] Button elements
-- [ ] Status-bar elements
-- [ ] SVG support
-- [ ] Alignment tools
-- [ ] Improved snapping
-- [ ] Improved OCR accuracy
-- [ ] Multi-pass OCR
-- [ ] Better symbol recognition
-- [ ] Better dot-matrix recognition
-- [ ] Improved geometry detection
-- [ ] Additional interface-region detection
-- [ ] Reference/mockup comparison overlay
-- [ ] Generic display templates
-
----
-
-## Font System Vision
-
-The planned font system will organize fonts into categories such as:
+For example:
 
 ```text
-System
-Pixel
-Monospace
-Dot Matrix
-Seven Segment
-Custom Font
+Display: 249 × 128
+
+Export:
+┌─────────────────┐
+│    249 × 128    │
+└─────────────────┘
 ```
 
-Custom fonts are planned to be loaded directly in the browser using the FontFace API.
-
-This is especially important for embedded displays where typography may be very different from normal web fonts.
+The export system also validates very large dimensions to avoid unreasonable browser memory usage.
 
 ---
 
-## Analysis Goals
+# 🛠️ Built with
 
-Future versions of the analyzer should be capable of detecting more than text.
+* **JavaScript**
+* **Vite**
+* **Tesseract.js**
+* HTML / CSS
+* Canvas-based rendering
+* Browser APIs
 
-The long-term goal is to identify interface structures such as:
+Everything currently runs locally in the browser.
+
+No backend is required for the core workflow.
+
+---
+
+# 🔬 How the analysis works
+
+The analysis pipeline is intentionally modular.
 
 ```text
-Text
-Lines
-Rectangles
-Icons
-Buttons
-Status areas
-Numeric displays
-Indicators
-Simple UI regions
+Reference Image
+      │
+      ▼
+Image Analysis
+      │
+      ├── Display information
+      ├── Polarity / visual analysis
+      └── Geometry detection
+      │
+      ▼
+OCR
+      │
+      ▼
+Detected Elements
+      │
+      ▼
+Editor State
+      │
+      ▼
+Manual Refinement
 ```
 
-Each detected object should become an independent editable element.
+The long-term goal is to make the analysis increasingly useful without taking control away from the user.
+
+The computer should do the boring parts.
+
+**The human should remain in control of the final mockup.**
 
 ---
 
-## Important Principle
+# 🗺️ Roadmap
 
-LCD Mockup Studio is **not a firmware simulator**.
-
-It is also not intended to reproduce the complexity of applications such as Photoshop or Figma.
-
-The goal is a focused tool for quickly recreating and editing embedded-device interfaces.
-
-A user should eventually be able to:
+The core workflow is already working:
 
 ```text
-Upload Screenshot
+Reference Image
       ↓
-Analyze Image
+Image Analysis
       ↓
-Receive Editable Draft
+OCR
       ↓
-Correct OCR
+Editable Mockup
       ↓
-Move / Resize / Restyle Elements
+Project Save / Open
       ↓
-Add Missing Elements
-      ↓
-Export Final Mockup
+PNG Export
 ```
+
+But the project is **not finished**.
+
+And that's intentional.
+
+The next phase is about turning the prototype into a genuinely pleasant tool to use.
+
+### Next up
+
+* [ ] Undo / Redo
+* [ ] Copy / Paste
+* [ ] Duplicate elements
+* [ ] Better resize handles
+* [ ] Alignment tools
+* [ ] Distribution tools
+* [ ] Improved text editing
+* [ ] More font controls
+* [ ] LCD / dot-matrix font support
+* [ ] Custom font loading
+* [ ] SVG export
+* [ ] Improved OCR for unusual LCD fonts
+* [ ] Symbol / icon recognition
+* [ ] More geometry detection
+* [ ] Buttons and indicator recognition
+* [ ] Reference vs. mockup comparison overlay
 
 ---
 
-## Running Locally
+# 🎯 Long-term vision
+
+LCD Mockup Studio is **not trying to become Photoshop.**
+
+It's also not trying to become Figma.
+
+The interesting space is much narrower:
+
+> **Tools for recreating embedded displays and HMI interfaces.**
+
+Think:
+
+* industrial LCDs
+* embedded HMIs
+* instrument panels
+* small monochrome displays
+* legacy equipment
+* prototype interfaces
+* electronics documentation
+* hardware reverse engineering
+* UI recreation
+
+A future version could eventually understand much more than text and geometry.
+
+For example:
+
+```text
+┌──────────────────────────────┐
+│ POWER       ████████  82%    │
+│                              │
+│ TEMP          23.5 °C        │
+│                              │
+│ ┌────────┐     ┌────────┐    │
+│ │ START  │     │ STOP   │    │
+│ └────────┘     └────────┘    │
+│                              │
+│ STATUS: READY                │
+└──────────────────────────────┘
+```
+
+And turn that into a structured, editable representation.
+
+That's where this project gets interesting.
+
+---
+
+# 🧩 Project structure
+
+The codebase is organized around the major parts of the editor:
+
+```text
+src/
+├── analysis/
+├── editor/
+├── export/
+├── project/
+├── reference/
+└── ...
+```
+
+The goal is to keep analysis, editing, exporting and project management reasonably separated so the application can grow without turning into one giant file.
+
+---
+
+# 🏃 Run locally
+
+Clone the repository:
+
+```bash
+git clone https://github.com/MitraZahiri/lcd-mockup-studio.git
+cd lcd-mockup-studio
+```
 
 Install dependencies:
 
@@ -468,18 +429,113 @@ Start the development server:
 npm run dev
 ```
 
-Create a production build:
+Then open the local URL shown by Vite, usually:
 
-```bash
-npm run build
+```text
+http://localhost:5173
 ```
 
 ---
 
-## Current Milestone
+# 🧭 Development philosophy
 
-The project has reached its first important functional milestone:
+A few principles guide the project:
 
-> A device screenshot can be uploaded, analyzed locally, recognized with OCR, and reconstructed as editable elements on an independent mockup canvas.
+### 1. Keep the workflow small
 
-The next development phase will focus on improving OCR accuracy and expanding the editor from a functional prototype into a more complete LCD/HMI design tool.
+Upload → Analyze → Edit → Export.
+
+No unnecessary complexity.
+
+### 2. Preserve the original display
+
+If the source is 249 × 128, the mockup should know that it is 249 × 128.
+
+### 3. Automate the boring work
+
+OCR and image analysis should save time, not create another problem.
+
+### 4. Keep the result editable
+
+Automatic detection is only the beginning.
+
+The user should always be able to correct it.
+
+### 5. Optimize for embedded displays
+
+This project has a specific problem to solve.
+
+That specificity is a feature.
+
+---
+
+# 📌 Project status
+
+**Current status: Active prototype / early development**
+
+The first complete workflow is in place:
+
+**Reference → Analyze → Edit → Save → Export**
+
+The project is now moving from:
+
+> 🧪 *“Can this work?”*
+
+toward:
+
+> 🛠️ *“Can someone actually enjoy using this?”*
+
+---
+
+# 💡 Why this exists
+
+Sometimes a tiny LCD screen is harder to recreate than a huge modern UI.
+
+A few pixels matter.
+
+A one-pixel alignment matters.
+
+A strange bitmap-looking font matters.
+
+And when the original hardware isn't sitting on your desk, even figuring out where to start can be annoying.
+
+LCD Mockup Studio exists to make that process a little less painful.
+
+---
+
+## ❤️ If you're interested
+
+This project is still evolving.
+
+Ideas, experiments, bug reports and contributions are welcome.
+
+If you're interested in:
+
+* embedded systems
+* LCD / HMI interfaces
+* OCR
+* computer vision
+* UI tooling
+* electronics
+* reverse engineering
+* browser-based creative tools
+
+...there's probably something interesting to build here.
+
+---
+
+## 📜 License
+
+License information will be added once the project's licensing decision is finalized.
+
+---
+
+<p align="center">
+
+**LCD Mockup Studio**
+
+*From pixels to editable interfaces.*
+
+📺 → 🔍 → ✏️ → 🖨️
+
+</p>
