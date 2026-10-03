@@ -423,15 +423,42 @@ export function sanitizeRecognizedText(
     )
     .trim()
 
+  // Fix spaced colons in time / ratios (e.g. 12 : 30 -> 12:30, 08 : 45 : 12 -> 08:45:12)
+  text = text.replace(/(\d{1,2})\s*:\s*(\d{2})/g, '$1:$2')
+  text = text.replace(/(\d{1,2}:\d{2})\s*:\s*(\d{2})/g, '$1:$2')
+
+  // Fix spaced decimals (e.g. 24 . 5 -> 24.5)
+  text = text.replace(/(\d+)\s*\.\s*(\d+)/g, '$1.$2')
+
   // Fix 'O' or 'o' in decimal numbers (e.g. 24.O -> 24.0, O.5 -> 0.5)
   text = text.replace(/(\d)\.([Oo])\b/g, '$1.0')
   text = text.replace(/\b([Oo])\.(\d)/g, '0.$2')
 
-  // Fix temperature degree notation (e.g. 23 *C or 23 oC -> 23 °C)
-  text = text.replace(/(\d+)\s*[*o]\s*([CF])\b/g, '$1 °$2')
+  // Fix 'O' / 'o' in large numbers (e.g. 1O0 -> 100, 2O24 -> 2024)
+  text = text.replace(/\b(\d+)[Oo]+(\d*)\b/g, (match, prefix, suffix) => {
+    return prefix + '0'.repeat(match.length - prefix.length - suffix.length) + suffix
+  })
 
-  // Clean common LCD noise artifact characters
-  text = text.replace(/^[~^`'"]+|[~^`'"]+$/g, '').trim()
+  // Fix 'S' or 's' in numbers (e.g. 2S.4 -> 25.4, 3.S -> 3.5, S.5 -> 5.5)
+  text = text.replace(/(\d+)[Ss]\.(\d+)/g, '$15.$2')
+  text = text.replace(/(\d+)\.([Ss])(\d*)/g, '$1.5$3')
+  text = text.replace(/\b([Ss])\.(\d+)/g, '5.$2')
+  text = text.replace(/\b(\d+)[Ss]\b/g, '$15')
+
+  // Fix 'l' or 'I' or '|' at beginning of multi-digit numbers (e.g. l2:00 -> 12:00, |50 -> 150)
+  text = text.replace(/\b[lI|](\d{2,})\b/g, '1$1')
+
+  // Fix percentage spacing (e.g. 98 % -> 98%)
+  text = text.replace(/(\d+)\s*%/g, '$1%')
+
+  // Fix temperature degree notation (e.g. 23 *C, 23 oC, 23 ° C -> 23 °C)
+  text = text.replace(/(\d+)\s*[*o°]\s*([CFcf])\b/g, '$1 °$2')
+
+  // Standardize LCD telemetry units (e.g. 50Hz, 12V, 3.3V, 240VAC)
+  text = text.replace(/(\d+(?:\.\d+)?)\s*(V|mV|mA|uA|A|W|kW|Hz|kHz|MHz|RPM|rpm|PSI|psi|bar|BAR|km\/h|mph|ms|us|dB)\b/g, '$1 $2')
+
+  // Clean common LCD noise artifact characters from boundaries
+  text = text.replace(/^[~^`'",._-]+|[~^`'",._-]+$/g, '').trim()
 
   return text
 }

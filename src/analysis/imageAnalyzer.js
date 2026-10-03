@@ -10,6 +10,7 @@ import {
   detectGeometry,
   lineGeometryToElement,
   rectangleGeometryToElement,
+  circleGeometryToElement,
 } from './geometryDetector.js'
 
 import {
@@ -25,17 +26,32 @@ import {
 // Responsibilities:
 // - Read the current reference image
 // - Prepare source image data and extract true color palette
-// - Run OCR pipeline
-// - Detect geometry: horizontal lines, vertical lines, frames
-// - Convert OCR regions & geometry into editor elements
+// - Run OCR pipeline with 7-segment normalization
+// - Detect geometry: horizontal lines, vertical lines, frames,
+//   solid badges, indicator dots/circles, and battery icons
+// - Automatically invert text colors inside dark solid badges
+// - Intelligently match authentic LCD typography & font weights
+// - Suggest standard LCD hardware resolutions
 // - Return analysis statistics and LCD palette
 // ======================================================
+
+const STANDARD_RESOLUTIONS = [
+  { width: 128, height: 64, name: '128 × 64 (OLED / Graphic LCD)' },
+  { width: 128, height: 32, name: '128 × 32 (Narrow OLED)' },
+  { width: 84, height: 48, name: '84 × 48 (Nokia 5110)' },
+  { width: 160, height: 128, name: '160 × 128 (ST7735 Color TFT)' },
+  { width: 240, height: 128, name: '240 × 128 (Graphic LCD)' },
+  { width: 240, height: 64, name: '240 × 64 (Wide LCD)' },
+  { width: 256, height: 64, name: '256 × 64 (SSD1322 OLED)' },
+  { width: 320, height: 240, name: '320 × 240 (QVGA TFT)' },
+  { width: 160, height: 80, name: '160 × 80 (Mini TFT)' },
+]
 
 // ======================================================
 // MAIN ANALYSIS
 // ======================================================
 
-export async function analyzeReferenceImage() {
+export async function analyzeReferenceImage(options = {}) {
   const reference =
     editorState.reference
 
@@ -91,7 +107,7 @@ export async function analyzeReferenceImage() {
     })
 
   // ----------------------------------------------------
-  // Detect graphical geometry (H-lines, V-lines, frames)
+  // Detect graphical geometry & shapes
   // Suppresses false-positive lines inside text regions
   // ----------------------------------------------------
 
@@ -101,36 +117,71 @@ export async function analyzeReferenceImage() {
       width,
       height,
       ocr.regions,
+      options,
     )
 
   // ----------------------------------------------------
   // Convert analysis results to editor elements
   // ----------------------------------------------------
 
-  const textElements =
-    ocr.regions.map(
-      (region) => ocrRegionToElement(region, palette.foreground),
-    )
+  const textElements = options.detectText !== false
+    ? ocr.regions.map(
+        (region) => ocrRegionToElement(region, palette.foreground),
+      )
+    : []
 
-  const lineElements =
-    geometry.lines.map(
-      (line) => lineGeometryToElement(line, palette.foreground),
-    )
+  const lineElements = options.detectFrames !== false
+    ? geometry.lines.map(
+        (line) => lineGeometryToElement(line, palette.foreground),
+      )
+    : []
 
-  const rectElements =
-    geometry.rectangles.map(
+  const rectElements = geometry.rectangles
+    .filter((rect) => {
+      if (rect.filled && options.detectBadges === false) return false
+      if (!rect.filled && options.detectFrames === false) return false
+      return true
+    })
+    .map(
       (rect) => rectangleGeometryToElement(rect, palette.foreground),
     )
 
+  const circleElements = options.detectCircles !== false
+    ? (geometry.circles || []).map(
+        (circle) => circleGeometryToElement(circle, palette.foreground),
+      )
+    : []
+
+  // Inverted text badge contrast handling:
+  // If a text element is placed inside a solid rectangle,
+  // set text color to the display background color for contrast!
+  for (const text of textElements) {
+    for (const rect of rectElements) {
+      if (rect.fill !== 'transparent') {
+        const pad = 2
+        const insideX = text.x >= rect.x - pad && (text.x + text.width) <= (rect.x + rect.width + pad)
+        const insideY = text.y >= rect.y - pad && (text.y + text.height) <= (rect.y + rect.height + pad)
+        if (insideX && insideY) {
+          text.color = palette.background || '#1d2720'
+          text.inverted = true
+          rect.name = 'Detected Inverted Badge'
+        }
+      }
+    }
+  }
+
   const elements = [
-    ...textElements,
     ...rectElements,
+    ...circleElements,
     ...lineElements,
+    ...textElements,
   ]
 
   elements.sort(
     sortElements,
   )
+
+  const suggestedResolution = findSuggestedResolution(width, height)
 
   // ----------------------------------------------------
   // Result
@@ -143,6 +194,7 @@ export async function analyzeReferenceImage() {
     threshold,
     polarity,
     palette,
+    suggestedResolution,
 
     elements,
 
@@ -158,6 +210,18 @@ export async function analyzeReferenceImage() {
 
       rectangles:
         rectElements.length,
+
+      hollowFrames:
+        geometry.stats?.hollowFrames ?? 0,
+
+      solidBadges:
+        geometry.stats?.solidBadges ?? 0,
+
+      circles:
+        circleElements.length,
+
+      symbols:
+        geometry.stats?.symbols ?? 0,
 
       totalElements:
         elements.length,
@@ -222,14 +286,6 @@ function ocrRegionToElement(region, color = '#a8d9a8') {
       ),
     )
 
-  /*
-   * OCR bounding-box height is a useful starting point
-   * for LCD font size.
-   *
-   * We keep it conservative because the editor can
-   * always enlarge the text later.
-   */
-
   const fontSize =
     clamp(
       Math.round(
@@ -238,6 +294,24 @@ function ocrRegionToElement(region, color = '#a8d9a8') {
       6,
       96,
     )
+
+  // Authentic LCD typography heuristics
+  const isNumericTelemetry = /^[0-9.:\-\s%+°CFAVWmkuhzRPMpsiBAR/]+$/i.test(text)
+  const isDigitalClock = /^\d{1,2}:\d{2}(?::\d{2})?$/.test(text)
+  const isShortLabel = /^[A-Z0-9_\-\s]{2,16}$/.test(text)
+
+  let fontFamily = 'monospace'
+  let fontWeight = 400
+
+  if (isDigitalClock || isNumericTelemetry) {
+    fontFamily = 'Share Tech Mono'
+    fontWeight = 700
+  } else if (isShortLabel) {
+    fontFamily = 'Share Tech Mono'
+    fontWeight = 700
+  } else if (height >= 16) {
+    fontWeight = 700
+  }
 
   return {
     type: 'text',
@@ -257,11 +331,9 @@ function ocrRegionToElement(region, color = '#a8d9a8') {
 
     fontSize,
 
-    fontFamily:
-      'monospace',
+    fontFamily,
 
-    fontWeight:
-      '400',
+    fontWeight,
 
     textAlign:
       'left',
@@ -295,6 +367,39 @@ function ocrRegionToElement(region, color = '#a8d9a8') {
         region?.sourceSupport,
       ) || 1,
   }
+}
+
+// ======================================================
+// RESOLUTION MATCHER
+// ======================================================
+
+function findSuggestedResolution(imgWidth, imgHeight) {
+  const imgAspect = imgWidth / imgHeight
+  let bestMatch = null
+  let bestScore = Infinity
+
+  for (const res of STANDARD_RESOLUTIONS) {
+    for (const scale of [1, 2, 3, 4, 0.5]) {
+      const targetW = res.width * scale
+      const targetH = res.height * scale
+      const diffW = Math.abs(imgWidth - targetW) / targetW
+      const diffH = Math.abs(imgHeight - targetH) / targetH
+      const score = diffW + diffH
+      if (score < 0.15 && score < bestScore) {
+        bestScore = score
+        bestMatch = res
+      }
+    }
+
+    const resAspect = res.width / res.height
+    const aspectDiff = Math.abs(imgAspect - resAspect) / resAspect
+    if (aspectDiff < 0.05 && 0.25 < bestScore) {
+      bestScore = 0.25
+      bestMatch = res
+    }
+  }
+
+  return bestMatch
 }
 
 // ======================================================
@@ -341,6 +446,10 @@ function sortElements(
   first,
   second,
 ) {
+  // If one element is a background container of the other, container goes first
+  if (isContainerOf(first, second)) return -1
+  if (isContainerOf(second, first)) return 1
+
   const firstY =
     Number(first?.y) || 0
 
@@ -399,6 +508,27 @@ function sortElements(
   return (
     firstX -
     secondX
+  )
+}
+
+function isContainerOf(container, target) {
+  if (container?.type === 'text') return false
+  const cX = Number(container?.x) || 0
+  const cY = Number(container?.y) || 0
+  const cW = Number(container?.width) || 0
+  const cH = Number(container?.height) || 0
+
+  const tX = Number(target?.x) || 0
+  const tY = Number(target?.y) || 0
+  const tW = Number(target?.width) || 0
+  const tH = Number(target?.height) || 0
+
+  const pad = 2
+  return (
+    tX >= cX - pad &&
+    (tX + tW) <= (cX + cW + pad) &&
+    tY >= cY - pad &&
+    (tY + tH) <= (cY + cH + pad)
   )
 }
 

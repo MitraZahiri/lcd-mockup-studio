@@ -1,20 +1,27 @@
 // ======================================================
-// LCD GEOMETRY DETECTOR
+// LCD GEOMETRY & SHAPE DETECTOR
 // ======================================================
 //
-// Detects horizontal lines, vertical lines, and rectangular
-// frames from a binary mask, with text overlap suppression.
+// Advanced shape analysis for LCD screens:
+// - Standalone horizontal & vertical divider lines
+// - Hollow rectangular frames
+// - Solid filled badges, headers, and progress bars
+// - Circular indicator dots & dial rings
+// - Battery indicator icon recognition
+// - Text overlap suppression to prevent character stroke noise
 // ======================================================
 
-export function detectGeometry(mask, width, height, textRegions = []) {
+export function detectGeometry(mask, width, height, textRegions = [], options = {}) {
   if (!mask || width < 1 || height < 1) {
-    return { lines: [], rectangles: [] }
+    return { lines: [], rectangles: [], circles: [], symbols: [], stats: { lines: 0, rectangles: 0, circles: 0, symbols: 0 } }
   }
 
+  // 1. Detect raw horizontal and vertical lines
   const hLines = detectRawHorizontalLines(mask, width, height)
   const vLines = detectRawVerticalLines(mask, width, height)
 
-  const { rectangles, remainingHLines, remainingVLines } = findRectanglesFromLines(
+  // 2. Find hollow frames formed by intersecting lines
+  const { rectangles: hollowRectangles, remainingHLines, remainingVLines } = findRectanglesFromLines(
     hLines,
     vLines,
     width,
@@ -23,11 +30,32 @@ export function detectGeometry(mask, width, height, textRegions = []) {
 
   const combinedLines = [...remainingHLines, ...remainingVLines]
   const filteredLines = filterLinesOverlappingText(combinedLines, textRegions)
-  const filteredRectangles = filterRectanglesOverlappingText(rectangles, textRegions)
+  const filteredHollowRectangles = filterRectanglesOverlappingText(hollowRectangles, textRegions)
+
+  // 3. Connected Component Analysis for solid badges, circles, and icons
+  const { solidRectangles, circles, symbols } = detectConnectedShapes(
+    mask,
+    width,
+    height,
+    textRegions,
+    filteredHollowRectangles,
+  )
+
+  const allRectangles = [...filteredHollowRectangles, ...solidRectangles]
 
   return {
     lines: filteredLines,
-    rectangles: filteredRectangles,
+    rectangles: allRectangles,
+    circles,
+    symbols,
+    stats: {
+      lines: filteredLines.length,
+      rectangles: allRectangles.length,
+      hollowFrames: filteredHollowRectangles.length,
+      solidBadges: solidRectangles.length,
+      circles: circles.length,
+      symbols: symbols.length,
+    },
   }
 }
 
@@ -36,7 +64,8 @@ export function detectGeometry(mask, width, height, textRegions = []) {
 // ------------------------------------------------------
 
 function detectRawHorizontalLines(mask, width, height) {
-  const minRun = Math.max(12, Math.round(width * 0.12))
+  // Adaptive minimum run length: can detect short dividers down to 8px
+  const minRun = Math.max(8, Math.round(width * 0.08))
   const candidates = []
 
   for (let y = 0; y < height; y++) {
@@ -100,7 +129,7 @@ function mergeHorizontalCandidates(candidates) {
 // ------------------------------------------------------
 
 function detectRawVerticalLines(mask, width, height) {
-  const minRun = Math.max(12, Math.round(height * 0.12))
+  const minRun = Math.max(8, Math.round(height * 0.08))
   const candidates = []
 
   for (let x = 0; x < width; x++) {
@@ -205,7 +234,7 @@ function findRectanglesFromLines(hLines, vLines, canvasWidth, canvasHeight) {
       }
 
       if (leftVIdx !== -1 && rightVIdx !== -1) {
-        // We found a complete rectangular frame!
+        // Complete hollow rectangular frame found
         usedHLines.add(topIdx)
         usedHLines.add(botIdx)
         usedVLines.add(leftVIdx)
@@ -223,6 +252,8 @@ function findRectanglesFromLines(hLines, vLines, canvasWidth, canvasHeight) {
           width: Math.min(canvasWidth - rectX, rectW),
           height: Math.min(canvasHeight - rectY, rectH),
           strokeWidth: Math.min(8, strokeW),
+          filled: false,
+          name: 'Detected Frame',
         })
         break
       }
@@ -237,6 +268,222 @@ function findRectanglesFromLines(hLines, vLines, canvasWidth, canvasHeight) {
     remainingHLines,
     remainingVLines,
   }
+}
+
+// ------------------------------------------------------
+// CONNECTED COMPONENT & SHAPE ANALYSIS
+// ------------------------------------------------------
+
+function detectConnectedShapes(mask, width, height, textRegions, existingFrames) {
+  const visited = new Uint8Array(width * height)
+  const solidRectangles = []
+  const circles = []
+  const symbols = []
+
+  // 8-way connectivity offsets
+  const dx = [-1, 0, 1, -1, 1, -1, 0, 1]
+  const dy = [-1, -1, -1, 0, 0, 1, 1, 1]
+  const queue = new Int32Array(width * height)
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const startIdx = y * width + x
+      if (mask[startIdx] !== 1 || visited[startIdx] === 1) continue
+
+      visited[startIdx] = 1
+      let head = 0
+      let tail = 0
+      queue[tail++] = startIdx
+
+      let minX = x, maxX = x, minY = y, maxY = y
+      let area = 0
+
+      while (head < tail) {
+        const curr = queue[head++]
+        const cy = Math.floor(curr / width)
+        const cx = curr % width
+        area++
+
+        if (cx < minX) minX = cx
+        if (cx > maxX) maxX = cx
+        if (cy < minY) minY = cy
+        if (cy > maxY) maxY = cy
+
+        for (let d = 0; d < 8; d++) {
+          const nx = cx + dx[d]
+          const ny = cy + dy[d]
+          if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+            const nidx = ny * width + nx
+            if (mask[nidx] === 1 && visited[nidx] === 0) {
+              visited[nidx] = 1
+              queue[tail++] = nidx
+            }
+          }
+        }
+      }
+
+      const compW = maxX - minX + 1
+      const compH = maxY - minY + 1
+      const totalPixels = compW * compH
+      const density = area / totalPixels
+
+      // Ignore noise or tiny blobs
+      if (compW < 4 && compH < 4) continue
+
+      // Ignore existing hollow frames
+      if (isDuplicateOfFrame(minX, minY, compW, compH, existingFrames)) continue
+
+      // Check text overlap: if blob is inside text region and small, it's a character glyph
+      if (isGlyphInsideText(minX, minY, compW, compH, textRegions)) continue
+
+      // 1. Check for Battery Icon (aspect 1.6-3.8, has terminal nub at right edge)
+      if (isBatteryShape(mask, width, minX, minY, compW, compH, density)) {
+        symbols.push({
+          type: 'battery',
+          name: 'Detected Battery Indicator',
+          x: minX,
+          y: minY,
+          width: compW,
+          height: compH,
+        })
+        solidRectangles.push({
+          x: minX,
+          y: minY,
+          width: compW,
+          height: compH,
+          filled: false,
+          strokeWidth: 1,
+          name: 'Detected Battery Frame',
+        })
+        continue
+      }
+
+      // 2. Check for Circle / Indicator Dot (aspect 0.75-1.33, circularity match)
+      const aspect = compW / compH
+      const isSquareish = aspect >= 0.72 && aspect <= 1.38
+      if (isSquareish && compW >= 4 && compH >= 4 && compW <= Math.min(width, height) * 0.4) {
+        const cornerEmptyCount = countEmptyCorners(mask, width, minX, minY, compW, compH)
+        // Circles have empty outer corners
+        if (cornerEmptyCount >= 3) {
+          if (density >= 0.52) {
+            circles.push({
+              x: minX,
+              y: minY,
+              width: compW,
+              height: compH,
+              fill: 'solid',
+              strokeWidth: 1,
+              name: 'Detected Indicator Dot',
+            })
+            continue
+          } else if (density >= 0.20 && density < 0.52) {
+            circles.push({
+              x: minX,
+              y: minY,
+              width: compW,
+              height: compH,
+              fill: 'transparent',
+              strokeWidth: 1,
+              name: 'Detected Ring Gauge',
+            })
+            continue
+          }
+        }
+      }
+
+      // 3. Check for Solid Rectangles (Badges, Headers, Progress Bars)
+      if (compW >= 8 && compH >= 4 && density >= 0.78) {
+        const isProgressBar = compW / compH >= 3.2
+        const isHeaderBar = compW >= width * 0.6 && compH >= 8 && compH <= 24
+        let name = 'Detected Solid Badge'
+        if (isProgressBar) name = 'Detected Progress Bar'
+        if (isHeaderBar) name = 'Detected Header Bar'
+
+        solidRectangles.push({
+          x: minX,
+          y: minY,
+          width: compW,
+          height: compH,
+          filled: true,
+          strokeWidth: 1,
+          name,
+        })
+      }
+    }
+  }
+
+  return { solidRectangles, circles, symbols }
+}
+
+function countEmptyCorners(mask, width, x, y, w, h) {
+  let empty = 0
+  const checkCorner = (px, py) => {
+    if (px < 0 || py < 0) return 1
+    return mask[py * width + px] === 0 ? 1 : 0
+  }
+  empty += checkCorner(x, y)
+  empty += checkCorner(x + w - 1, y)
+  empty += checkCorner(x, y + h - 1)
+  empty += checkCorner(x + w - 1, y + h - 1)
+  return empty
+}
+
+function isBatteryShape(mask, canvasW, x, y, w, h, density) {
+  const aspect = w / h
+  if (aspect < 1.5 || aspect > 4.2) return false
+  if (w < 14 || h < 6 || h > 40) return false
+
+  // Check rightmost 2 columns for a centered terminal nub
+  // Main body is x .. x + w - 3, nub is x + w - 2 .. x + w - 1
+  const nubWidth = Math.max(2, Math.round(w * 0.1))
+  const bodyRight = x + w - nubWidth
+  const nubTop = y + Math.round(h * 0.25)
+  const nubBottom = y + Math.round(h * 0.75)
+
+  // Top-right and bottom-right outside the nub should be empty background
+  let emptyAboveNub = 0
+  let emptyBelowNub = 0
+  for (let nx = bodyRight; nx < x + w; nx++) {
+    for (let ny = y; ny < nubTop; ny++) {
+      if (mask[ny * canvasW + nx] === 0) emptyAboveNub++
+    }
+    for (let ny = nubBottom; ny < y + h; ny++) {
+      if (mask[ny * canvasW + nx] === 0) emptyBelowNub++
+    }
+  }
+
+  return emptyAboveNub > 0 && emptyBelowNub > 0
+}
+
+function isDuplicateOfFrame(x, y, w, h, frames) {
+  for (const f of frames) {
+    if (Math.abs(f.x - x) <= 4 && Math.abs(f.y - y) <= 4 &&
+        Math.abs(f.width - w) <= 6 && Math.abs(f.height - h) <= 6) {
+      return true
+    }
+  }
+  return false
+}
+
+function isGlyphInsideText(x, y, w, h, textRegions) {
+  if (!textRegions || textRegions.length === 0) return false
+
+  for (const t of textRegions) {
+    const pad = 3
+    const textLeft = (t.x || 0) - pad
+    const textRight = textLeft + (t.width || 0) + pad * 2
+    const textTop = (t.y || 0) - pad
+    const textBottom = textTop + (t.height || 0) + pad * 2
+
+    const insideX = x >= textLeft && (x + w) <= textRight
+    const insideY = y >= textTop && (y + h) <= textBottom
+
+    // If completely inside text region and smaller than 70% of text area, it's a character glyph
+    if (insideX && insideY && (w * h) < (t.width * t.height * 0.75)) {
+      return true
+    }
+  }
+  return false
 }
 
 // ------------------------------------------------------
@@ -257,7 +504,6 @@ function filterLinesOverlappingText(lines, textRegions) {
       const lineRight = line.x + line.width
       const lineBottom = line.y + line.height
 
-      // If line is largely contained within a text region and shorter than half the display width
       const overlapsHoriz = line.x >= textLeft && lineRight <= textRight
       const overlapsVert = line.y >= textTop && lineBottom <= textBottom
 
@@ -270,8 +516,7 @@ function filterLinesOverlappingText(lines, textRegions) {
 }
 
 function filterRectanglesOverlappingText(rectangles, textRegions) {
-  // Keep rectangles that are valid frames (typically larger than individual character glyphs)
-  return rectangles.filter(r => r.width >= 16 && r.height >= 12)
+  return rectangles.filter(r => r.width >= 14 && r.height >= 10)
 }
 
 // ------------------------------------------------------
@@ -284,11 +529,11 @@ export function lineGeometryToElement(line, color = '#a8d9a8') {
 
   return {
     type: 'line',
-    name: isHoriz ? 'Detected Horizontal Line' : 'Detected Vertical Line',
-    x: line.x,
-    y: line.y,
-    width: Math.max(1, line.width),
-    height: Math.max(isHoriz ? 3 : 1, line.height),
+    name: line.name || (isHoriz ? 'Detected Horizontal Line' : 'Detected Vertical Line'),
+    x: Math.max(0, Math.round(line.x)),
+    y: Math.max(0, Math.round(line.y)),
+    width: Math.max(1, Math.round(line.width)),
+    height: Math.max(isHoriz ? 3 : 1, Math.round(line.height)),
     color,
     strokeWidth,
     source: 'analysis',
@@ -296,16 +541,33 @@ export function lineGeometryToElement(line, color = '#a8d9a8') {
 }
 
 export function rectangleGeometryToElement(rect, strokeColor = '#a8d9a8') {
+  const isFilled = Boolean(rect.filled)
   return {
     type: 'rectangle',
-    name: 'Detected Frame',
-    x: rect.x,
-    y: rect.y,
-    width: Math.max(1, rect.width),
-    height: Math.max(1, rect.height),
-    fill: 'transparent',
+    name: rect.name || (isFilled ? 'Detected Solid Badge' : 'Detected Frame'),
+    x: Math.max(0, Math.round(rect.x)),
+    y: Math.max(0, Math.round(rect.y)),
+    width: Math.max(1, Math.round(rect.width)),
+    height: Math.max(1, Math.round(rect.height)),
+    fill: isFilled ? strokeColor : 'transparent',
     stroke: strokeColor,
-    strokeWidth: Math.max(1, rect.strokeWidth || 1),
+    strokeWidth: Math.max(1, Math.round(rect.strokeWidth || 1)),
+    source: 'analysis',
+  }
+}
+
+export function circleGeometryToElement(circle, strokeColor = '#a8d9a8') {
+  const isFilled = circle.fill !== 'transparent'
+  return {
+    type: 'circle',
+    name: circle.name || (isFilled ? 'Detected Indicator Dot' : 'Detected Ring Gauge'),
+    x: Math.max(0, Math.round(circle.x)),
+    y: Math.max(0, Math.round(circle.y)),
+    width: Math.max(2, Math.round(circle.width)),
+    height: Math.max(2, Math.round(circle.height)),
+    fill: isFilled ? strokeColor : 'transparent',
+    stroke: strokeColor,
+    strokeWidth: Math.max(1, Math.round(circle.strokeWidth || 1)),
     source: 'analysis',
   }
 }

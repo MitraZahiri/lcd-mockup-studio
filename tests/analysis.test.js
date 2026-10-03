@@ -4,8 +4,10 @@ import {
   detectGeometry,
   lineGeometryToElement,
   rectangleGeometryToElement,
+  circleGeometryToElement,
 } from '../src/analysis/geometryDetector.js'
 import { extractDominantColors } from '../src/analysis/imageProcessing.js'
+import { sanitizeRecognizedText } from '../src/analysis/ocr/ocrExtractor.js'
 import { validateProject } from '../src/project/projectFormat.js'
 
 function createEmptyMask(width, height) {
@@ -142,3 +144,104 @@ test('extractDominantColors computes correct background and foreground hex color
   assert.equal(colors.foreground, '#00c8ff')
   assert.equal(colors.background, '#001e3c')
 })
+
+test('detectGeometry detects solid badges and progress bars', () => {
+  const width = 100
+  const height = 100
+  const mask = createEmptyMask(width, height)
+
+  // Draw a 30x10 solid badge at (10, 10)
+  for (let y = 10; y < 20; y++) {
+    for (let x = 10; x < 40; x++) {
+      mask[y * width + x] = 1
+    }
+  }
+
+  const { rectangles } = detectGeometry(mask, width, height)
+  assert.ok(rectangles.length >= 1)
+  const badge = rectangles.find(r => r.filled && r.x === 10 && r.y === 10)
+  assert.ok(badge)
+  assert.equal(badge.width, 30)
+  assert.equal(badge.height, 10)
+  assert.equal(badge.filled, true)
+})
+
+test('detectGeometry detects circular indicator dots', () => {
+  const width = 80
+  const height = 80
+  const mask = createEmptyMask(width, height)
+
+  // Draw a 6x6 circle at (20, 20) with empty corners
+  // Corners at (20, 20), (25, 20), (20, 25), (25, 25) are left 0
+  for (let y = 20; y <= 25; y++) {
+    for (let x = 20; x <= 25; x++) {
+      const isCorner =
+        (x === 20 && y === 20) ||
+        (x === 25 && y === 20) ||
+        (x === 20 && y === 25) ||
+        (x === 25 && y === 25)
+      if (!isCorner) {
+        mask[y * width + x] = 1
+      }
+    }
+  }
+
+  const { circles } = detectGeometry(mask, width, height)
+  assert.ok(circles.length >= 1)
+  const circle = circles[0]
+  assert.equal(circle.x, 20)
+  assert.equal(circle.y, 20)
+  assert.equal(circle.width, 6)
+  assert.equal(circle.height, 6)
+  assert.equal(circle.fill, 'solid')
+})
+
+test('circle and solid badge elements pass validateProject schema', () => {
+  const circleEl = circleGeometryToElement({ x: 15, y: 15, width: 10, height: 10, fill: 'solid' }, '#00ff88')
+  const badgeEl = rectangleGeometryToElement({ x: 5, y: 5, width: 40, height: 12, filled: true }, '#00ff88')
+
+  circleEl.id = 'circ-1'
+  badgeEl.id = 'badge-1'
+
+  const project = {
+    format: 'lcd-mockup-studio',
+    version: 1,
+    name: 'Shapes Test',
+    display: { width: 128, height: 64, background: '#001100' },
+    grid: { enabled: true, snap: false, size: 8 },
+    elements: [circleEl, badgeEl],
+  }
+
+  const validated = validateProject(project)
+  assert.equal(validated.elements.length, 2)
+  assert.equal(validated.elements[0].type, 'circle')
+  assert.equal(validated.elements[0].fill, '#00ff88')
+  assert.equal(validated.elements[1].type, 'rectangle')
+  assert.equal(validated.elements[1].fill, '#00ff88')
+})
+
+test('sanitizeRecognizedText handles clock, 7-segment substitutions, and telemetry units', () => {
+  // Clock with spaces
+  assert.equal(sanitizeRecognizedText('12 : 30'), '12:30')
+  assert.equal(sanitizeRecognizedText('09 : 45 : 12'), '09:45:12')
+
+  // Spaced decimal
+  assert.equal(sanitizeRecognizedText('24 . 5'), '24.5')
+
+  // 7-segment O to 0 in decimal & numbers
+  assert.equal(sanitizeRecognizedText('24.O'), '24.0')
+  assert.equal(sanitizeRecognizedText('1O0'), '100')
+
+  // 7-segment S to 5 in decimal
+  assert.equal(sanitizeRecognizedText('2S.4'), '25.4')
+
+  // Temperature
+  assert.equal(sanitizeRecognizedText('23 *C'), '23 °C')
+  assert.equal(sanitizeRecognizedText('75 oF'), '75 °F')
+
+  // Units
+  assert.equal(sanitizeRecognizedText('100%'), '100%')
+  assert.equal(sanitizeRecognizedText('50Hz'), '50 Hz')
+  assert.equal(sanitizeRecognizedText('12V'), '12 V')
+})
+
