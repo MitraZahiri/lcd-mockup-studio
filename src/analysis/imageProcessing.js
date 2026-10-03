@@ -394,9 +394,63 @@ export function prepareSourceImage(image) {
     width,
     height,
     canvas,
+    imageData,
     grayscale,
     threshold,
     polarity,
     binaryMask,
+  }
+}
+
+// ======================================================
+// PALETTE EXTRACTION
+// ======================================================
+
+export function extractDominantColors(imageData, binaryMask) {
+  if (!imageData || !binaryMask) {
+    return {
+      foreground: '#a8d9a8',
+      background: '#1d2720',
+    }
+  }
+
+  const { data } = imageData
+  let fgR = 0, fgG = 0, fgB = 0, fgCount = 0
+  let bgR = 0, bgG = 0, bgB = 0, bgCount = 0
+
+  const totalPixels = binaryMask.length
+  const step = Math.max(1, Math.floor(totalPixels / 25000))
+
+  for (let i = 0; i < totalPixels; i += step) {
+    const idx = i * 4
+    const r = data[idx]
+    const g = data[idx + 1]
+    const b = data[idx + 2]
+
+    if (binaryMask[i] === 1) {
+      fgR += r
+      fgG += g
+      fgB += b
+      fgCount++
+    } else {
+      bgR += r
+      bgG += g
+      bgB += b
+      bgCount++
+    }
+  }
+
+  function toHex(r, g, b) {
+    const clampVal = (v) => Math.max(0, Math.min(255, Math.round(v)))
+    const hex = (v) => clampVal(v).toString(16).padStart(2, '0')
+    return `#${hex(r)}${hex(g)}${hex(b)}`
+  }
+
+  const foreground = fgCount > 0 ? toHex(fgR / fgCount, fgG / fgCount, fgB / fgCount) : '#a8d9a8'
+  const background = bgCount > 0 ? toHex(bgR / bgCount, bgG / bgCount, bgB / bgCount) : '#1d2720'
+
+  return {
+    foreground,
+    background,
   }
 }

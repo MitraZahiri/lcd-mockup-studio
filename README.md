@@ -357,9 +357,10 @@ The next phase is about turning the prototype into a genuinely pleasant tool to 
 * [x] Custom font loading (.ttf, .otf, .woff, .woff2)
 * [x] Buttons, indicators and compound UI stencils
 * [x] Embedded C array / bitmap header export (Adafruit_GFX, U8g2, XBM)
-* [ ] Improved OCR for unusual LCD fonts
+* [x] Improved OCR for LCD segment fonts & text artifact cleanup
+* [x] More geometry detection (vertical lines & rectangular frames)
+* [x] Automatic LCD theme & palette extraction from photo
 * [ ] Symbol / icon recognition
-* [ ] More geometry detection
 
 ---
 

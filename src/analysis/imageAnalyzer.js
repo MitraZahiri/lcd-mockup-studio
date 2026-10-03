@@ -3,12 +3,14 @@ import { editorState } from '../editor/state.js'
 import {
   loadImage,
   prepareSourceImage,
+  extractDominantColors,
 } from './imageProcessing.js'
 
 import {
-  detectHorizontalLines,
-  lineToElement,
-} from './lineDetector.js'
+  detectGeometry,
+  lineGeometryToElement,
+  rectangleGeometryToElement,
+} from './geometryDetector.js'
 
 import {
   recognizeLcdText,
@@ -22,14 +24,11 @@ import {
 //
 // Responsibilities:
 // - Read the current reference image
-// - Prepare source image data
-// - Detect simple graphical lines
+// - Prepare source image data and extract true color palette
 // - Run OCR pipeline
-// - Convert OCR regions into editor elements
-// - Return analysis statistics
-//
-// Detailed OCR/image-processing logic belongs in the
-// dedicated modules under src/analysis/.
+// - Detect geometry: horizontal lines, vertical lines, frames
+// - Convert OCR regions & geometry into editor elements
+// - Return analysis statistics and LCD palette
 // ======================================================
 
 // ======================================================
@@ -56,7 +55,7 @@ export async function analyzeReferenceImage() {
     )
 
   // ----------------------------------------------------
-  // Basic image processing
+  // Basic image processing & palette extraction
   // ----------------------------------------------------
 
   const source =
@@ -70,18 +69,13 @@ export async function analyzeReferenceImage() {
     threshold,
     polarity,
     binaryMask,
+    imageData,
   } = source
 
-  // ----------------------------------------------------
-  // Detect graphical horizontal lines
-  // ----------------------------------------------------
-
-  const detectedLines =
-    detectHorizontalLines(
-      binaryMask,
-      width,
-      height,
-    )
+  const palette = extractDominantColors(
+    imageData,
+    binaryMask,
+  )
 
   // ----------------------------------------------------
   // OCR
@@ -97,21 +91,40 @@ export async function analyzeReferenceImage() {
     })
 
   // ----------------------------------------------------
+  // Detect graphical geometry (H-lines, V-lines, frames)
+  // Suppresses false-positive lines inside text regions
+  // ----------------------------------------------------
+
+  const geometry =
+    detectGeometry(
+      binaryMask,
+      width,
+      height,
+      ocr.regions,
+    )
+
+  // ----------------------------------------------------
   // Convert analysis results to editor elements
   // ----------------------------------------------------
 
   const textElements =
     ocr.regions.map(
-      ocrRegionToElement,
+      (region) => ocrRegionToElement(region, palette.foreground),
     )
 
   const lineElements =
-    detectedLines.map(
-      lineToElement,
+    geometry.lines.map(
+      (line) => lineGeometryToElement(line, palette.foreground),
+    )
+
+  const rectElements =
+    geometry.rectangles.map(
+      (rect) => rectangleGeometryToElement(rect, palette.foreground),
     )
 
   const elements = [
     ...textElements,
+    ...rectElements,
     ...lineElements,
   ]
 
@@ -129,6 +142,7 @@ export async function analyzeReferenceImage() {
 
     threshold,
     polarity,
+    palette,
 
     elements,
 
@@ -139,8 +153,11 @@ export async function analyzeReferenceImage() {
       textRegions:
         textElements.length,
 
-      horizontalLines:
+      lines:
         lineElements.length,
+
+      rectangles:
+        rectElements.length,
 
       totalElements:
         elements.length,
@@ -167,7 +184,7 @@ export async function analyzeReferenceImage() {
 // OCR REGION -> EDITOR ELEMENT
 // ======================================================
 
-function ocrRegionToElement(region) {
+function ocrRegionToElement(region, color = '#a8d9a8') {
   const text =
     String(
       region?.text ?? '',
@@ -249,8 +266,7 @@ function ocrRegionToElement(region) {
     textAlign:
       'left',
 
-    color:
-      '#a8d9a8',
+    color,
 
     opacity: 1,
 

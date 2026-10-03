@@ -1700,6 +1700,13 @@ analyzeReferenceButton.addEventListener(
 
       removeAnalysisElements(false)
 
+      // Automatically match LCD display background color if detected
+      if (result.palette?.background) {
+        updateDisplay({
+          background: result.palette.background,
+        })
+      }
+
       for (
         const data
         of result.elements
@@ -1723,6 +1730,9 @@ analyzeReferenceButton.addEventListener(
         fitCanvasToWorkspace()
       })
 
+      const linesCount = result.stats.lines ?? result.stats.horizontalLines ?? 0
+      const rectsCount = result.stats.rectangles ?? 0
+
       analysisMessage.innerHTML = `
         <strong>
           Analysis complete.
@@ -1739,15 +1749,24 @@ analyzeReferenceButton.addEventListener(
           ${result.stats.totalElements}
           editable elements created:
           ${result.stats.textRegions}
-          OCR text regions and
-          ${result.stats.horizontalLines}
-          horizontal lines.
+          text regions,
+          ${rectsCount}
+          boxes/frames, and
+          ${linesCount}
+          lines.
         </p>
 
         <p>
-          Recognized text is editable.
-          Select any text element on the mockup
-          or in Layers to correct OCR results.
+          Screen theme auto-matched:
+          <span style="display:inline-block;width:10px;height:10px;background:${result.palette?.background || '#1d2720'};border:1px solid #555;vertical-align:middle;margin:0 2px;"></span>
+          ${result.palette?.background || '#1d2720'} bg,
+          <span style="display:inline-block;width:10px;height:10px;background:${result.palette?.foreground || '#a8d9a8'};border:1px solid #555;vertical-align:middle;margin:0 2px;"></span>
+          ${result.palette?.foreground || '#a8d9a8'} fg.
+        </p>
+
+        <p>
+          Recognized text and geometry are editable.
+          Select any element to adjust or resize.
         </p>
       `
 

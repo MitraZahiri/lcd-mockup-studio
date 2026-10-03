@@ -413,7 +413,7 @@ function isImplausiblyLargeCandidate(
 export function sanitizeRecognizedText(
   value,
 ) {
-  return String(
+  let text = String(
     value ?? '',
   )
     .normalize('NFKC')
@@ -422,6 +422,18 @@ export function sanitizeRecognizedText(
       ' ',
     )
     .trim()
+
+  // Fix 'O' or 'o' in decimal numbers (e.g. 24.O -> 24.0, O.5 -> 0.5)
+  text = text.replace(/(\d)\.([Oo])\b/g, '$1.0')
+  text = text.replace(/\b([Oo])\.(\d)/g, '0.$2')
+
+  // Fix temperature degree notation (e.g. 23 *C or 23 oC -> 23 °C)
+  text = text.replace(/(\d+)\s*[*o]\s*([CF])\b/g, '$1 °$2')
+
+  // Clean common LCD noise artifact characters
+  text = text.replace(/^[~^`'"]+|[~^`'"]+$/g, '').trim()
+
+  return text
 }
 
 export function cleanOcrText(
