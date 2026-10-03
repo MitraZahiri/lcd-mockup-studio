@@ -360,6 +360,49 @@ export function alignElement(id = editorState.selectedId, alignment) {
   notify()
 }
 
+// DISTRIBUTION
+export function distributeElements(axis = 'horizontal') {
+  if (editorState.elements.length < 3) return
+
+  const elements = [...editorState.elements]
+
+  if (axis === 'horizontal') {
+    elements.sort((a, b) => a.x - b.x)
+    const first = elements[0]
+    const last = elements[elements.length - 1]
+    const minX = first.x
+    const maxRight = last.x + last.width
+    const totalSpan = maxRight - minX
+    const totalElementWidth = elements.reduce((sum, el) => sum + el.width, 0)
+    const availableSpace = totalSpan - totalElementWidth
+    const gap = availableSpace / (elements.length - 1)
+
+    let currentX = minX
+    for (const el of elements) {
+      el.x = Math.round(currentX)
+      currentX += el.width + gap
+    }
+  } else if (axis === 'vertical') {
+    elements.sort((a, b) => a.y - b.y)
+    const first = elements[0]
+    const last = elements[elements.length - 1]
+    const minY = first.y
+    const maxBottom = last.y + last.height
+    const totalSpan = maxBottom - minY
+    const totalElementHeight = elements.reduce((sum, el) => sum + el.height, 0)
+    const availableSpace = totalSpan - totalElementHeight
+    const gap = availableSpace / (elements.length - 1)
+
+    let currentY = minY
+    for (const el of elements) {
+      el.y = Math.round(currentY)
+      currentY += el.height + gap
+    }
+  }
+
+  notify()
+}
+
 // LAYER REORDERING (Z-INDEX)
 export function reorderElement(id = editorState.selectedId, direction) {
   const index = editorState.elements.findIndex((item) => item.id === id)

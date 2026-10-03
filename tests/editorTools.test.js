@@ -8,6 +8,7 @@ import {
   copyElement,
   pasteElement,
   alignElement,
+  distributeElements,
   reorderElement,
   applyLcdPreset,
   setOverlayEnabled,
@@ -157,3 +158,37 @@ test('setOverlayEnabled and setOverlayOpacity controls comparison ghost overlay'
   setOverlayOpacity(-0.5)
   assert.equal(editorState.overlay.opacity, 0)
 })
+
+test('distributeElements evenly spaces elements along horizontal and vertical axes', () => {
+  setupTestState()
+  // Add 3rd element so we have 3
+  addElement({
+    id: 'el-3',
+    type: 'circle',
+    name: 'Dot',
+    x: 200,
+    y: 120,
+    width: 20,
+    height: 20,
+    fill: '#fff',
+    stroke: '#fff',
+    strokeWidth: 1,
+  }, false)
+
+  // Initial X positions: el-1 (x: 10, w: 100), el-2 (x: 50, w: 80), el-3 (x: 200, w: 20)
+  // Sort order by x: el-1 (10), el-2 (50), el-3 (200)
+  // minX = 10, maxRight = 220, totalSpan = 210
+  // totalWidth = 100 + 80 + 20 = 200
+  // space = 10, gaps = 2 => gap = 5
+  // Expected X: el-1 = 10, el-2 = 10 + 100 + 5 = 115, el-3 = 115 + 80 + 5 = 200
+  distributeElements('horizontal')
+
+  const el1 = editorState.elements.find(e => e.id === 'el-1')
+  const el2 = editorState.elements.find(e => e.id === 'el-2')
+  const el3 = editorState.elements.find(e => e.id === 'el-3')
+
+  assert.equal(el1.x, 10)
+  assert.equal(el2.x, 115)
+  assert.equal(el3.x, 200)
+})
+

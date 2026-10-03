@@ -50,7 +50,7 @@ LCD Mockup Studio is built around a simple workflow:
 * 🔎 Zoom and Fit View
 * 👁️ Reference ghost overlay comparison with opacity control
 * 📑 Duplicate, Copy and Paste elements
-* 📐 Instant alignment tools (canvas boundaries & center)
+* 📐 Instant alignment and horizontal/vertical distribution tools
 * ↩️ Full Undo / Redo history
 * ↔️ Keyboard-based element movement
 * 🎨 Display background, orientation and classic LCD palette presets
@@ -349,7 +349,7 @@ The next phase is about turning the prototype into a genuinely pleasant tool to 
 * [x] Classic LCD color presets & fonts
 * [x] Better resize handles
 * [x] Improved text editing
-* [ ] Distribution tools
+* [x] Distribution tools
 * [ ] Custom font loading
 * [ ] Improved OCR for unusual LCD fonts
 * [ ] Symbol / icon recognition

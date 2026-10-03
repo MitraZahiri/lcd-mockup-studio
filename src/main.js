@@ -24,6 +24,7 @@ import {
   copyElement,
   pasteElement,
   alignElement,
+  distributeElements,
   reorderElement,
   getClipboard,
   setOverlayEnabled,
@@ -841,7 +842,7 @@ document.querySelector('#app').innerHTML = `
 
 
           <div class="field">
-            <span>Alignment</span>
+            <span>Alignment & Distribution</span>
             <div class="alignment-grid">
               <button type="button" class="icon-button" id="align-left" title="Align Left">⇤</button>
               <button type="button" class="icon-button" id="align-center-h" title="Center Horizontally">⇹</button>
@@ -849,6 +850,10 @@ document.querySelector('#app').innerHTML = `
               <button type="button" class="icon-button" id="align-top" title="Align Top">⤒</button>
               <button type="button" class="icon-button" id="align-center-v" title="Center Vertically">⇕</button>
               <button type="button" class="icon-button" id="align-bottom" title="Align Bottom">⤓</button>
+            </div>
+            <div class="field-row" style="margin-top: 6px;">
+              <button type="button" class="icon-button" id="distribute-h" title="Distribute Horizontally (≥3 elements)" style="padding: 5px; font-size: 11px;">⇶ Distribute H</button>
+              <button type="button" class="icon-button" id="distribute-v" title="Distribute Vertically (≥3 elements)" style="padding: 5px; font-size: 11px;">⇵ Distribute V</button>
             </div>
           </div>
 
@@ -1211,9 +1216,13 @@ const alignTopBtn = document.querySelector('#align-top')
 const alignCenterVBtn = document.querySelector('#align-center-v')
 const alignBottomBtn = document.querySelector('#align-bottom')
 
+const distributeHBtn = document.querySelector('#distribute-h')
+const distributeVBtn = document.querySelector('#distribute-v')
+
 function updateActionButtons() {
   const hasSelection = Boolean(editorState.selectedId)
   const hasClipboard = Boolean(getClipboard())
+  const hasEnoughForDistribution = editorState.elements.length >= 3
 
   if (duplicateButton) duplicateButton.disabled = !hasSelection
   if (duplicateElementBtn) duplicateElementBtn.disabled = !hasSelection
@@ -1231,6 +1240,9 @@ function updateActionButtons() {
   if (alignTopBtn) alignTopBtn.disabled = !hasSelection
   if (alignCenterVBtn) alignCenterVBtn.disabled = !hasSelection
   if (alignBottomBtn) alignBottomBtn.disabled = !hasSelection
+
+  if (distributeHBtn) distributeHBtn.disabled = !hasEnoughForDistribution
+  if (distributeVBtn) distributeVBtn.disabled = !hasEnoughForDistribution
 
   if (overlayControls) {
     const hasReference = Boolean(editorState.reference.src)
@@ -1308,6 +1320,9 @@ if (alignRightBtn) alignRightBtn.addEventListener('click', () => alignElement(un
 if (alignTopBtn) alignTopBtn.addEventListener('click', () => alignElement(undefined, 'top'))
 if (alignCenterVBtn) alignCenterVBtn.addEventListener('click', () => alignElement(undefined, 'middle'))
 if (alignBottomBtn) alignBottomBtn.addEventListener('click', () => alignElement(undefined, 'bottom'))
+
+if (distributeHBtn) distributeHBtn.addEventListener('click', () => distributeElements('horizontal'))
+if (distributeVBtn) distributeVBtn.addEventListener('click', () => distributeElements('vertical'))
 
 subscribe(updateHistoryButtons)
 subscribe(updateActionButtons)
