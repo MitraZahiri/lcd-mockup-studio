@@ -938,3 +938,35 @@ button:focus-visible {
   color: #8be28b;
 }
 
+/* RESIZE HANDLES */
+.canvas-element.selected {
+  outline: 1.5px solid #8be28b;
+  outline-offset: 1px;
+}
+
+.resize-handle {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #8be28b;
+  border: 1px solid #101710;
+  border-radius: 1px;
+  box-sizing: border-box;
+  z-index: 120;
+}
+
+.handle-nw { top: -4px; left: -4px; cursor: nwse-resize; }
+.handle-n  { top: -4px; left: calc(50% - 3.5px); cursor: ns-resize; }
+.handle-ne { top: -4px; right: -4px; cursor: nesw-resize; }
+.handle-e  { top: calc(50% - 3.5px); right: -4px; cursor: ew-resize; }
+.handle-se { bottom: -4px; right: -4px; cursor: nwse-resize; }
+.handle-s  { bottom: -4px; left: calc(50% - 3.5px); cursor: ns-resize; }
+.handle-sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
+.handle-w  { top: calc(50% - 3.5px); left: -4px; cursor: ew-resize; }
+
+.inline-text-editor {
+  box-sizing: border-box;
+  outline: none;
+}
+
+

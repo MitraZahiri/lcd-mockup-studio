@@ -4,9 +4,11 @@ import {
   updateElement,
   notify,
 } from './state.js'
+import { calculateResize } from './resize.js'
 
 let canvasElement = null
 let dragState = null
+let resizeState = null
 
 export function initCanvas(canvas) {
   canvasElement = canvas
@@ -14,6 +16,11 @@ export function initCanvas(canvas) {
   canvasElement.addEventListener(
     'pointerdown',
     handlePointerDown,
+  )
+
+  canvasElement.addEventListener(
+    'dblclick',
+    handleDoubleClick,
   )
 
   window.addEventListener(
@@ -38,6 +45,30 @@ export function initCanvas(canvas) {
 }
 
 function handlePointerDown(event) {
+  const handleTarget = event.target.closest('.resize-handle')
+  if (handleTarget) {
+    const handle = handleTarget.dataset.handle
+    const id = handleTarget.dataset.elementId
+    const element = editorState.elements.find((item) => item.id === id)
+    if (!element) return
+
+    resizeState = {
+      id,
+      handle,
+      startMouseX: event.clientX,
+      startMouseY: event.clientY,
+      startBox: {
+        x: element.x,
+        y: element.y,
+        width: element.width,
+        height: element.height,
+      },
+    }
+    event.preventDefault()
+    event.stopPropagation()
+    return
+  }
+
   const target =
     event.target.closest(
       '[data-element-id]',
@@ -82,6 +113,35 @@ function handlePointerDown(event) {
 }
 
 function handlePointerMove(event) {
+  if (resizeState) {
+    const element = editorState.elements.find(
+      (item) => item.id === resizeState.id,
+    )
+    if (!element) return
+
+    const scale = editorState.view.scale || 1
+    const deltaX = (event.clientX - resizeState.startMouseX) / scale
+    const deltaY = (event.clientY - resizeState.startMouseY) / scale
+
+    const newBox = calculateResize(
+      resizeState.handle,
+      resizeState.startBox,
+      { x: deltaX, y: deltaY },
+      {
+        snap: editorState.grid.snap,
+        snapSize: editorState.grid.size,
+        displayWidth: editorState.display.width,
+        displayHeight: editorState.display.height,
+        minWidth: element.type === 'circle' ? 10 : 4,
+        minHeight: element.type === 'circle' ? 10 : (element.type === 'line' ? 1 : 4),
+      },
+    )
+
+    updateElement(element.id, newBox, false)
+    renderCanvas()
+    return
+  }
+
   if (!dragState) {
     return
   }
@@ -159,12 +219,71 @@ function handlePointerMove(event) {
 }
 
 function handlePointerUp() {
+  if (resizeState) {
+    resizeState = null
+    notify()
+    return
+  }
+
   if (!dragState) {
     return
   }
 
   dragState = null
   notify()
+}
+
+function handleDoubleClick(event) {
+  const target = event.target.closest('[data-element-id]')
+  if (!target) return
+
+  const id = target.dataset.elementId
+  const element = editorState.elements.find((item) => item.id === id)
+  if (!element || element.type !== 'text') return
+
+  const existingInput = target.querySelector('.inline-text-editor')
+  if (existingInput) return
+
+  const input = document.createElement('input')
+  input.type = 'text'
+  input.className = 'inline-text-editor'
+  input.value = element.text || ''
+  input.style.position = 'absolute'
+  input.style.left = '0'
+  input.style.top = '0'
+  input.style.width = '100%'
+  input.style.height = '100%'
+  input.style.fontSize = `${element.fontSize}px`
+  input.style.fontFamily = element.fontFamily || 'monospace'
+  input.style.fontWeight = String(element.fontWeight || '400')
+  input.style.color = element.color
+  input.style.background = 'rgba(0, 0, 0, 0.85)'
+  input.style.border = '1px solid #8be28b'
+  input.style.outline = 'none'
+  input.style.padding = '0 4px'
+  input.style.zIndex = '500'
+
+  function commitText() {
+    if (input.parentNode) {
+      const newText = input.value
+      input.remove()
+      updateElement(element.id, { text: newText })
+    }
+  }
+
+  input.addEventListener('blur', commitText)
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      commitText()
+    } else if (e.key === 'Escape') {
+      input.remove()
+    }
+    e.stopPropagation()
+  })
+
+  target.appendChild(input)
+  input.focus()
+  input.select()
 }
 
 export function renderCanvas() {
@@ -272,6 +391,7 @@ function renderElement(element) {
     editorState.selectedId
   ) {
     node.classList.add('selected')
+    appendResizeHandles(node, element)
   }
 
   if (element.type === 'text') {
@@ -396,4 +516,18 @@ function renderLineElement(
     'none'
 
   node.appendChild(line)
+}
+
+function appendResizeHandles(node, element) {
+  const handles = element.type === 'line'
+    ? ['w', 'e']
+    : ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']
+
+  for (const pos of handles) {
+    const handle = document.createElement('div')
+    handle.className = `resize-handle handle-${pos}`
+    handle.dataset.handle = pos
+    handle.dataset.elementId = element.id
+    node.appendChild(handle)
+  }
 }

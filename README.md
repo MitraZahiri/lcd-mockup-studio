@@ -56,6 +56,8 @@ LCD Mockup Studio is built around a simple workflow:
 * 🎨 Display background, orientation and classic LCD palette presets
 * 💾 New / Open / Save projects
 * 📦 `.lcd.json` project files
+* 🔲 Visual 8-point resize handles with boundary and grid snapping
+* ✏️ Direct inline text editing on canvas via double-click
 * 🖨️ Native-resolution PNG export
 * 📐 Crisp, scalable vector SVG export
 
@@ -345,9 +347,9 @@ The next phase is about turning the prototype into a genuinely pleasant tool to 
 * [x] SVG export
 * [x] Reference vs. mockup comparison overlay
 * [x] Classic LCD color presets & fonts
-* [ ] Better resize handles
+* [x] Better resize handles
+* [x] Improved text editing
 * [ ] Distribution tools
-* [ ] Improved text editing
 * [ ] Custom font loading
 * [ ] Improved OCR for unusual LCD fonts
 * [ ] Symbol / icon recognition
