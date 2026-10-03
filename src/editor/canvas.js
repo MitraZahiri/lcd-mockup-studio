@@ -42,6 +42,13 @@ export function initCanvas(canvas) {
     'blur',
     handlePointerUp,
   )
+
+  canvasElement.addEventListener('pointerleave', () => {
+    const coordsElem = document.querySelector('#status-coords')
+    if (coordsElem && !dragState && !resizeState) {
+      coordsElem.textContent = ''
+    }
+  })
 }
 
 function handlePointerDown(event) {
@@ -113,6 +120,19 @@ function handlePointerDown(event) {
 }
 
 function handlePointerMove(event) {
+  const coordsElem = document.querySelector('#status-coords')
+  if (coordsElem && canvasElement) {
+    const rect = canvasElement.getBoundingClientRect()
+    const scale = editorState.view.scale || 1
+    const px = Math.floor((event.clientX - rect.left) / scale)
+    const py = Math.floor((event.clientY - rect.top) / scale)
+    if (px >= 0 && px < editorState.display.width && py >= 0 && py < editorState.display.height) {
+      coordsElem.textContent = `X: ${px}  Y: ${py}`
+    } else if (!dragState && !resizeState) {
+      coordsElem.textContent = ''
+    }
+  }
+
   if (resizeState) {
     const element = editorState.elements.find(
       (item) => item.id === resizeState.id,

@@ -60,8 +60,10 @@ LCD Mockup Studio is built around a simple workflow:
 * ✏️ Direct inline text editing on canvas via double-click
 * 🔤 Authentic dot-matrix & embedded fonts (VT323, Share Tech Mono) and custom font upload (.ttf, .otf, .woff, .woff2)
 * 🔋 Pre-built compound LCD UI stencils (Battery, Progress Bar, Status Badge, Numeric Gauge)
+* 🎯 Real-time canvas pixel cursor coordinates (X, Y) on the status bar
 * 🖨️ Native-resolution PNG export
 * 📐 Crisp, scalable vector SVG export
+* 💻 Embedded C Bitmap Header Export (.h / XBM) with live 1-bit hardware preview for Arduino, ESP32, U8g2 & Adafruit_GFX
 
 ---
 
@@ -354,6 +356,7 @@ The next phase is about turning the prototype into a genuinely pleasant tool to 
 * [x] Distribution tools
 * [x] Custom font loading (.ttf, .otf, .woff, .woff2)
 * [x] Buttons, indicators and compound UI stencils
+* [x] Embedded C array / bitmap header export (Adafruit_GFX, U8g2, XBM)
 * [ ] Improved OCR for unusual LCD fonts
 * [ ] Symbol / icon recognition
 * [ ] More geometry detection

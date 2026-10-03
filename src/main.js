@@ -2,6 +2,7 @@ import './style.css'
 import { initProjectControls } from './project/projectControls.js'
 import { initPngExport } from './export/pngExport.js'
 import { initSvgExport } from './export/svgExport.js'
+import { initCExport } from './export/cExport.js'
 
 import {
   editorState,
@@ -129,6 +130,15 @@ document.querySelector('#app').innerHTML = `
           id="export-svg"
         >
           Export SVG
+        </button>
+
+        <button
+          type="button"
+          class="export-button export-c-button"
+          id="export-c"
+          title="Export as C Header / Embedded Monochrome Bitmap (Adafruit GFX / U8g2 / XBM)"
+        >
+          Export C Code
         </button>
 
       </div>
@@ -939,6 +949,11 @@ document.querySelector('#app').innerHTML = `
           id="status-orientation"
         ></span>
 
+        <span
+          id="status-coords"
+          style="font-family: monospace; font-size: 11px; margin-left: 12px; color: #8fa394;"
+        ></span>
+
       </div>
 
 
@@ -968,6 +983,54 @@ document.querySelector('#app').innerHTML = `
       </div>
 
     </footer>
+
+    <div id="c-export-modal" class="modal-backdrop" hidden>
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span>Embedded C Bitmap Export</span>
+            <span id="c-export-resolution" class="badge">128 × 64 px</span>
+          </div>
+          <button type="button" class="icon-button modal-close" id="c-export-close" title="Close (Esc)">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="c-export-preview-column">
+            <span class="column-title">1-Bit Monochrome Hardware Preview</span>
+            <div class="preview-container">
+              <canvas id="c-export-preview" class="c-preview-canvas"></canvas>
+            </div>
+            <div class="c-export-options">
+              <label class="field">
+                <span>Target Hardware Format</span>
+                <select id="c-export-format">
+                  <option value="adafruit">Adafruit_GFX (Horizontal MSB-first)</option>
+                  <option value="u8g2">U8g2 / SSD1306 (Vertical 8-px Pages)</option>
+                  <option value="xbm">XBM (Standard X BitMap / LSB-first)</option>
+                </select>
+              </label>
+              <div class="field-row">
+                <label class="field" style="flex: 1;">
+                  <span>Luminance Threshold: <strong id="c-export-threshold-val">128</strong></span>
+                  <input type="range" id="c-export-threshold" min="1" max="254" value="128">
+                </label>
+                <label class="checkbox-label" style="margin-top: 18px; margin-left: 10px; white-space: nowrap;">
+                  <input type="checkbox" id="c-export-invert">
+                  Invert
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="c-export-code-column">
+            <span class="column-title">Generated C Header / Array</span>
+            <textarea id="c-export-code" class="c-code-area" readonly spellcheck="false"></textarea>
+            <div class="modal-actions">
+              <button type="button" class="wide-button" id="c-export-copy">📋 Copy C Code</button>
+              <button type="button" class="wide-button primary-button" id="c-export-download">⭳ Download .h File</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </div>
 `
@@ -2727,3 +2790,4 @@ initProjectControls({
 
 initPngExport(editorState)
 initSvgExport(editorState)
+initCExport(editorState)
