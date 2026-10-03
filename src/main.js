@@ -1,6 +1,7 @@
-﻿import './style.css'
+import './style.css'
 import { initProjectControls } from './project/projectControls.js'
 import { initPngExport } from './export/pngExport.js'
+import { initSvgExport } from './export/svgExport.js'
 
 import {
   editorState,
@@ -19,6 +20,16 @@ import {
   canRedo,
   undo,
   redo,
+  duplicateElement,
+  copyElement,
+  pasteElement,
+  alignElement,
+  reorderElement,
+  getClipboard,
+  setOverlayEnabled,
+  setOverlayOpacity,
+  applyLcdPreset,
+  LCD_PRESETS,
 } from './editor/state.js'
 
 import {
@@ -86,12 +97,34 @@ document.querySelector('#app').innerHTML = `
 
         <div class="separator"></div>
 
+        <button type="button" id="duplicate-button" disabled title="Duplicate Element (Ctrl+D)">
+          Duplicate
+        </button>
+
+        <button type="button" id="copy-button" disabled title="Copy Element (Ctrl+C)">
+          Copy
+        </button>
+
+        <button type="button" id="paste-button" disabled title="Paste Element (Ctrl+V)">
+          Paste
+        </button>
+
+        <div class="separator"></div>
+
         <button
           type="button"
           class="export-button"
           id="export-png"
         >
           Export PNG
+        </button>
+
+        <button
+          type="button"
+          class="export-button export-svg-button"
+          id="export-svg"
+        >
+          Export SVG
         </button>
 
       </div>
@@ -311,6 +344,13 @@ document.querySelector('#app').innerHTML = `
             LAYERS
           </div>
 
+          <div class="layer-actions">
+            <button type="button" class="layer-action-btn" id="layer-to-front" disabled title="Bring to Front">⇈</button>
+            <button type="button" class="layer-action-btn" id="layer-move-up" disabled title="Move Up (PageUp / ])">▲</button>
+            <button type="button" class="layer-action-btn" id="layer-move-down" disabled title="Move Down (PageDown / [)">▼</button>
+            <button type="button" class="layer-action-btn" id="layer-to-back" disabled title="Send to Back">⇊</button>
+          </div>
+
           <span
             class="layer-count"
             id="layer-count"
@@ -352,6 +392,14 @@ document.querySelector('#app').innerHTML = `
 
 
         <div class="workspace-actions">
+
+          <div class="overlay-controls" id="overlay-controls" title="Reference Ghost Overlay (compare with original photo)" hidden>
+            <label>
+              <input type="checkbox" id="overlay-toggle">
+              Overlay
+            </label>
+            <input type="range" id="overlay-opacity" min="0.05" max="1" step="0.05" value="0.4" title="Overlay Opacity">
+          </div>
 
           <button
             id="fit-workspace"
@@ -478,6 +526,21 @@ document.querySelector('#app').innerHTML = `
 
           </div>
 
+        </label>
+ 
+        <label class="field preset-field">
+          <span>
+            LCD Palette Preset
+          </span>
+          <select id="lcd-preset-select">
+            <option value="">Custom / Manual</option>
+            <option value="emerald">Dark Emerald (Default)</option>
+            <option value="nokia">Nokia 5110 Matrix</option>
+            <option value="stn-blue">Blue STN LCD</option>
+            <option value="amber">Industrial Amber</option>
+            <option value="oled-cyan">OLED Cyan</option>
+            <option value="gray-lcd">Classic Gray LCD</option>
+          </select>
         </label>
 
 
@@ -640,6 +703,18 @@ document.querySelector('#app').innerHTML = `
                   Monospace
                 </option>
 
+                <option value="Lucida Console">
+                  Lucida Console
+                </option>
+
+                <option value="Consolas">
+                  Consolas
+                </option>
+
+                <option value="Trebuchet MS">
+                  Trebuchet MS
+                </option>
+
                 <option value="Arial">
                   Arial
                 </option>
@@ -765,13 +840,34 @@ document.querySelector('#app').innerHTML = `
           </div>
 
 
-          <button
-            class="wide-button danger-button"
-            id="delete-element"
-            type="button"
-          >
-            Delete Element
-          </button>
+          <div class="field">
+            <span>Alignment</span>
+            <div class="alignment-grid">
+              <button type="button" class="icon-button" id="align-left" title="Align Left">⇤</button>
+              <button type="button" class="icon-button" id="align-center-h" title="Center Horizontally">⇹</button>
+              <button type="button" class="icon-button" id="align-right" title="Align Right">⇥</button>
+              <button type="button" class="icon-button" id="align-top" title="Align Top">⤒</button>
+              <button type="button" class="icon-button" id="align-center-v" title="Center Vertically">⇕</button>
+              <button type="button" class="icon-button" id="align-bottom" title="Align Bottom">⤓</button>
+            </div>
+          </div>
+
+          <div class="field-row" style="margin-top: 10px;">
+            <button
+              class="wide-button"
+              id="duplicate-element"
+              type="button"
+            >
+              Duplicate
+            </button>
+            <button
+              class="wide-button danger-button"
+              id="delete-element"
+              type="button"
+            >
+              Delete
+            </button>
+          </div>
 
         </div>
 
@@ -1092,6 +1188,56 @@ const snapToggle =
 const undoButton = document.querySelector('#undo-button')
 const redoButton = document.querySelector('#redo-button')
 
+const duplicateButton = document.querySelector('#duplicate-button')
+const copyButton = document.querySelector('#copy-button')
+const pasteButton = document.querySelector('#paste-button')
+const duplicateElementBtn = document.querySelector('#duplicate-element')
+
+const overlayControls = document.querySelector('#overlay-controls')
+const overlayToggle = document.querySelector('#overlay-toggle')
+const overlayOpacity = document.querySelector('#overlay-opacity')
+
+const lcdPresetSelect = document.querySelector('#lcd-preset-select')
+
+const layerToFrontBtn = document.querySelector('#layer-to-front')
+const layerMoveUpBtn = document.querySelector('#layer-move-up')
+const layerMoveDownBtn = document.querySelector('#layer-move-down')
+const layerToBackBtn = document.querySelector('#layer-to-back')
+
+const alignLeftBtn = document.querySelector('#align-left')
+const alignCenterHBtn = document.querySelector('#align-center-h')
+const alignRightBtn = document.querySelector('#align-right')
+const alignTopBtn = document.querySelector('#align-top')
+const alignCenterVBtn = document.querySelector('#align-center-v')
+const alignBottomBtn = document.querySelector('#align-bottom')
+
+function updateActionButtons() {
+  const hasSelection = Boolean(editorState.selectedId)
+  const hasClipboard = Boolean(getClipboard())
+
+  if (duplicateButton) duplicateButton.disabled = !hasSelection
+  if (duplicateElementBtn) duplicateElementBtn.disabled = !hasSelection
+  if (copyButton) copyButton.disabled = !hasSelection
+  if (pasteButton) pasteButton.disabled = !hasClipboard
+
+  if (layerToFrontBtn) layerToFrontBtn.disabled = !hasSelection
+  if (layerMoveUpBtn) layerMoveUpBtn.disabled = !hasSelection
+  if (layerMoveDownBtn) layerMoveDownBtn.disabled = !hasSelection
+  if (layerToBackBtn) layerToBackBtn.disabled = !hasSelection
+
+  if (alignLeftBtn) alignLeftBtn.disabled = !hasSelection
+  if (alignCenterHBtn) alignCenterHBtn.disabled = !hasSelection
+  if (alignRightBtn) alignRightBtn.disabled = !hasSelection
+  if (alignTopBtn) alignTopBtn.disabled = !hasSelection
+  if (alignCenterVBtn) alignCenterVBtn.disabled = !hasSelection
+  if (alignBottomBtn) alignBottomBtn.disabled = !hasSelection
+
+  if (overlayControls) {
+    const hasReference = Boolean(editorState.reference.src)
+    overlayControls.hidden = !hasReference
+  }
+}
+
 function updateHistoryButtons() {
   undoButton.disabled = !canUndo()
   redoButton.disabled = !canRedo()
@@ -1105,8 +1251,68 @@ redoButton.addEventListener('click', () => {
   redo()
 })
 
+function handleDuplicate() {
+  const selected = getSelectedElement()
+  if (selected) {
+    duplicateElement(selected.id)
+  }
+}
+
+if (duplicateButton) duplicateButton.addEventListener('click', handleDuplicate)
+if (duplicateElementBtn) duplicateElementBtn.addEventListener('click', handleDuplicate)
+
+if (copyButton) {
+  copyButton.addEventListener('click', () => {
+    const selected = getSelectedElement()
+    if (selected) {
+      copyElement(selected.id)
+      updateActionButtons()
+    }
+  })
+}
+
+if (pasteButton) {
+  pasteButton.addEventListener('click', () => {
+    pasteElement()
+  })
+}
+
+if (overlayToggle) {
+  overlayToggle.addEventListener('change', () => {
+    setOverlayEnabled(overlayToggle.checked)
+  })
+}
+
+if (overlayOpacity) {
+  overlayOpacity.addEventListener('input', () => {
+    setOverlayOpacity(overlayOpacity.value)
+  })
+}
+
+if (lcdPresetSelect) {
+  lcdPresetSelect.addEventListener('change', () => {
+    if (lcdPresetSelect.value) {
+      applyLcdPreset(lcdPresetSelect.value)
+    }
+  })
+}
+
+if (layerToFrontBtn) layerToFrontBtn.addEventListener('click', () => reorderElement(undefined, 'front'))
+if (layerMoveUpBtn) layerMoveUpBtn.addEventListener('click', () => reorderElement(undefined, 'up'))
+if (layerMoveDownBtn) layerMoveDownBtn.addEventListener('click', () => reorderElement(undefined, 'down'))
+if (layerToBackBtn) layerToBackBtn.addEventListener('click', () => reorderElement(undefined, 'back'))
+
+if (alignLeftBtn) alignLeftBtn.addEventListener('click', () => alignElement(undefined, 'left'))
+if (alignCenterHBtn) alignCenterHBtn.addEventListener('click', () => alignElement(undefined, 'center'))
+if (alignRightBtn) alignRightBtn.addEventListener('click', () => alignElement(undefined, 'right'))
+if (alignTopBtn) alignTopBtn.addEventListener('click', () => alignElement(undefined, 'top'))
+if (alignCenterVBtn) alignCenterVBtn.addEventListener('click', () => alignElement(undefined, 'middle'))
+if (alignBottomBtn) alignBottomBtn.addEventListener('click', () => alignElement(undefined, 'bottom'))
+
 subscribe(updateHistoryButtons)
+subscribe(updateActionButtons)
 updateHistoryButtons()
+updateActionButtons()
 
 // ======================================================
 // CANVAS
@@ -2147,45 +2353,62 @@ window.addEventListener(
       return
     }
 
-    const element =
-      getSelectedElement()
-
-    if (!element) {
-      return
-    }
-
-    if (
-      event.key === 'Delete' ||
-      event.key === 'Backspace'
-    ) {
-
-      removeElement(
-        element.id,
-      )
-
-      event.preventDefault()
-
-      return
-    }
-
+    // Global shortcuts
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
       event.preventDefault()
-
       if (event.shiftKey) {
         redo()
       } else {
         undo()
       }
-
       return
     }
 
-    if (
-      (event.ctrlKey || event.metaKey) &&
-      event.key.toLowerCase() === 'y'
-    ) {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'y') {
       event.preventDefault()
       redo()
+      return
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
+      event.preventDefault()
+      pasteElement()
+      return
+    }
+
+    const element = getSelectedElement()
+    if (!element) {
+      return
+    }
+
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      removeElement(element.id)
+      event.preventDefault()
+      return
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'd') {
+      event.preventDefault()
+      duplicateElement(element.id)
+      return
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
+      event.preventDefault()
+      copyElement(element.id)
+      updateActionButtons()
+      return
+    }
+
+    if (event.key === 'PageUp' || event.key === ']') {
+      event.preventDefault()
+      reorderElement(element.id, event.shiftKey ? 'front' : 'up')
+      return
+    }
+
+    if (event.key === 'PageDown' || event.key === '[') {
+      event.preventDefault()
+      reorderElement(element.id, event.shiftKey ? 'back' : 'down')
       return
     }
 
@@ -2304,6 +2527,16 @@ function updateInterface() {
   snapToggle.checked =
     editorState.grid.snap
 
+  if (overlayToggle) {
+    overlayToggle.checked = Boolean(editorState.overlay?.enabled)
+  }
+
+  if (overlayOpacity) {
+    overlayOpacity.value = String(editorState.overlay?.opacity ?? 0.4)
+  }
+
+  updateActionButtons()
+
   renderLayers()
 
   renderProperties()
@@ -2364,3 +2597,4 @@ initProjectControls({
 })
 
 initPngExport(editorState)
+initSvgExport(editorState)

@@ -45,14 +45,19 @@ LCD Mockup Studio is built around a simple workflow:
 * ▭ Rectangles
 * ─ Lines
 * ○ Circles
-* 🗂️ Layers and element selection
+* 🗂️ Layers, element selection and Z-index reordering
 * 🎯 Grid and snapping
 * 🔎 Zoom and Fit View
+* 👁️ Reference ghost overlay comparison with opacity control
+* 📑 Duplicate, Copy and Paste elements
+* 📐 Instant alignment tools (canvas boundaries & center)
+* ↩️ Full Undo / Redo history
 * ↔️ Keyboard-based element movement
-* 🎨 Display background and orientation controls
+* 🎨 Display background, orientation and classic LCD palette presets
 * 💾 New / Open / Save projects
 * 📦 `.lcd.json` project files
 * 🖨️ Native-resolution PNG export
+* 📐 Crisp, scalable vector SVG export
 
 ---
 
@@ -197,12 +202,19 @@ The interface is designed around the display itself rather than around a large c
 
 # ⌨️ Keyboard shortcuts
 
-| Shortcut               | Action                        |
-| ---------------------- | ----------------------------- |
-| `Delete` / `Backspace` | Delete selected element       |
-| `Arrow Keys`           | Move selected element by 1 px |
-| `Shift + Arrow`        | Move selected element by 5 px |
-| `Ctrl/Cmd + S`         | Save project                  |
+| Shortcut                      | Action                                |
+| ----------------------------- | ------------------------------------- |
+| `Delete` / `Backspace`        | Delete selected element               |
+| `Ctrl/Cmd + Z`                | Undo last change                      |
+| `Ctrl/Cmd + Shift + Z` / `Ctrl + Y` | Redo change                     |
+| `Ctrl/Cmd + D`                | Duplicate selected element            |
+| `Ctrl/Cmd + C`                | Copy selected element                 |
+| `Ctrl/Cmd + V`                | Paste element from clipboard          |
+| `Arrow Keys`                  | Move selected element by 1 px         |
+| `Shift + Arrow`               | Move selected element by 5 px         |
+| `]` / `PageUp`                | Move layer up (`Shift + ]` to Front)  |
+| `[` / `PageDown`              | Move layer down (`Shift + [` to Back) |
+| `Ctrl/Cmd + S`                | Save project                          |
 
 ---
 
@@ -325,22 +337,22 @@ The next phase is about turning the prototype into a genuinely pleasant tool to 
 
 ### Next up
 
-* [ ] Undo / Redo
-* [ ] Copy / Paste
-* [ ] Duplicate elements
+* [x] Undo / Redo
+* [x] Copy / Paste
+* [x] Duplicate elements
+* [x] Alignment tools
+* [x] Layer Z-Index reordering
+* [x] SVG export
+* [x] Reference vs. mockup comparison overlay
+* [x] Classic LCD color presets & fonts
 * [ ] Better resize handles
-* [ ] Alignment tools
 * [ ] Distribution tools
 * [ ] Improved text editing
-* [ ] More font controls
-* [ ] LCD / dot-matrix font support
 * [ ] Custom font loading
-* [ ] SVG export
 * [ ] Improved OCR for unusual LCD fonts
 * [ ] Symbol / icon recognition
 * [ ] More geometry detection
 * [ ] Buttons and indicator recognition
-* [ ] Reference vs. mockup comparison overlay
 
 ---
 

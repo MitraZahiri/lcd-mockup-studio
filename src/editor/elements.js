@@ -1,15 +1,8 @@
 import {
   editorState,
   addElement,
+  createId,
 } from './state.js'
-
-function createId() {
-  if (crypto.randomUUID) {
-    return crypto.randomUUID()
-  }
-
-  return `element-${Date.now()}-${Math.random()}`
-}
 
 function getAdaptiveSize(
   preferredWidth,

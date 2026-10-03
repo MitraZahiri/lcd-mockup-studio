@@ -226,6 +226,23 @@ export function renderCanvas() {
       renderElement(element),
     )
   }
+
+  if (editorState.overlay?.enabled && editorState.reference?.src) {
+    const overlay = document.createElement('img')
+    overlay.className = 'canvas-reference-overlay'
+    overlay.src = editorState.reference.src
+    overlay.alt = 'Reference Overlay'
+    overlay.style.position = 'absolute'
+    overlay.style.left = '0'
+    overlay.style.top = '0'
+    overlay.style.width = '100%'
+    overlay.style.height = '100%'
+    overlay.style.objectFit = 'fill'
+    overlay.style.opacity = String(editorState.overlay.opacity ?? 0.4)
+    overlay.style.pointerEvents = 'none'
+    overlay.style.zIndex = '100'
+    canvasElement.appendChild(overlay)
+  }
 }
 
 function renderElement(element) {

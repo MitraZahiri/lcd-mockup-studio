@@ -24,6 +24,11 @@ export const editorState = {
     snap: true,
     size: 10,
   },
+
+  overlay: {
+    enabled: false,
+    opacity: 0.4,
+  },
 }
 
 const MAX_HISTORY = 100
@@ -252,6 +257,165 @@ export function setGridEnabled(enabled) {
 
 export function setSnapEnabled(enabled) {
   editorState.grid.snap = Boolean(enabled)
+  notify()
+}
+
+// ELEMENT GENERATION & ID
+export function createId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+
+  return `element-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+}
+
+// DUPLICATE & CLIPBOARD
+let clipboard = null
+
+export function getClipboard() {
+  return clipboard
+}
+
+export function duplicateElement(id = editorState.selectedId) {
+  const element = editorState.elements.find((item) => item.id === id)
+  if (!element) return null
+
+  const clone = structuredClone(element)
+  clone.id = createId()
+  const offset = 8
+
+  clone.x = Math.max(0, Math.min(editorState.display.width - clone.width, clone.x + offset))
+  clone.y = Math.max(0, Math.min(editorState.display.height - clone.height, clone.y + offset))
+
+  if (clone.name) {
+    clone.name = clone.name.includes('(Copy)') ? clone.name : `${clone.name} (Copy)`
+  }
+
+  editorState.elements.push(clone)
+  editorState.selectedId = clone.id
+  notify()
+  return clone
+}
+
+export function copyElement(id = editorState.selectedId) {
+  const element = editorState.elements.find((item) => item.id === id)
+  if (!element) return null
+  clipboard = structuredClone(element)
+  return clipboard
+}
+
+export function pasteElement() {
+  if (!clipboard) return null
+  const clone = structuredClone(clipboard)
+  clone.id = createId()
+  const offset = 8
+
+  clone.x = Math.max(0, Math.min(editorState.display.width - clone.width, clone.x + offset))
+  clone.y = Math.max(0, Math.min(editorState.display.height - clone.height, clone.y + offset))
+
+  // Offset clipboard so successive pastes cascade nicely across canvas
+  clipboard.x = clone.x
+  clipboard.y = clone.y
+
+  if (clone.name) {
+    clone.name = clone.name.includes('(Copy)') ? clone.name : `${clone.name} (Copy)`
+  }
+
+  editorState.elements.push(clone)
+  editorState.selectedId = clone.id
+  notify()
+  return clone
+}
+
+// ALIGNMENT
+export function alignElement(id = editorState.selectedId, alignment) {
+  const element = editorState.elements.find((item) => item.id === id)
+  if (!element) return
+
+  const { width: dispWidth, height: dispHeight } = editorState.display
+
+  switch (alignment) {
+    case 'left':
+      element.x = 0
+      break
+    case 'center':
+      element.x = Math.max(0, Math.round((dispWidth - element.width) / 2))
+      break
+    case 'right':
+      element.x = Math.max(0, dispWidth - element.width)
+      break
+    case 'top':
+      element.y = 0
+      break
+    case 'middle':
+      element.y = Math.max(0, Math.round((dispHeight - element.height) / 2))
+      break
+    case 'bottom':
+      element.y = Math.max(0, dispHeight - element.height)
+      break
+    default:
+      return
+  }
+
+  notify()
+}
+
+// LAYER REORDERING (Z-INDEX)
+export function reorderElement(id = editorState.selectedId, direction) {
+  const index = editorState.elements.findIndex((item) => item.id === id)
+  if (index === -1) return
+
+  const elements = editorState.elements
+  const element = elements[index]
+
+  if (direction === 'up' && index < elements.length - 1) {
+    elements[index] = elements[index + 1]
+    elements[index + 1] = element
+  } else if (direction === 'down' && index > 0) {
+    elements[index] = elements[index - 1]
+    elements[index - 1] = element
+  } else if (direction === 'front') {
+    elements.splice(index, 1)
+    elements.push(element)
+  } else if (direction === 'back') {
+    elements.splice(index, 1)
+    elements.unshift(element)
+  } else {
+    return
+  }
+
+  notify()
+}
+
+// OVERLAY (REFERENCE COMPARISON)
+export function setOverlayEnabled(enabled) {
+  editorState.overlay.enabled = Boolean(enabled)
+  notify()
+}
+
+export function setOverlayOpacity(opacity) {
+  const val = Number(opacity)
+  if (Number.isFinite(val)) {
+    editorState.overlay.opacity = Math.max(0, Math.min(1, val))
+    notify()
+  }
+}
+
+// LCD COLOR PRESETS
+export const LCD_PRESETS = {
+  'emerald': { name: 'Dark Emerald', background: '#18211b', color: '#a8d9a8', fill: '#324638' },
+  'nokia': { name: 'Nokia 5110 Matrix', background: '#c4d5b6', color: '#222b1d', fill: '#8fa77e' },
+  'stn-blue': { name: 'Blue STN LCD', background: '#002277', color: '#ffffff', fill: '#0033aa' },
+  'amber': { name: 'Industrial Amber', background: '#141006', color: '#ffaa00', fill: '#3a2705' },
+  'oled-cyan': { name: 'OLED Cyan', background: '#000810', color: '#00e5ff', fill: '#002b3d' },
+  'gray-lcd': { name: 'Classic Gray LCD', background: '#9aa89a', color: '#1a201c', fill: '#738273' },
+}
+
+export function applyLcdPreset(presetKey) {
+  const preset = LCD_PRESETS[presetKey]
+  if (!preset) return
+
+  editorState.display.background = preset.background
   notify()
 }
 

@@ -831,3 +831,110 @@ button:focus-visible {
     linear-gradient(90deg, rgba(168, 217, 168, 0.15) 1px, transparent 1px);
   background-size: var(--grid-size, 10px) var(--grid-size, 10px);
 }
+
+.export-button.export-svg-button {
+  background: #38bdf8 !important;
+  color: #082f49 !important;
+}
+
+.export-button.export-svg-button:hover {
+  background: #7dd3fc !important;
+}
+
+.overlay-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: #192027;
+  border: 1px solid #2b343e;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.overlay-controls label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #cbd5e1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.overlay-controls input[type="range"] {
+  width: 60px;
+  height: 4px;
+  accent-color: #8be28b;
+  cursor: pointer;
+}
+
+.layer-actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.layer-action-btn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: #20262d;
+  border: 1px solid #333c46;
+  border-radius: 4px;
+  color: #cbd5e1;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.layer-action-btn:hover:not(:disabled) {
+  background: #2f3844;
+  color: #8be28b;
+  border-color: #475569;
+}
+
+.layer-action-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.alignment-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.icon-button {
+  padding: 6px 0;
+  background: #1a2027;
+  border: 1px solid #2d3641;
+  border-radius: 5px;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.icon-button:hover:not(:disabled) {
+  background: #27313c;
+  border-color: #8be28b;
+  color: #8be28b;
+}
+
+.icon-button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.preset-field select {
+  font-weight: 600;
+  color: #8be28b;
+}
+
