@@ -43,6 +43,9 @@ import {
   renderCanvas,
 } from './editor/canvas.js'
 
+import { loadFontFromFile } from './editor/customFonts.js'
+import { insertStencil } from './editor/stencils.js'
+
 import {
   loadReferenceImage,
   fitCanvasToReference,
@@ -332,6 +335,29 @@ document.querySelector('#app').innerHTML = `
             </span>
           </button>
 
+        </div>
+
+        <div class="panel-subtitle" style="margin-top: 14px; margin-bottom: 8px; font-size: 11px; font-weight: 700; color: #8fa394; text-transform: uppercase; letter-spacing: 0.5px;">
+          LCD Stencils
+        </div>
+
+        <div class="element-grid stencil-grid">
+          <button class="element-card" data-stencil-type="battery" type="button" title="Insert Battery Indicator (Frame + Terminal + Bars)">
+            <span class="element-icon">🔋</span>
+            <span>Battery</span>
+          </button>
+          <button class="element-card" data-stencil-type="progress" type="button" title="Insert Progress Bar with Frame & Fill">
+            <span class="element-icon">📊</span>
+            <span>Progress</span>
+          </button>
+          <button class="element-card" data-stencil-type="badge" type="button" title="Insert Status Badge / Button">
+            <span class="element-icon">🏷️</span>
+            <span>Badge</span>
+          </button>
+          <button class="element-card" data-stencil-type="gauge" type="button" title="Insert Numeric Gauge Box Readout">
+            <span class="element-icon">🔢</span>
+            <span>Gauge</span>
+          </button>
         </div>
 
       </section>
@@ -696,6 +722,14 @@ document.querySelector('#app').innerHTML = `
               <select
                 id="property-font-family"
               >
+                <option value="VT323">
+                  VT323 (Dot Matrix)
+                </option>
+
+                <option value="Share Tech Mono">
+                  Share Tech Mono
+                </option>
+
                 <option value="Courier New">
                   Courier New
                 </option>
@@ -724,6 +758,13 @@ document.querySelector('#app').innerHTML = `
                   Verdana
                 </option>
               </select>
+
+              <div class="field-row" style="margin-top: 5px;">
+                <input type="file" id="font-file-input" accept=".ttf,.otf,.woff,.woff2" hidden>
+                <button type="button" class="wide-button" id="load-custom-font-btn" style="padding: 4px 8px; font-size: 11px;">
+                  ⭳ Load Custom Font (.ttf / .woff)
+                </button>
+              </div>
 
             </label>
 
@@ -1136,6 +1177,16 @@ const propertyFontFamily =
     '#property-font-family',
   )
 
+const fontFileInput =
+  document.querySelector(
+    '#font-file-input',
+  )
+
+const loadCustomFontBtn =
+  document.querySelector(
+    '#load-custom-font-btn',
+  )
+
 const propertyFontSize =
   document.querySelector(
     '#property-font-size',
@@ -1351,6 +1402,23 @@ document
       () => {
         createElement(
           button.dataset.elementType,
+        )
+      },
+    )
+
+  })
+
+document
+  .querySelectorAll(
+    '[data-stencil-type]',
+  )
+  .forEach((button) => {
+
+    button.addEventListener(
+      'click',
+      () => {
+        insertStencil(
+          button.dataset.stencilType,
         )
       },
     )
@@ -2046,6 +2114,18 @@ function renderProperties() {
     propertyText.value =
       element.text
 
+    if (element.fontFamily) {
+      const exists = Array.from(propertyFontFamily.options).some(
+        (opt) => opt.value === element.fontFamily,
+      )
+      if (!exists) {
+        const option = document.createElement('option')
+        option.value = element.fontFamily
+        option.textContent = `${element.fontFamily} (Custom)`
+        propertyFontFamily.appendChild(option)
+      }
+    }
+
     propertyFontFamily.value =
       element.fontFamily
 
@@ -2215,6 +2295,40 @@ propertyFontFamily.addEventListener(
 
   },
 )
+
+if (loadCustomFontBtn && fontFileInput) {
+  loadCustomFontBtn.addEventListener('click', () => {
+    fontFileInput.click()
+  })
+
+  fontFileInput.addEventListener('change', async () => {
+    const file = fontFileInput.files?.[0]
+    if (!file) return
+    const statusElem = document.querySelector('#project-status')
+    try {
+      if (statusElem) statusElem.textContent = `Loading font ${file.name}…`
+      const familyName = await loadFontFromFile(file)
+      const exists = Array.from(propertyFontFamily.options).some(
+        (opt) => opt.value === familyName,
+      )
+      if (!exists) {
+        const option = document.createElement('option')
+        option.value = familyName
+        option.textContent = `${familyName} (Custom)`
+        propertyFontFamily.appendChild(option)
+      }
+      propertyFontFamily.value = familyName
+      updateSelectedElement({
+        fontFamily: familyName,
+      })
+      if (statusElem) statusElem.textContent = `Loaded font: ${familyName}`
+    } catch (err) {
+      if (statusElem) statusElem.textContent = `Font error: ${err.message}`
+    } finally {
+      fontFileInput.value = ''
+    }
+  })
+}
 
 
 propertyFontSize.addEventListener(

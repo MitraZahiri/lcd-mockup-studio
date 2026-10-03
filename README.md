@@ -58,6 +58,8 @@ LCD Mockup Studio is built around a simple workflow:
 * 📦 `.lcd.json` project files
 * 🔲 Visual 8-point resize handles with boundary and grid snapping
 * ✏️ Direct inline text editing on canvas via double-click
+* 🔤 Authentic dot-matrix & embedded fonts (VT323, Share Tech Mono) and custom font upload (.ttf, .otf, .woff, .woff2)
+* 🔋 Pre-built compound LCD UI stencils (Battery, Progress Bar, Status Badge, Numeric Gauge)
 * 🖨️ Native-resolution PNG export
 * 📐 Crisp, scalable vector SVG export
 
@@ -350,11 +352,11 @@ The next phase is about turning the prototype into a genuinely pleasant tool to 
 * [x] Better resize handles
 * [x] Improved text editing
 * [x] Distribution tools
-* [ ] Custom font loading
+* [x] Custom font loading (.ttf, .otf, .woff, .woff2)
+* [x] Buttons, indicators and compound UI stencils
 * [ ] Improved OCR for unusual LCD fonts
 * [ ] Symbol / icon recognition
 * [ ] More geometry detection
-* [ ] Buttons and indicator recognition
 
 ---
 
