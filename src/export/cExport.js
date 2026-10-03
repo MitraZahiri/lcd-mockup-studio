@@ -257,13 +257,32 @@ export function initCExport(state) {
     codeArea.value = currentCode
   }
 
-  exportBtn.addEventListener('click', () => {
+  function openModal() {
     updateExport()
+    modal.removeAttribute('hidden')
     modal.hidden = false
-  })
+    modal.classList.add('open')
+    modal.style.display = 'flex'
+  }
 
-  closeBtn?.addEventListener('click', () => {
+  function closeModal() {
+    modal.setAttribute('hidden', '')
     modal.hidden = true
+    modal.classList.remove('open')
+    modal.style.display = 'none'
+  }
+
+  // Ensure closed on init
+  closeModal()
+
+  exportBtn.addEventListener('click', openModal)
+  closeBtn?.addEventListener('click', closeModal)
+
+  // Clicking backdrop outside modal dialog closes it
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal()
+    }
   })
 
   formatSelect?.addEventListener('change', updateExport)
@@ -302,8 +321,8 @@ export function initCExport(state) {
   })
 
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !modal.hidden) {
-      modal.hidden = true
+    if (e.key === 'Escape' && (modal.classList.contains('open') || !modal.hidden)) {
+      closeModal()
     }
   })
 }

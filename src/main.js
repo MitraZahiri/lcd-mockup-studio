@@ -984,7 +984,7 @@ document.querySelector('#app').innerHTML = `
 
     </footer>
 
-    <div id="c-export-modal" class="modal-backdrop" hidden>
+    <div id="c-export-modal" class="modal-backdrop" hidden style="display: none;">
       <div class="modal-dialog">
         <div class="modal-header">
           <div class="modal-title">

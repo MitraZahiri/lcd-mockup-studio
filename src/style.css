@@ -982,6 +982,11 @@ button:focus-visible {
   padding: 20px;
 }
 
+.modal-backdrop[hidden],
+.modal-backdrop:not(.open) {
+  display: none !important;
+}
+
 .modal-dialog {
   background: #181d22;
   border: 1px solid #303740;
