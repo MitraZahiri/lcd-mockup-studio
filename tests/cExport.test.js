@@ -103,3 +103,40 @@ test('formatCSource handles XBM format structure correctly', () => {
   assert.ok(code.includes('static const unsigned char screen_icon[] = {'))
   assert.ok(code.includes('0x55, 0xaa'))
 })
+
+test('formatCSource handles MicroPython framebuf export correctly', () => {
+  const bytes = new Uint8Array([0x12, 0x34])
+  const code = formatCSource({
+    bitmapBytes: bytes,
+    width: 128,
+    height: 64,
+    format: 'micropython',
+    variableName: 'lcd_buffer',
+  })
+
+  assert.ok(code.includes('import framebuf'))
+  assert.ok(code.includes('LCD_BUFFER_WIDTH = 128'))
+  assert.ok(code.includes('lcd_buffer = bytearray(['))
+  assert.ok(code.includes('0x12, 0x34'))
+  assert.ok(code.includes('framebuf.FrameBuffer(lcd_buffer, LCD_BUFFER_WIDTH, LCD_BUFFER_HEIGHT, framebuf.MONO_HLSB)'))
+})
+
+test('formatCSource handles complete Arduino sketch export correctly', () => {
+  const bytes = new Uint8Array([0xff, 0x00])
+  const code = formatCSource({
+    bitmapBytes: bytes,
+    width: 128,
+    height: 64,
+    format: 'arduino_sketch',
+    variableName: 'oled_screen',
+  })
+
+  assert.ok(code.includes('#include <Arduino.h>'))
+  assert.ok(code.includes('#include <U8g2lib.h>'))
+  assert.ok(code.includes('U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2'))
+  assert.ok(code.includes('static const unsigned char PROGMEM oled_screen[] = {'))
+  assert.ok(code.includes('u8g2.drawXBMP(0, 0, OLED_SCREEN_WIDTH, OLED_SCREEN_HEIGHT, oled_screen);'))
+  assert.ok(code.includes('void setup()'))
+  assert.ok(code.includes('void loop()'))
+})
+

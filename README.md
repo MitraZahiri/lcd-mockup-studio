@@ -3,7 +3,7 @@
 
 [![Deploy to GitHub Pages](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml/badge.svg)](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml)
 [![Live Studio](https://img.shields.io/badge/🚀%20Live%20Studio-Online-4ade80?style=for-the-badge&logo=googlechrome&logoColor=white)](https://mitrazahiri.github.io/lcd-mockup-studio/)
-[![Tests](https://img.shields.io/badge/Tests-56%2F56%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
+[![Tests](https://img.shields.io/badge/Tests-59%2F59%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
 [![License: MIT](https://img.shields.io/badge/License-MIT-facc15?style=for-the-badge)](LICENSE)
 
 **[👉 Launch Studio in Browser (No Install Needed)](https://mitrazahiri.github.io/lcd-mockup-studio/)**  
@@ -47,14 +47,19 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
   * **Geometry & Shapes**: Automatically extracts border frames, dividing lines, circular indicators, and solid badges.
   * **Dedicated LCD Symbols**: Detects ascending Wi-Fi/cellular signal bars, battery meters with internal charge level, directional arrows, locks, and checkboxes.
   * **Color Palette Auto-Adoption**: Automatically samples display background and foreground pixel colors from the photo.
-* 💻 **Microcontroller C Header Export**:
+* 💻 **Microcontroller & Embedded Firmware Export**:
   * Live 1-bit monochrome hardware preview with real-time luminance threshold and inversion toggles.
-  * Generates clean `.h` header arrays for **Adafruit_GFX** (horizontal MSB-first), **U8g2** (vertical page-packed LSB-first), and **XBM**.
+  * **Adafruit_GFX & U8g2 Headers**: Generates clean `.h` header arrays for horizontal MSB-first, vertical page-packed LSB-first, and XBM formats.
+  * **⚡ Complete Arduino Sketch (`.ino`)**: Ready-to-flash complete sketch with I2C initialization and `u8g2.drawXBMP()`.
+  * **🐍 MicroPython Script (`.py`)**: Generates `framebuf.FrameBuffer(bitmap, ...)` bytearrays ready for ESP32 and Raspberry Pi Pico.
+* 🎛️ **Target Hardware Display Presets**:
+  * 1-Click dimensions and color mapping for **SSD1306** (128×64 & 128×32 OLED), **ST7920** (128×64 Graphic LCD), **PCD8544** (Nokia 5110), **HD44780** (16×2 Character LCD), and **ST7789** (240×240 IPS).
 * 📐 **Vector & Document Export**:
   * **SVG Vector Export**: Scalable vector graphics with precise clip paths for manuals, datasheets, and schematics.
   * **Native PNG Export**: Pixel-for-pixel hardware resolution preservation.
   * **Project Files (`.lcd.json`)**: Save full project state with layers, grid, and reference images.
-* 🎨 **Authentic LCD Presets**: Presets for Monochrome OLED, Flipper Zero Orange, GameBoy Olive, Nokia 5110 Blue, and Industrial Matrix.
+* ⌨️ **Pro Studio Productivity**:
+  * Global clipboard paste (`Ctrl + V`), element nudging via Arrow keys, duplicate (`Ctrl + D`), undo/redo, and interactive keyboard shortcut guide (`?`).
 
 ---
 

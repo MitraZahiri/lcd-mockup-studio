@@ -32,6 +32,8 @@ import {
   setOverlayOpacity,
   applyLcdPreset,
   LCD_PRESETS,
+  HARDWARE_PRESETS,
+  applyHardwarePreset,
 } from './editor/state.js'
 
 import {
@@ -142,6 +144,17 @@ document.querySelector('#app').innerHTML = `
           title="Export as C Header / Embedded Monochrome Bitmap (Adafruit GFX / U8g2 / XBM)"
         >
           Export C Code
+        </button>
+
+        <div class="separator"></div>
+
+        <button
+          type="button"
+          class="shortcuts-button"
+          id="shortcuts-button"
+          title="Keyboard Shortcuts (?)"
+        >
+          ⌨️ Shortcuts
         </button>
 
       </div>
@@ -520,6 +533,44 @@ document.querySelector('#app').innerHTML = `
 
         </div>
 
+        <div class="canvas-quickstart" id="canvas-quickstart">
+          <div class="quickstart-card">
+            <div class="quickstart-title">
+              <span class="quickstart-tag">⚡ 1-CLICK QUICKSTART</span>
+              <h2>Start with a Real Embedded Display</h2>
+              <p>Select a pre-built embedded screen or drop any photo / screenshot:</p>
+            </div>
+            <div class="quickstart-grid">
+              <button class="quickstart-card-btn" type="button" data-sample-id="controller">
+                <span class="qs-icon">🎛️</span>
+                <div class="qs-text">
+                  <strong>Industrial HMI</strong>
+                  <span>128 × 64 STN Graphic LCD</span>
+                </div>
+              </button>
+              <button class="quickstart-card-btn" type="button" data-sample-id="marlin-3d">
+                <span class="qs-icon">🖨️</span>
+                <div class="qs-text">
+                  <strong>3D Printer Marlin</strong>
+                  <span>128 × 64 Blue Graphic LCD</span>
+                </div>
+              </button>
+              <button class="quickstart-card-btn" type="button" data-sample-id="iot-weather">
+                <span class="qs-icon">📟</span>
+                <div class="qs-text">
+                  <strong>IoT Weather Station</strong>
+                  <span>128 × 64 ESP32 OLED</span>
+                </div>
+              </button>
+            </div>
+            <div class="quickstart-hints">
+              <span>📋 Press <kbd>Ctrl</kbd> + <kbd>V</kbd> to paste screenshot</span>
+              <span>•</span>
+              <span>📁 Drag & drop PNG / JPG anywhere</span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
 
@@ -601,6 +652,21 @@ document.querySelector('#app').innerHTML = `
 
         </label>
  
+        <label class="field preset-field">
+          <span>
+            Target Hardware Display
+          </span>
+          <select id="hardware-preset-select">
+            <option value="">Custom Dimensions</option>
+            <option value="ssd1306-128x64">SSD1306 128 × 64 (0.96" OLED)</option>
+            <option value="ssd1306-128x32">SSD1306 128 × 32 (0.91" OLED)</option>
+            <option value="st7920-128x64">ST7920 128 × 64 (Graphic LCD)</option>
+            <option value="nokia-84x48">PCD8544 84 × 48 (Nokia 5110)</option>
+            <option value="hd44780-16x2">HD44780 16 × 2 (Character LCD)</option>
+            <option value="st7789-240x240">ST7789 240 × 240 (Square IPS)</option>
+          </select>
+        </label>
+
         <label class="field preset-field">
           <span>
             LCD Palette Preset
@@ -1039,9 +1105,11 @@ document.querySelector('#app').innerHTML = `
               <label class="field">
                 <span>Target Hardware Format</span>
                 <select id="c-export-format">
-                  <option value="adafruit">Adafruit_GFX (Horizontal MSB-first)</option>
-                  <option value="u8g2">U8g2 / SSD1306 (Vertical 8-px Pages)</option>
-                  <option value="xbm">XBM (Standard X BitMap / LSB-first)</option>
+                  <option value="adafruit">Adafruit_GFX (Horizontal MSB-first .h)</option>
+                  <option value="u8g2">U8g2 / SSD1306 (Vertical 8-px Pages .h)</option>
+                  <option value="xbm">XBM (Standard X BitMap / LSB-first .h)</option>
+                  <option value="arduino_sketch">Complete Arduino Sketch (.ino)</option>
+                  <option value="micropython">MicroPython framebuf (ESP32/Pico .py)</option>
                 </select>
               </label>
               <div class="field-row">
@@ -1067,6 +1135,71 @@ document.querySelector('#app').innerHTML = `
         </div>
       </div>
     </div>
+
+    <!-- KEYBOARD SHORTCUTS MODAL -->
+    <div id="shortcuts-modal" class="modal-backdrop" hidden style="display: none;">
+      <div class="modal-dialog" style="max-width: 580px;">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span>⌨️ Keyboard Shortcuts</span>
+          </div>
+          <button type="button" class="icon-button modal-close" id="shortcuts-close" title="Close (Esc)">✕</button>
+        </div>
+        <div class="modal-body" style="flex-direction: column;">
+          <div class="shortcuts-grid">
+            <div class="shortcut-group">
+              <div class="shortcut-group-title">Clipboard & History</div>
+              <div class="shortcut-row">
+                <span>Paste Image / Element</span>
+                <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>V</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Copy Selected Element</span>
+                <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>C</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Duplicate Element</span>
+                <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>D</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Undo Action</span>
+                <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>Z</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Redo Action</span>
+                <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>Y</kbd></div>
+              </div>
+            </div>
+            <div class="shortcut-group">
+              <div class="shortcut-group-title">Canvas & Selection</div>
+              <div class="shortcut-row">
+                <span>Nudge Element (1px)</span>
+                <div class="shortcut-keys"><kbd>Arrow Keys</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Fast Nudge (5px)</span>
+                <div class="shortcut-keys"><kbd>Shift</kbd> + <kbd>Arrow</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Layer Up / Down</span>
+                <div class="shortcut-keys"><kbd>]</kbd> / <kbd>[</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Delete Element</span>
+                <div class="shortcut-keys"><kbd>Del</kbd> / <kbd>Backspace</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Open Shortcuts</span>
+                <div class="shortcut-keys"><kbd>?</kbd></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLOATING TOAST CONTAINER -->
+    <div id="toast-container" class="toast-container"></div>
 
   </div>
 `
@@ -1703,6 +1836,7 @@ analyzeReferenceButton.addEventListener('click', async () => {
 
     analysisMessage.hidden = false
     analysisMessage.textContent = `✓ ${result.elements.length} elements detected`
+    showToast(`✓ ${result.elements.length} LCD elements vectorized!`, 'info')
     setTimeout(() => {
       if (!analysisInProgress) analysisMessage.hidden = true
     }, 2500)
@@ -1710,6 +1844,7 @@ analyzeReferenceButton.addEventListener('click', async () => {
     console.error(error)
     analysisMessage.className = 'analysis-message error'
     analysisMessage.textContent = error?.message || 'Analysis failed.'
+    showToast(error?.message || 'Analysis failed', 'warn')
   } finally {
     analyzeReferenceButton.disabled = !editorState.reference.src
     analyzeReferenceButton.textContent = originalLabel
@@ -2498,9 +2633,24 @@ window.addEventListener(
     }
 
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
+      if (getClipboard()) {
+        event.preventDefault()
+        pasteElement()
+        showToast('Pasted element from clipboard', 'info')
+        return
+      }
+      // If no internal element is in clipboard, do not preventDefault!
+      // This allows the native 'paste' event to handle clipboard images smoothly!
+    }
+
+    if (event.key === '?' && !isTyping) {
       event.preventDefault()
-      pasteElement()
+      openShortcutsModal()
       return
+    }
+
+    if (event.key === 'Escape') {
+      closeShortcutsModal()
     }
 
     const element = getSelectedElement()
@@ -2664,6 +2814,20 @@ function updateInterface() {
 
   updateActionButtons()
 
+  const quickstartContainer = document.querySelector('#canvas-quickstart')
+  if (quickstartContainer) {
+    const hasContent = editorState.elements.length > 0 || Boolean(editorState.reference.src)
+    quickstartContainer.hidden = hasContent
+  }
+
+  const hardwarePresetSelect = document.querySelector('#hardware-preset-select')
+  if (hardwarePresetSelect) {
+    const matchingKey = Object.keys(HARDWARE_PRESETS).find(
+      (k) => HARDWARE_PRESETS[k].width === width && HARDWARE_PRESETS[k].height === height
+    )
+    hardwarePresetSelect.value = matchingKey || ''
+  }
+
   renderLayers()
 
   renderProperties()
@@ -2726,3 +2890,89 @@ initProjectControls({
 initPngExport(editorState)
 initSvgExport(editorState)
 initCExport(editorState)
+
+// ======================================================
+// PRO FEATURES: TOASTS, PRESETS, QUICKSTART & SHORTCUTS
+// ======================================================
+
+export function showToast(message, type = 'info') {
+  const container = document.querySelector('#toast-container')
+  if (!container) return
+
+  const item = document.createElement('div')
+  item.className = `toast-item toast-${type}`
+  const icon = type === 'warn' ? '⚠️' : (type === 'error' ? '❌' : '✅')
+  item.innerHTML = `<span>${icon}</span> <span>${message}</span>`
+  container.appendChild(item)
+
+  setTimeout(() => {
+    item.classList.add('toast-out')
+    setTimeout(() => item.remove(), 250)
+  }, 2500)
+}
+
+function initHardwarePresets() {
+  const select = document.querySelector('#hardware-preset-select')
+  if (!select) return
+
+  select.addEventListener('change', () => {
+    const val = select.value
+    if (val && HARDWARE_PRESETS[val]) {
+      applyHardwarePreset(val)
+      const p = HARDWARE_PRESETS[val]
+      showToast(`Target display set to ${p.name}`, 'info')
+    }
+  })
+}
+
+const shortcutsModal = document.querySelector('#shortcuts-modal')
+
+export function openShortcutsModal() {
+  if (!shortcutsModal) return
+  shortcutsModal.removeAttribute('hidden')
+  shortcutsModal.hidden = false
+  shortcutsModal.classList.add('open')
+  shortcutsModal.style.display = 'flex'
+}
+
+export function closeShortcutsModal() {
+  if (!shortcutsModal) return
+  shortcutsModal.setAttribute('hidden', '')
+  shortcutsModal.hidden = true
+  shortcutsModal.classList.remove('open')
+  shortcutsModal.style.display = 'none'
+}
+
+function initShortcutsModal() {
+  const btn = document.querySelector('#shortcuts-button')
+  const close = document.querySelector('#shortcuts-close')
+
+  btn?.addEventListener('click', openShortcutsModal)
+  close?.addEventListener('click', closeShortcutsModal)
+  shortcutsModal?.addEventListener('click', (e) => {
+    if (e.target === shortcutsModal) closeShortcutsModal()
+  })
+}
+
+function initQuickstart() {
+  const quickstart = document.querySelector('#canvas-quickstart')
+  if (!quickstart) return
+
+  quickstart.querySelectorAll('.quickstart-card-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const sampleId = btn.dataset.sampleId
+      const sample = LCD_SAMPLES.find((s) => s.id === sampleId)
+      if (sample) {
+        showToast(`Loading ${sample.title}...`, 'info')
+        const result = await applyReference(loadReferenceFromUrl(sample.url, sample.title))
+        if (result) {
+          analyzeReferenceButton.click()
+        }
+      }
+    })
+  })
+}
+
+initHardwarePresets()
+initShortcutsModal()
+initQuickstart()
