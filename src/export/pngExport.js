@@ -64,6 +64,22 @@ function drawShape(context, element) {
   }
 }
 
+function drawBitmap(context, element) {
+  if (element.canvas) {
+    if (context.drawImage) {
+      context.drawImage(element.canvas, element.x, element.y, element.width, element.height)
+    }
+    return
+  }
+  if (element.dataUrl && typeof Image !== 'undefined') {
+    const img = new Image()
+    img.src = element.dataUrl
+    if (img.complete && img.naturalWidth > 0 && context.drawImage) {
+      context.drawImage(img, element.x, element.y, element.width, element.height)
+    }
+  }
+}
+
 export function renderProjectCanvas(project, canvas) {
   const { width, height, background } = project.display
   validateExportSize(width, height)
@@ -79,6 +95,7 @@ export function renderProjectCanvas(project, canvas) {
     try {
       if (element.type === 'text') drawText(context, element)
       else if (['rectangle', 'circle', 'line'].includes(element.type)) drawShape(context, element)
+      else if (element.type === 'bitmap') drawBitmap(context, element)
       else throw new Error(`Cannot export element type: ${element.type}`)
     } finally { context.restore() }
   }

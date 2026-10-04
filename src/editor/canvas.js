@@ -445,7 +445,32 @@ function renderElement(element) {
     )
   }
 
+  if (element.type === 'bitmap') {
+    renderBitmapElement(
+      node,
+      element,
+    )
+  }
+
   return node
+}
+
+function renderBitmapElement(node, element) {
+  node.classList.add('element-bitmap')
+  let img = node.querySelector('img')
+  if (!img) {
+    img = document.createElement('img')
+    img.className = 'canvas-bitmap-img'
+    img.style.width = '100%'
+    img.style.height = '100%'
+    img.style.objectFit = 'fill'
+    img.style.imageRendering = 'pixelated'
+    img.style.pointerEvents = 'none'
+    img.style.userSelect = 'none'
+    img.draggable = false
+    node.appendChild(img)
+  }
+  img.src = element.dataUrl || ''
 }
 
 function renderTextElement(
