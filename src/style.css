@@ -1693,10 +1693,10 @@ kbd {
 .dither-settings-box {
   display: flex;
   flex-direction: column;
-  gap: 9px;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.35);
-  border-radius: 6px;
+  gap: 10px;
+  padding: 12px;
+  background: #161b22;
+  border-radius: 8px;
   border: 1px solid #30363d;
   margin-bottom: 10px;
 }
@@ -1715,9 +1715,9 @@ kbd {
 
 .sidebar-select {
   width: 100%;
-  padding: 5px 8px;
+  padding: 6px 8px;
   font-size: 11px;
-  background: #161b22;
+  background: #0d1117;
   color: #f0f6fc;
   border: 1px solid #30363d;
   border-radius: 4px;
@@ -1768,18 +1768,28 @@ kbd {
 }
 
 .dither-action-btn {
-  background: linear-gradient(180deg, #238636 0%, #1a6327 100%) !important;
-  border: 1px solid #2ea043 !important;
+  width: 100%;
+  padding: 12px 16px !important;
+  margin: 6px 0 10px 0 !important;
+  background: linear-gradient(180deg, #2ea043 0%, #238636 100%) !important;
+  border: 1px solid #3fb950 !important;
+  border-radius: 6px !important;
   color: #ffffff !important;
+  font-size: 13px !important;
   font-weight: 700 !important;
+  letter-spacing: 0.3px;
   box-shadow: 0 2px 8px rgba(35, 134, 54, 0.35) !important;
   cursor: pointer;
   transition: all 0.15s ease !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .dither-action-btn:hover:not(:disabled) {
-  background: linear-gradient(180deg, #2ea043 0%, #238636 100%) !important;
-  box-shadow: 0 4px 14px rgba(35, 134, 54, 0.5) !important;
+  background: linear-gradient(180deg, #3fb950 0%, #2ea043 100%) !important;
+  box-shadow: 0 4px 14px rgba(46, 160, 67, 0.5) !important;
   transform: translateY(-1px);
 }
 
@@ -1797,48 +1807,69 @@ kbd {
   display: block;
 }
 
-/* Telegraphic / Wirephoto Engraving Styles */
+/* Telegraphic / Wirephoto Options (clean borderless inside card) */
 .telegraphic-options-box {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: rgba(18, 42, 32, 0.45);
-  border: 1px solid #2e6648;
-  border-radius: 5px;
-  padding: 8px 10px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
 }
 
-.telegraph-action-btn {
-  background: linear-gradient(135deg, #1f4a38 0%, #153827 100%) !important;
-  border: 1px solid #4da375 !important;
-  color: #c4f9dc !important;
-  font-weight: 700 !important;
-  box-shadow: 0 2px 8px rgba(31, 74, 56, 0.4) !important;
+/* Compact Reference Info Card */
+.reference-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin: 8px 0;
+  font-size: 11px;
+}
+
+.reference-info-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.reference-info strong {
+  color: #f0f6fc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 125px;
+  font-size: 11px;
+}
+
+.reference-info span {
+  color: #8b949e;
+  font-size: 10px;
+}
+
+.reference-remove-btn {
+  background: rgba(248, 81, 73, 0.1);
+  border: 1px solid rgba(248, 81, 73, 0.35);
+  color: #f85149;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease !important;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
-.telegraph-action-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #285e47 0%, #1c4b35 100%) !important;
-  border-color: #5bc48d !important;
-  box-shadow: 0 4px 14px rgba(40, 94, 71, 0.6) !important;
-  transform: translateY(-1px);
-}
-
-.vector-action-btn {
-  background: #172b21 !important;
-  border: 1px solid #3d805c !important;
-  color: #a8d9a8 !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  padding: 7px 10px !important;
-  cursor: pointer;
-  transition: all 0.15s ease !important;
-}
-
-.vector-action-btn:hover:not(:disabled) {
-  background: #1e3a2c !important;
-  border-color: #4da375 !important;
-  color: #ffffff !important;
+.reference-remove-btn:hover {
+  background: #da3633;
+  color: #ffffff;
+  border-color: #da3633;
 }

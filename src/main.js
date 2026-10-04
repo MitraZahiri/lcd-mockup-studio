@@ -266,11 +266,20 @@ document.querySelector('#app').innerHTML = `
         <div
           class="reference-info"
           id="reference-info"
-          style="display: none;"
           hidden
         >
-          <strong id="reference-name"></strong>
-          <span id="reference-size"></span>
+          <div class="reference-info-meta">
+            <strong id="reference-name">Görsel</strong>
+            <span id="reference-size"></span>
+          </div>
+          <button
+            class="reference-remove-btn"
+            id="remove-reference"
+            type="button"
+            title="Yüklenen görseli kaldır"
+          >
+            ✕ Kaldır
+          </button>
         </div>
 
         <div class="analysis-mode-tabs">
@@ -320,6 +329,16 @@ document.querySelector('#app').innerHTML = `
             disabled
           >
             ✦ LCD Ekranı Çözümle
+          </button>
+
+          <button
+            class="wide-button secondary-button"
+            id="match-reference-size"
+            type="button"
+            title="Ekran boyutunu yüklenen görselin çözünürlüğüne eşitler"
+            style="margin-top: 6px; font-size: 11px; padding: 7px 10px;"
+          >
+            📐 Ekran Boyutunu Eşle
           </button>
         </div>
 
@@ -380,6 +399,7 @@ document.querySelector('#app').innerHTML = `
                   <select id="dither-target-select" class="sidebar-select">
                     <option value="fit" selected>Mevcut Ekrana Sığdır</option>
                     <option value="proportional">Fotoğraf Oranını Koru</option>
+                    <option value="avatar">👤 Köşeye Avatar Olarak Ekle</option>
                     <option value="ssd1306">128 × 64 (OLED / SSD1306)</option>
                     <option value="badge">250 × 122 (e-Paper Badge)</option>
                     <option value="nokia">84 × 48 (Nokia 5110)</option>
@@ -428,7 +448,7 @@ document.querySelector('#app').innerHTML = `
             </details>
           </div>
 
-          <!-- Hero Action Button -->
+          <!-- Hero Action Button - Standalone & Spacious -->
           <button
             class="wide-button dither-action-btn"
             id="apply-dither-button"
@@ -437,30 +457,6 @@ document.querySelector('#app').innerHTML = `
           >
             📡 Telgraf Gravürü Oluştur
           </button>
-
-          <!-- Clean Secondary Actions Row -->
-          <div class="dither-secondary-actions" style="display: flex; gap: 6px; margin-top: 6px;">
-            <button
-              class="vector-action-btn"
-              id="apply-vector-telegraph-button"
-              type="button"
-              disabled
-              style="flex: 1; text-align: center;"
-              title="Fotoğrafı tek tek düzenlenebilir vektör çizgi katmanlarına dönüştürür"
-            >
-              📐 Vektör Çizgi Yap
-            </button>
-            <button
-              class="secondary-button"
-              id="add-avatar-button"
-              type="button"
-              disabled
-              style="flex: 1; font-size: 11px; padding: 7px 4px; text-align: center;"
-              title="Mevcut mockup ekranını silmeden köşeye avatar katmanı olarak ekler"
-            >
-              👤 Avatar Ekle
-            </button>
-          </div>
         </div>
 
         <div
@@ -473,24 +469,8 @@ document.querySelector('#app').innerHTML = `
           class="reference-actions"
           id="reference-actions"
           hidden
-        >
-          <button
-            class="wide-button"
-            id="match-reference-size"
-            type="button"
-            title="Match Document Size to Reference"
-          >
-            Match Size
-          </button>
-
-          <button
-            class="wide-button danger-button"
-            id="remove-reference"
-            type="button"
-          >
-            Remove
-          </button>
-        </div>
+          style="display: none;"
+        ></div>
 
       </section>
 
@@ -1861,17 +1841,19 @@ function refreshReferenceInterface() {
   referencePreviewImage.hidden = !hasReference
   referencePlaceholder.hidden = hasReference
   referencePreview.classList.toggle('empty', !hasReference)
-  if (referenceInfo) referenceInfo.hidden = true
-  if (referenceActions) referenceActions.hidden = !hasReference
+  if (referenceInfo) {
+    referenceInfo.hidden = !hasReference
+    if (hasReference) {
+      const nameEl = document.querySelector('#reference-name')
+      const sizeEl = document.querySelector('#reference-size')
+      if (nameEl && editorState.reference.name) nameEl.textContent = editorState.reference.name
+      if (sizeEl && editorState.reference.width) sizeEl.textContent = `${editorState.reference.width} × ${editorState.reference.height} px`
+    }
+  }
+  if (referenceActions) referenceActions.hidden = true
   if (analyzeReferenceButton) analyzeReferenceButton.disabled = !hasReference
-  const analyzeTelegraphicButton = document.querySelector('#analyze-telegraphic')
-  if (analyzeTelegraphicButton) analyzeTelegraphicButton.disabled = !hasReference
   const applyDitherButton = document.querySelector('#apply-dither-button')
-  const applyVectorButton = document.querySelector('#apply-vector-telegraph-button')
-  const addAvatarButton = document.querySelector('#add-avatar-button')
   if (applyDitherButton) applyDitherButton.disabled = !hasReference
-  if (applyVectorButton) applyVectorButton.disabled = !hasReference
-  if (addAvatarButton) addAvatarButton.disabled = !hasReference
   if (analysisMessage) analysisMessage.hidden = true
 }
 
@@ -1884,17 +1866,17 @@ async function applyReference(loadPromise) {
     referencePreviewImage.hidden = false
     referencePlaceholder.hidden = true
     referencePreview.classList.remove('empty')
-    if (referenceInfo) referenceInfo.hidden = true
-    referenceActions.hidden = false
+    if (referenceInfo) {
+      referenceInfo.hidden = false
+      const nameEl = document.querySelector('#reference-name')
+      const sizeEl = document.querySelector('#reference-size')
+      if (nameEl) nameEl.textContent = result.name || 'Görsel'
+      if (sizeEl) sizeEl.textContent = `${result.width} × ${result.height} px`
+    }
+    if (referenceActions) referenceActions.hidden = true
     if (analyzeReferenceButton) analyzeReferenceButton.disabled = false
-    const analyzeTelegraphicButton = document.querySelector('#analyze-telegraphic')
-    if (analyzeTelegraphicButton) analyzeTelegraphicButton.disabled = false
     const applyDitherButton = document.querySelector('#apply-dither-button')
-    const applyVectorButton = document.querySelector('#apply-vector-telegraph-button')
-    const addAvatarButton = document.querySelector('#add-avatar-button')
     if (applyDitherButton) applyDitherButton.disabled = false
-    if (applyVectorButton) applyVectorButton.disabled = false
-    if (addAvatarButton) addAvatarButton.disabled = false
 
     fitCanvasToReference()
     requestAnimationFrame(() => fitCanvasToWorkspace())
@@ -3427,12 +3409,10 @@ function initDitheringStudio() {
   const algoSelect = document.querySelector('#dither-algo-select')
   const teleOptionsBox = document.querySelector('#telegraphic-options-box')
   const applyDitherBtn = document.querySelector('#apply-dither-button')
-  const applyVectorBtn = document.querySelector('#apply-vector-telegraph-button')
 
   function updateAlgoUi() {
     const isTele = algoSelect?.value === 'telegraphic'
     if (teleOptionsBox) teleOptionsBox.hidden = !isTele
-    if (applyVectorBtn) applyVectorBtn.hidden = !isTele
     const modField = document.querySelector('#modulation-field')
     const maxTGroup = document.querySelector('#max-thickness-group')
     const threshGroup = document.querySelector('#threshold-slider-group')
@@ -3449,16 +3429,14 @@ function initDitheringStudio() {
   algoSelect?.addEventListener('change', updateAlgoUi)
   updateAlgoUi()
 
-  async function executeDither(isAvatarOnly) {
+  async function executeDither() {
     if (!editorState.reference.src) {
       showToast('Please upload an image or portrait first', 'warn')
       return
     }
 
     const applyBtn = document.querySelector('#apply-dither-button')
-    const avatarBtn = document.querySelector('#add-avatar-button')
     if (applyBtn) applyBtn.disabled = true
-    if (avatarBtn) avatarBtn.disabled = true
 
     try {
       const isTele = algoSelect?.value === 'telegraphic'
@@ -3590,102 +3568,10 @@ function initDitheringStudio() {
       showToast('Dithering failed: ' + err.message, 'error')
     } finally {
       if (applyBtn) applyBtn.disabled = !editorState.reference.src
-      if (avatarBtn) avatarBtn.disabled = !editorState.reference.src
     }
   }
 
-  // Vector line generator
-  async function executeVectorLines() {
-    if (!editorState.reference.src) {
-      showToast('Please upload an image or portrait first', 'warn')
-      return
-    }
-
-    const vectorBtn = document.querySelector('#apply-vector-telegraph-button')
-    if (vectorBtn) vectorBtn.disabled = true
-
-    try {
-      showToast('📐 Generating editable vector wirephoto lines...', 'info')
-
-      const img = await loadImage(editorState.reference.src)
-      const targetSelect = document.querySelector('#dither-target-select')?.value || 'fit'
-      const contrast = parseInt(document.querySelector('#dither-contrast')?.value || '25', 10)
-      const brightness = parseInt(document.querySelector('#dither-brightness')?.value || '0', 10)
-      const invert = Boolean(document.querySelector('#dither-invert')?.checked)
-      const lineSpacing = parseInt(document.querySelector('#telegraphic-spacing')?.value || '4', 10)
-      const maxThickness = parseFloat(document.querySelector('#telegraphic-max-thickness')?.value || '4.5')
-
-      let targetW = editorState.display.width
-      let targetH = editorState.display.height
-
-      if (targetSelect === 'ssd1306') {
-        targetW = 128
-        targetH = 64
-      } else if (targetSelect === 'badge') {
-        targetW = 250
-        targetH = 122
-      } else if (targetSelect === 'nokia') {
-        targetW = 84
-        targetH = 48
-      } else if (targetSelect === 'smartwatch') {
-        targetW = 128
-        targetH = 128
-      } else if (targetSelect === 'proportional') {
-        const aspect = img.naturalWidth / (img.naturalHeight || 1)
-        if (aspect >= 1) {
-          targetW = Math.min(img.naturalWidth, 256)
-          targetH = Math.max(16, Math.round(targetW / aspect))
-        } else {
-          targetH = Math.min(img.naturalHeight, 256)
-          targetW = Math.max(16, Math.round(targetH * aspect))
-        }
-      }
-
-      const offscreen = document.createElement('canvas')
-      offscreen.width = targetW
-      offscreen.height = targetH
-      const ctx = offscreen.getContext('2d')
-      ctx.imageSmoothingEnabled = true
-      ctx.imageSmoothingQuality = 'high'
-      ctx.drawImage(img, 0, 0, targetW, targetH)
-      const imgData = ctx.getImageData(0, 0, targetW, targetH)
-
-      const bgHex = editorState.display.background || '#18211b'
-      const isDarkBg = bgHex === '#000000' || bgHex === '#18211b' || bgHex.startsWith('#0') || bgHex.startsWith('#1')
-      const fgHex = isDarkBg ? '#a8d9a8' : '#18211b'
-
-      const vectorLines = generateTelegraphicVectorLines(imgData, targetW, targetH, {
-        lineSpacing,
-        minThickness: 1,
-        maxThickness,
-        contrast,
-        brightness,
-        invert,
-        color: fgHex
-      })
-
-      if (vectorLines.length === 0) {
-        showToast('No prominent wirephoto lines detected. Try increasing contrast.', 'warn')
-        return
-      }
-
-      updateDisplay({ width: targetW, height: targetH })
-      editorState.elements = vectorLines
-      editorState.selectedId = vectorLines[0]?.id || null
-      notify()
-      requestAnimationFrame(() => fitCanvasToWorkspace())
-      showToast(`📐 ${vectorLines.length} adet düzenlenebilir telgraf vektör çizgisi oluşturuldu!`, 'info')
-    } catch (err) {
-      console.error('Vector wirephoto error:', err)
-      showToast('Vektör oluşturma hatası: ' + err.message, 'error')
-    } finally {
-      if (vectorBtn) vectorBtn.disabled = !editorState.reference.src
-    }
-  }
-
-  document.querySelector('#apply-dither-button')?.addEventListener('click', () => executeDither(false))
-  document.querySelector('#apply-vector-telegraph-button')?.addEventListener('click', executeVectorLines)
-  document.querySelector('#add-avatar-button')?.addEventListener('click', () => executeDither(true))
+  document.querySelector('#apply-dither-button')?.addEventListener('click', executeDither)
 }
 
 initDitheringStudio()
