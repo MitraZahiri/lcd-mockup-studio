@@ -19,7 +19,7 @@
 
 <img src="docs/assets/telegraph_demo.gif" alt="1-Bit Retro Telegraph & Wirephoto Scanline Engraving Workflow" width="700" style="max-width: 100%; border-radius: 8px; border: 1px solid #30363d; box-shadow: 0 8px 24px rgba(0,0,0,0.45);" />
 
-*1-Bit Telegraphic Wirephoto workflow: Upload portrait/photo ➜ Belinograph scanline thickness modulation ➜ Vintage facsimile engraving ➜ Instant Microcontroller C code export*
+
 
 </div>
 
