@@ -27,6 +27,28 @@ test('JSON round trip preserves text, all element types, order, grid and OCR met
   assert.deepEqual(parseProject(JSON.stringify(project())), project())
 })
 
+test('validateProject supports bitmap element with dither settings', () => {
+  const p = project()
+  p.elements.push({
+    id: 'bmp_1',
+    type: 'bitmap',
+    name: 'Dithered Avatar',
+    x: 10,
+    y: 10,
+    width: 64,
+    height: 64,
+    dataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    ditherMethod: 'atkinson',
+    contrast: 20,
+    brightness: 0,
+    threshold: 128,
+    invert: false,
+  })
+  const roundtripped = parseProject(JSON.stringify(p))
+  assert.equal(roundtripped.elements[4].type, 'bitmap')
+  assert.equal(roundtripped.elements[4].ditherMethod, 'atkinson')
+})
+
 test('current OCR string font weights and display metadata survive save/load', () => {
   const p = project()
   Object.assign(p.elements[0], { fontWeight: '400', textAlign: 'left', opacity: 1, rotation: 0 })

@@ -65,6 +65,8 @@ import {
 import { encodeProjectToUrl, decodeProjectFromUrl } from './project/shareUrl.js'
 import { updateHardwareShellDOM } from './editor/deviceShell.js'
 import { startSimulation, stopSimulation, isSimulating } from './editor/simulation.js'
+import { processDithering } from './analysis/dithering.js'
+import { loadImage } from './analysis/imageProcessing.js'
 
 
 // ======================================================
@@ -271,44 +273,132 @@ document.querySelector('#app').innerHTML = `
           <span id="reference-size"></span>
         </div>
 
-        <details
-          class="analysis-options"
-          id="analysis-options-details"
-          style="margin: 8px 0; font-size: 11px;"
-        >
-          <summary style="cursor: pointer; color: #a8d9a8; font-weight: bold; margin-bottom: 6px;">
-            ⚙ Analysis Settings
-          </summary>
-          <div style="display: flex; flex-direction: column; gap: 5px; padding: 6px 8px; background: rgba(0,0,0,0.25); border-radius: 4px; border: 1px solid #334438;">
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="checkbox" id="opt-detect-text" checked> Detect Text (OCR & 7-Segment)
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="checkbox" id="opt-detect-frames" checked> Detect Frames & Lines
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="checkbox" id="opt-detect-badges" checked> Detect Solid Badges & Bars
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="checkbox" id="opt-detect-circles" checked> Detect Circles & Dots
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="checkbox" id="opt-detect-symbols" checked> Detect Symbols & Icons
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="checkbox" id="opt-auto-theme" checked> Auto-adopt LCD Screen Theme
-            </label>
-          </div>
-        </details>
+        <div class="analysis-mode-tabs">
+          <button type="button" class="analysis-mode-tab active" id="tab-mode-lcd" data-mode="lcd" title="Extract text & UI from physical LCD displays">
+            📟 LCD Screen (OCR)
+          </button>
+          <button type="button" class="analysis-mode-tab" id="tab-mode-dither" data-mode="dither" title="High-fidelity 1-bit dithering for portraits, photos, badges, and pixel art">
+            🖼️ Photo & Portrait (1-Bit)
+          </button>
+        </div>
 
-        <button
-          class="wide-button analyze-button"
-          id="analyze-reference"
-          type="button"
-          disabled
-        >
-          ✦ Analyze Image
-        </button>
+        <div class="mode-container-lcd" id="mode-container-lcd">
+          <details
+            class="analysis-options"
+            id="analysis-options-details"
+            style="margin: 8px 0; font-size: 11px;"
+          >
+            <summary style="cursor: pointer; color: #a8d9a8; font-weight: bold; margin-bottom: 6px;">
+              ⚙ Analysis Settings
+            </summary>
+            <div style="display: flex; flex-direction: column; gap: 5px; padding: 6px 8px; background: rgba(0,0,0,0.25); border-radius: 4px; border: 1px solid #334438;">
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="opt-detect-text" checked> Detect Text (OCR & 7-Segment)
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="opt-detect-frames" checked> Detect Frames & Lines
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="opt-detect-badges" checked> Detect Solid Badges & Bars
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="opt-detect-circles" checked> Detect Circles & Dots
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="opt-detect-symbols" checked> Detect Symbols & Icons
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="checkbox" id="opt-auto-theme" checked> Auto-adopt LCD Screen Theme
+              </label>
+            </div>
+          </details>
+
+          <button
+            class="wide-button analyze-button"
+            id="analyze-reference"
+            type="button"
+            disabled
+          >
+            ✦ Analyze LCD Screen
+          </button>
+        </div>
+
+        <div class="mode-container-dither" id="mode-container-dither" hidden>
+          <div class="dither-settings-box">
+            <div class="dither-field">
+              <label for="dither-algo-select">Dither Algorithm:</label>
+              <select id="dither-algo-select" class="sidebar-select">
+                <option value="atkinson" selected>Atkinson (Original Mac 1984 / GameBoy) ★</option>
+                <option value="floyd-steinberg">Floyd-Steinberg (Smooth Shading)</option>
+                <option value="bayer4">Bayer 4×4 (Retro CRT / Halftone)</option>
+                <option value="bayer8">Bayer 8×8 (Fine Matrix)</option>
+                <option value="threshold">Ink Stamp / Comic Stencil</option>
+              </select>
+            </div>
+
+            <div class="dither-field">
+              <label for="dither-target-select">Target Resolution:</label>
+              <select id="dither-target-select" class="sidebar-select">
+                <option value="fit" selected>Fit Current Screen</option>
+                <option value="ssd1306">128 × 64 (OLED / SSD1306)</option>
+                <option value="badge">250 × 122 (e-Paper Badge)</option>
+                <option value="nokia">84 × 48 (Nokia 5110)</option>
+                <option value="smartwatch">128 × 128 (Smartwatch Face)</option>
+                <option value="proportional">Keep Photo Proportions</option>
+              </select>
+            </div>
+
+            <div class="dither-slider-group">
+              <div class="slider-row">
+                <label for="dither-contrast">Contrast</label>
+                <span id="dither-contrast-val">+25%</span>
+              </div>
+              <input type="range" id="dither-contrast" min="-100" max="100" value="25" step="5">
+            </div>
+
+            <div class="dither-slider-group">
+              <div class="slider-row">
+                <label for="dither-brightness">Brightness</label>
+                <span id="dither-brightness-val">0%</span>
+              </div>
+              <input type="range" id="dither-brightness" min="-100" max="100" value="0" step="5">
+            </div>
+
+            <div class="dither-slider-group">
+              <div class="slider-row">
+                <label for="dither-threshold">Threshold</label>
+                <span id="dither-threshold-val">128</span>
+              </div>
+              <input type="range" id="dither-threshold" min="30" max="225" value="128" step="1">
+            </div>
+
+            <div class="dither-checkbox-row">
+              <label>
+                <input type="checkbox" id="dither-invert"> Invert Polarity (Light / Dark)
+              </label>
+            </div>
+          </div>
+
+          <button
+            class="wide-button dither-action-btn"
+            id="apply-dither-button"
+            type="button"
+            disabled
+          >
+            ✨ Convert to 1-Bit Dither Art
+          </button>
+
+          <button
+            class="wide-button secondary-button"
+            id="add-avatar-button"
+            type="button"
+            disabled
+            style="margin-top: 6px;"
+            title="Insert as a scalable Avatar layer without replacing other elements"
+          >
+            ➕ Insert as Avatar Layer
+          </button>
+        </div>
 
         <div
           class="analysis-message"
@@ -1711,6 +1801,10 @@ function refreshReferenceInterface() {
   if (referenceInfo) referenceInfo.hidden = true
   if (referenceActions) referenceActions.hidden = !hasReference
   if (analyzeReferenceButton) analyzeReferenceButton.disabled = !hasReference
+  const applyDitherButton = document.querySelector('#apply-dither-button')
+  const addAvatarButton = document.querySelector('#add-avatar-button')
+  if (applyDitherButton) applyDitherButton.disabled = !hasReference
+  if (addAvatarButton) addAvatarButton.disabled = !hasReference
   if (analysisMessage) analysisMessage.hidden = true
 }
 
@@ -1726,6 +1820,10 @@ async function applyReference(loadPromise) {
     if (referenceInfo) referenceInfo.hidden = true
     referenceActions.hidden = false
     analyzeReferenceButton.disabled = false
+    const applyDitherButton = document.querySelector('#apply-dither-button')
+    const addAvatarButton = document.querySelector('#add-avatar-button')
+    if (applyDitherButton) applyDitherButton.disabled = false
+    if (addAvatarButton) addAvatarButton.disabled = false
 
     fitCanvasToReference()
     requestAnimationFrame(() => fitCanvasToWorkspace())
@@ -3118,3 +3216,171 @@ function initHardwareShellControls() {
 initShareUrl()
 initSimulationControls()
 initHardwareShellControls()
+
+function initDitheringStudio() {
+  const tabLcd = document.querySelector('#tab-mode-lcd')
+  const tabDither = document.querySelector('#tab-mode-dither')
+  const containerLcd = document.querySelector('#mode-container-lcd')
+  const containerDither = document.querySelector('#mode-container-dither')
+
+  tabLcd?.addEventListener('click', () => {
+    tabLcd.classList.add('active')
+    tabDither?.classList.remove('active')
+    if (containerLcd) containerLcd.hidden = false
+    if (containerDither) containerDither.hidden = true
+  })
+
+  tabDither?.addEventListener('click', () => {
+    tabDither.classList.add('active')
+    tabLcd?.classList.remove('active')
+    if (containerDither) containerDither.hidden = false
+    if (containerLcd) containerLcd.hidden = true
+  })
+
+  // Slider readouts
+  const contrastInput = document.querySelector('#dither-contrast')
+  const contrastVal = document.querySelector('#dither-contrast-val')
+  contrastInput?.addEventListener('input', () => {
+    const v = parseInt(contrastInput.value, 10)
+    if (contrastVal) contrastVal.textContent = (v > 0 ? '+' : '') + v + '%'
+  })
+
+  const brightnessInput = document.querySelector('#dither-brightness')
+  const brightnessVal = document.querySelector('#dither-brightness-val')
+  brightnessInput?.addEventListener('input', () => {
+    const v = parseInt(brightnessInput.value, 10)
+    if (brightnessVal) brightnessVal.textContent = (v > 0 ? '+' : '') + v + '%'
+  })
+
+  const thresholdInput = document.querySelector('#dither-threshold')
+  const thresholdVal = document.querySelector('#dither-threshold-val')
+  thresholdInput?.addEventListener('input', () => {
+    if (thresholdVal) thresholdVal.textContent = thresholdInput.value
+  })
+
+  async function executeDither(isAvatarOnly) {
+    if (!editorState.reference.src) {
+      showToast('Please upload an image or portrait first', 'warn')
+      return
+    }
+
+    const applyBtn = document.querySelector('#apply-dither-button')
+    const avatarBtn = document.querySelector('#add-avatar-button')
+    if (applyBtn) applyBtn.disabled = true
+    if (avatarBtn) avatarBtn.disabled = true
+
+    try {
+      showToast('Converting to high-detail 1-bit dither art...', 'info')
+
+      const img = await loadImage(editorState.reference.src)
+      const targetSelect = document.querySelector('#dither-target-select')?.value || 'fit'
+      const algo = document.querySelector('#dither-algo-select')?.value || 'atkinson'
+      const contrast = parseInt(document.querySelector('#dither-contrast')?.value || '25', 10)
+      const brightness = parseInt(document.querySelector('#dither-brightness')?.value || '0', 10)
+      const threshold = parseInt(document.querySelector('#dither-threshold')?.value || '128', 10)
+      const invert = Boolean(document.querySelector('#dither-invert')?.checked)
+
+      let targetW = editorState.display.width
+      let targetH = editorState.display.height
+
+      if (!isAvatarOnly) {
+        if (targetSelect === 'ssd1306') {
+          targetW = 128
+          targetH = 64
+        } else if (targetSelect === 'badge') {
+          targetW = 250
+          targetH = 122
+        } else if (targetSelect === 'nokia') {
+          targetW = 84
+          targetH = 48
+        } else if (targetSelect === 'smartwatch') {
+          targetW = 128
+          targetH = 128
+        } else if (targetSelect === 'proportional') {
+          const aspect = img.naturalWidth / (img.naturalHeight || 1)
+          if (aspect >= 1) {
+            targetW = Math.min(img.naturalWidth, 256)
+            targetH = Math.max(16, Math.round(targetW / aspect))
+          } else {
+            targetH = Math.min(img.naturalHeight, 256)
+            targetW = Math.max(16, Math.round(targetH * aspect))
+          }
+        }
+      } else {
+        const avatarSize = Math.min(80, Math.max(32, Math.round(editorState.display.height * 0.75)))
+        targetW = avatarSize
+        targetH = avatarSize
+      }
+
+      const offscreen = document.createElement('canvas')
+      offscreen.width = targetW
+      offscreen.height = targetH
+      const ctx = offscreen.getContext('2d')
+      ctx.imageSmoothingEnabled = true
+      ctx.imageSmoothingQuality = 'high'
+      ctx.drawImage(img, 0, 0, targetW, targetH)
+      const imgData = ctx.getImageData(0, 0, targetW, targetH)
+
+      const bgHex = editorState.display.background || '#18211b'
+      const isDarkBg = bgHex === '#000000' || bgHex === '#18211b' || bgHex.startsWith('#0') || bgHex.startsWith('#1')
+      const fgHex = isDarkBg ? '#a8d9a8' : '#18211b'
+
+      const ditherResult = processDithering(imgData, {
+        algorithm: algo,
+        contrast,
+        brightness,
+        threshold,
+        invert,
+        fgColor: fgHex,
+        bgColor: bgHex
+      })
+
+      const ditheredData = ditherResult.createImageData(fgHex, bgHex)
+      ctx.putImageData(ditheredData, 0, 0)
+      const dataUrl = offscreen.toDataURL('image/png')
+
+      const newElement = {
+        id: `bmp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        type: 'bitmap',
+        name: isAvatarOnly ? 'Dithered Avatar' : '1-Bit Dither Portrait',
+        x: isAvatarOnly ? 10 : 0,
+        y: isAvatarOnly ? 10 : 0,
+        width: targetW,
+        height: targetH,
+        dataUrl,
+        canvas: offscreen,
+        ditherMethod: algo,
+        contrast,
+        brightness,
+        threshold,
+        invert
+      }
+
+      if (isAvatarOnly) {
+        editorState.elements.push(newElement)
+        editorState.selectedId = newElement.id
+        notify()
+        showToast('✨ Dithered Avatar inserted into canvas!', 'info')
+      } else {
+        updateDisplay({ width: targetW, height: targetH })
+        editorState.elements = [newElement]
+        editorState.selectedId = newElement.id
+        notify()
+        requestAnimationFrame(() => fitCanvasToWorkspace())
+        showToast('✨ 1-Bit Dither Portrait generated! Click "Export C Code" for microcontroller code.', 'info')
+      }
+    } catch (err) {
+      console.error('Dithering error:', err)
+      showToast('Dithering failed: ' + err.message, 'error')
+    } finally {
+      if (applyBtn) applyBtn.disabled = !editorState.reference.src
+      if (avatarBtn) avatarBtn.disabled = !editorState.reference.src
+    }
+  }
+
+  document.querySelector('#apply-dither-button')?.addEventListener('click', () => executeDither(false))
+  document.querySelector('#add-avatar-button')?.addEventListener('click', () => executeDither(true))
+}
+
+initDitheringStudio()
+

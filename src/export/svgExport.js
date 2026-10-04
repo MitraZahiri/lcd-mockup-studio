@@ -104,6 +104,12 @@ export function renderProjectSvg(project) {
         `  <rect x="${element.x}" y="${y}" width="${element.width}" height="${strokeWidth}" ` +
         `fill="${safeColor}" />`
       )
+    } else if (element.type === 'bitmap') {
+      const href = escapeXml(element.dataUrl || '')
+      elementsSvg.push(
+        `  <image href="${href}" x="${element.x}" y="${element.y}" ` +
+        `width="${element.width}" height="${element.height}" image-rendering="pixelated" />`
+      )
     } else {
       throw new Error(`Cannot export element type to SVG: ${element.type}`)
     }

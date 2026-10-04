@@ -3,7 +3,7 @@
 
 [![Deploy to GitHub Pages](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml/badge.svg)](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml)
 [![Live Studio](https://img.shields.io/badge/🚀%20Live%20Studio-Online-4ade80?style=for-the-badge&logo=googlechrome&logoColor=white)](https://mitrazahiri.github.io/lcd-mockup-studio/)
-[![Tests](https://img.shields.io/badge/Tests-64%2F64%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
+[![Tests](https://img.shields.io/badge/Tests-72%2F72%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
 [![License: MIT](https://img.shields.io/badge/License-MIT-facc15?style=for-the-badge)](LICENSE)
 
 **[👉 Launch Studio in Browser (No Install Needed)](https://mitrazahiri.github.io/lcd-mockup-studio/)**  
@@ -40,6 +40,15 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
 ## ⚡ Key Capabilities
 
 * 🚀 **Zero Install Live Web App**: Built with Vite, Canvas, Web Workers, and WebAssembly OCR. Nothing is sent to any server.
+* 🖼️ **1-Bit Retro Photo & Portrait Dither Engine**:
+  * Convert any real photograph, portrait, selfie, logo, or artwork into ultra-detailed 1-bit monochrome pixel art without OCR hallucinations or broken rectangular artifacts.
+  * **Legendary Dithering Algorithms**:
+    * **Atkinson Dither**: Developed by Bill Atkinson for the original 1984 Apple Macintosh & GameBoy Camera — preserves high contrast and clean whites, ideal for human faces and avatars.
+    * **Floyd-Steinberg Dither**: Smooth photographic error-diffusion for natural gradients and skin tones.
+    * **Bayer 4×4 & 8×8 Ordered Matrix**: Vintage CRT / newspaper halftone cross-hatch shading.
+    * **Ink Stamp Stencil**: High-contrast graphic contour styling.
+  * Real-time sliders for **Contrast**, **Brightness**, **Threshold**, and **Polarity Inversion** (Dark OLED vs. Light e-Paper).
+  * Direct 1-click full screen conversion or insert as an **Avatar Layer** alongside vector text and stencils.
 * 🔗 **1-Click Viral URL Sharing (Zero-Backend Permalinks)**:
   * Lossless `CompressionStream('deflate-raw')` compression packs complete projects directly into URL hashes. Share mockups with a single link without needing servers or databases.
 * 🔘 **Hardware Realistic Breakout PCB Simulator**:
@@ -145,7 +154,7 @@ npm install
 # Start local Vite development server
 npm run dev
 
-# Run test suite (64 unit tests)
+# Run test suite (72 unit tests)
 npm test
 
 # Build production bundle

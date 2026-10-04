@@ -36,7 +36,7 @@ export function validateProject(project) {
     'The project must contain at most 10,000 elements.')
   const ids = new Set()
   const elements = project.elements.map(item => {
-    check(item && ['text', 'rectangle', 'circle', 'line'].includes(item.type),
+    check(item && ['text', 'rectangle', 'circle', 'line', 'bitmap'].includes(item.type),
       'Unsupported element type.')
     const id = text(item.id, 'element ID', 200)
     check(id.length > 0 && !ids.has(id), 'Missing or duplicate element ID.')
@@ -68,6 +68,13 @@ export function validateProject(project) {
         fontWeight: item.fontWeight,
         color: color(item.color),
       })
+    } else if (item.type === 'bitmap') {
+      element.dataUrl = text(item.dataUrl, 'bitmap data URL', 15000000)
+      if (item.ditherMethod) element.ditherMethod = text(item.ditherMethod, 'dither method', 50)
+      if (item.contrast !== undefined) element.contrast = number(item.contrast, 'contrast', -100, 100)
+      if (item.brightness !== undefined) element.brightness = number(item.brightness, 'brightness', -100, 100)
+      if (item.threshold !== undefined) element.threshold = number(item.threshold, 'threshold', 0, 255)
+      if (item.invert !== undefined) element.invert = Boolean(item.invert)
     } else {
       element.strokeWidth = number(item.strokeWidth, 'stroke width', 1)
       if (item.type === 'line') element.color = color(item.color)
