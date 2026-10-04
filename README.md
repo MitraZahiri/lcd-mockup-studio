@@ -3,7 +3,7 @@
 
 [![Deploy to GitHub Pages](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml/badge.svg)](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml)
 [![Live Studio](https://img.shields.io/badge/🚀%20Live%20Studio-Online-4ade80?style=for-the-badge&logo=googlechrome&logoColor=white)](https://mitrazahiri.github.io/lcd-mockup-studio/)
-[![Tests](https://img.shields.io/badge/Tests-72%2F72%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
+[![Tests](https://img.shields.io/badge/Tests-78%2F78%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
 [![License: MIT](https://img.shields.io/badge/License-MIT-facc15?style=for-the-badge)](LICENSE)
 
 **[👉 Launch Studio in Browser (No Install Needed)](https://mitrazahiri.github.io/lcd-mockup-studio/)**  
@@ -11,15 +11,23 @@
 
 <br />
 
+<div align="center">
+
 <img src="docs/assets/demo.gif" alt="LCD Mockup Studio Interactive Workflow" width="700" style="max-width: 100%; border-radius: 8px; border: 1px solid #30363d; box-shadow: 0 8px 24px rgba(0,0,0,0.45);" />
 
 *Live studio workflow: 1-Click sample loading ➜ Computer vision OCR scan ➜ Vector elements ➜ Microcontroller C code export*
+
+<br /><br />
+
+<img src="docs/assets/telegraph_demo.gif" alt="1-Bit Retro Telegraph & Wirephoto Scanline Engraving Workflow" width="700" style="max-width: 100%; border-radius: 8px; border: 1px solid #30363d; box-shadow: 0 8px 24px rgba(0,0,0,0.45);" />
+
+*1-Bit Telegraphic Wirephoto workflow: Upload portrait/photo ➜ Belinograph scanline thickness modulation ➜ Vintage facsimile engraving ➜ Instant Microcontroller C code export*
 
 </div>
 
 ---
 
-## 📟 Live LCD Screen Representation
+## 📟 Live LCD Screen & Telegraphic Wirephoto Representation
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -29,17 +37,39 @@
 │    CH-1   CH-2   CH-3   CH-4   CH-5   CH-6              [■■■■□] 🔋   │
 │  23.5°C                                                  12:30         │
 └────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────┐
+│  TELEGRAPHIC WIREPHOTO FACSIMILE TRANSMISSION (BELINOGRAPH SCAN)       │
+│  MODE: 1-BIT SCANLINE ENGRAVING · DENSITY: 3px · CONTRAST: BOOST       │
+│  ════════════════════════════════════════════════════════════════════  │
+│  ────────────────────────────────────────────────────────────────────  │
+│  ───  ──── ── ─── ── ── ─── ─── ── ────── ── ── ── ─── ─── ── ─── ───  │
+│  ─ ─ ── ─── ─── ── ─── ── ──── ── ── ─── ─── ── ─── ── ── ─── ── ─ ─   │
+│  ── ── ─── ─── ─── ──── ────── ────── ──── ─── ─── ── ── ─── ── ── ──  │
+│  ────────────────────────────────────────────────────────────────────  │
+│  100% PURE 1-BIT MONOCHROME · NO GRAYSCALE · READY FOR U8G2 / SSD1306  │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 Recreating physical LCD and HMI screens for documentation, reverse engineering, and embedded firmware traditionally required measuring pixels by hand and redrawing every box and glyph.
 
-**LCD Mockup Studio automates the tedious work:** Drop a photo or paste a screenshot, let the vision engine extract geometry and text into layered vectors, and immediately export production-ready C byte arrays for your microcontroller firmware.
+**LCD Mockup Studio automates the tedious work:** Drop a photo or paste a screenshot, let the vision engine extract geometry and text into layered vectors, or engrave portraits using the historical telegraphic wirephoto facsimile engine, and immediately export production-ready C byte arrays for your microcontroller firmware.
 
 ---
 
 ## ⚡ Key Capabilities
 
 * 🚀 **Zero Install Live Web App**: Built with Vite, Canvas, Web Workers, and WebAssembly OCR. Nothing is sent to any server.
+* 📡 **1-Bit Retro Wirephoto & Telegraphic Scanline Engraving Engine**:
+  * Transform real photographic portraits, faces, and technical schematics into authentic 20th-century **Belinograph facsimile & wirephoto scanline engravings**.
+  * **Dynamic Thickness Modulation**: Modulates scanline stroke weight and thickness in real-time based on local image luminance and darkness gradients.
+  * **4 Distinct Historical Scan Patterns**:
+    * **Horizontal (0°)**: Classic 1920s newspaper wirephoto and CRT television raster scanlines.
+    * **Diagonal (45°)**: Vintage banknote, currency, and copperplate etching cross-hatch engraving.
+    * **Crosshatch Grid**: Interlocking orthogonal lines for deep shadows and dramatic shading.
+    * **Morse / Pulse Raster**: Dashes and dots simulating telegraphic radio-photo bursts.
+  * **Interactive Laser Sweep**: Visualizes real-time scanline engraving progression with animated laser sweeps.
+  * **Embedded-Ready**: Generates ultra-crisp 1-bit bitmaps ready for Adafruit_GFX, U8g2, and MicroPython on SSD1306 OLEDs and e-Paper displays.
 * 🖼️ **1-Bit Retro Photo & Portrait Dither Engine**:
   * Convert any real photograph, portrait, selfie, logo, or artwork into ultra-detailed 1-bit monochrome pixel art without OCR hallucinations or broken rectangular artifacts.
   * **Legendary Dithering Algorithms**:
@@ -83,22 +113,25 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
 ```text
        [ Reference Photo / Clipboard ]
                       │
-                      ▼
-       ┌──────────────────────────────┐
-       │  Computer Vision Pipeline    │
-       │  • Auto Palette Extraction   │
-       │  • Connected Component (CCA) │
-       │  • Shape & Symbol Classifier │
-       │  • Tesseract.js OCR Engine   │
-       └──────────────┬───────────────┘
-                      │
-                      ▼
-         [ Interactive Vector Canvas ]
-                      │
-        ┌─────────────┼──────────────┐
-        ▼             ▼              ▼
-   [ C Header ]    [ SVG ]        [ PNG ]
-   (U8g2/Adafruit) (Vector)       (1:1 Pixel)
+       ┌──────────────┴──────────────┐
+       ▼                             ▼
+┌──────────────────────────┐  ┌──────────────────────────────┐
+│  Computer Vision (OCR)   │  │  1-Bit Photo & Wirephoto     │
+│  • Auto Palette Extract  │  │  • Atkinson / Floyd-St.      │
+│  • Connected Components  │  │  • Belinograph Scanlines     │
+│  • Shape/Symbol Detect   │  │  • Diagonal & Morse Pulses   │
+│  • Tesseract.js Text     │  │  • Local Contrast Boost      │
+└──────────────┬───────────┘  └──────────────┬───────────────┘
+               │                             │
+               └──────────────┬──────────────┘
+                              │
+                              ▼
+                 [ Interactive Vector Canvas ]
+                              │
+                ┌─────────────┼──────────────┐
+                ▼             ▼              ▼
+           [ C Header ]    [ SVG ]        [ PNG ]
+           (U8g2/Adafruit) (Vector)       (1:1 Pixel)
 ```
 
 ---
@@ -154,7 +187,7 @@ npm install
 # Start local Vite development server
 npm run dev
 
-# Run test suite (72 unit tests)
+# Run test suite (78 unit tests)
 npm test
 
 # Build production bundle
