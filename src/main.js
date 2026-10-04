@@ -49,9 +49,12 @@ import { insertStencil } from './editor/stencils.js'
 
 import {
   loadReferenceImage,
+  loadReferenceFromUrl,
   fitCanvasToReference,
   removeReferenceImage,
 } from './reference/referenceImage.js'
+
+import { LCD_SAMPLES } from './reference/samples.js'
 
 import {
   analyzeReferenceImage,
@@ -208,13 +211,26 @@ document.querySelector('#app').innerHTML = `
         >
 
 
-        <button
-          class="wide-button primary-button"
-          id="upload-reference"
-          type="button"
-        >
-          Upload Reference
-        </button>
+        <div class="reference-upload-row">
+          <button
+            class="wide-button primary-button"
+            id="upload-reference"
+            type="button"
+          >
+            Upload
+          </button>
+          <div class="sample-dropdown-container">
+            <button
+              class="wide-button secondary-button"
+              id="try-sample-btn"
+              type="button"
+              title="Try built-in LCD sample images"
+            >
+              Try Sample ▾
+            </button>
+            <div class="sample-dropdown-menu" id="sample-dropdown-menu" hidden></div>
+          </div>
+        </div>
 
 
         <div
@@ -1530,18 +1546,11 @@ function refreshReferenceInterface() {
   if (analysisMessage) analysisMessage.hidden = true
 }
 
-uploadReferenceButton.addEventListener('click', () => {
-  referenceFileInput.click()
-})
-
-referenceFileInput.addEventListener('change', async () => {
-  const file = referenceFileInput.files?.[0]
-  if (!file) return
-
+async function applyReference(loadPromise) {
   referenceLoading = true
   try {
     if (analysisMessage) analysisMessage.hidden = true
-    const result = await loadReferenceImage(file)
+    const result = await loadPromise
     referencePreviewImage.src = result.src
     referencePreviewImage.hidden = false
     referencePlaceholder.hidden = true
@@ -1552,14 +1561,83 @@ referenceFileInput.addEventListener('change', async () => {
 
     fitCanvasToReference()
     requestAnimationFrame(() => fitCanvasToWorkspace())
+    return result
   } catch (error) {
     console.error(error)
     window.alert(error?.message || 'Reference image could not be loaded.')
+    return null
   } finally {
-    referenceFileInput.value = ''
     referenceLoading = false
   }
+}
+
+uploadReferenceButton.addEventListener('click', () => {
+  referenceFileInput.click()
 })
+
+referenceFileInput.addEventListener('change', async () => {
+  const file = referenceFileInput.files?.[0]
+  if (!file) return
+  await applyReference(loadReferenceImage(file))
+  referenceFileInput.value = ''
+})
+
+window.addEventListener('paste', async (event) => {
+  const target = event.target
+  if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable) {
+    return
+  }
+  const items = event.clipboardData?.items
+  if (!items) return
+
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile()
+      if (file) {
+        event.preventDefault()
+        await applyReference(loadReferenceImage(file))
+        break
+      }
+    }
+  }
+})
+
+const trySampleBtn = document.querySelector('#try-sample-btn')
+const sampleDropdownMenu = document.querySelector('#sample-dropdown-menu')
+
+if (trySampleBtn && sampleDropdownMenu) {
+  sampleDropdownMenu.innerHTML = LCD_SAMPLES.map(
+    (sample) => `
+      <button class="sample-dropdown-item" type="button" data-sample-id="${sample.id}">
+        <strong>${sample.title}</strong>
+        <span>${sample.subtitle}</span>
+      </button>
+    `,
+  ).join('')
+
+  trySampleBtn.addEventListener('click', (e) => {
+    e.stopPropagation()
+    sampleDropdownMenu.hidden = !sampleDropdownMenu.hidden
+  })
+
+  document.addEventListener('click', () => {
+    sampleDropdownMenu.hidden = true
+  })
+
+  sampleDropdownMenu.addEventListener('click', async (e) => {
+    const item = e.target.closest('.sample-dropdown-item')
+    if (!item) return
+    const sampleId = item.dataset.sampleId
+    const sample = LCD_SAMPLES.find((s) => s.id === sampleId)
+    if (!sample) return
+
+    sampleDropdownMenu.hidden = true
+    const result = await applyReference(loadReferenceFromUrl(sample.url, sample.title))
+    if (result) {
+      analyzeReferenceButton.click()
+    }
+  })
+}
 
 matchReferenceSizeButton.addEventListener('click', () => {
   fitCanvasToReference()

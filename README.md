@@ -1,68 +1,30 @@
 # 📺 LCD Mockup Studio
 
-### Turn a real LCD / HMI screen into an editable mockup.
+### Turn photos of real LCD / HMI displays into editable vector mockups & Arduino C headers.
 
-**Upload → Analyze → Edit → Export**
+[![Deploy to GitHub Pages](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml/badge.svg)](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml)
+[![Live Demo](https://img.shields.io/badge/🚀%20Try%20Live%20Demo-Online-brightgreen?style=for-the-badge)](https://mitrazahiri.github.io/lcd-mockup-studio/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](https://github.com/MitraZahiri/lcd-mockup-studio)
 
-LCD Mockup Studio is a browser-based tool for turning screenshots or photos of embedded displays into clean, editable mockups.
+> 🚀 **[Click here to open the Live Studio in your browser!](https://mitrazahiri.github.io/lcd-mockup-studio/)** (100% Client-Side, Zero Install, Zero Tracking)
 
-Instead of manually redrawing every label, line and shape, the idea is simple:
+**Upload / Paste → Analyze → Edit → Export (C / SVG / PNG)**
 
-> **Give it a real display image. Let the tool analyze it. Then refine the result and export it.**
+LCD Mockup Studio is a browser-based tool for turning screenshots or photos of embedded displays into clean, editable mockups and ready-to-flash C arrays for microcontroller projects.
 
 ---
 
-## ✨ What can it do?
+## ✨ Highlights
 
-LCD Mockup Studio is built around a simple workflow:
+* 🚀 **Zero Install Live Web App**: Runs entirely in the browser with Web Workers & WebAssembly OCR.
+* 📋 **Global Clipboard Paste (Ctrl+V)**: Take any screenshot with Snipping Tool and press `Ctrl+V` to load instantly.
+* 🧪 **1-Click Sample Gallery**: Test immediately with built-in realistic LCD samples (Vending Machine, 3D Printer Marlin, IoT Weather Station).
+* 🔍 **Smart Geometry & Symbol Detection**: Recognizes frames, progress bars, indicator dots, signal strength bars, and battery levels.
+* 💻 **Microcontroller C Header Export**: Generates packed 1-bit monochrome byte arrays for **U8g2**, **Adafruit_GFX**, and **XBM**.
+* 📐 **Vector SVG & PNG Export**: Crisp, pixel-perfect exports for documentation, spec sheets, and manuals.
+* 🎨 **Classic LCD Themes**: Flipper Zero, GameBoy, Nokia 5110, OLED, and Industrial Green-Black palettes.
 
-```text
-        📷 Reference Image
-                │
-                ▼
-        🔍 Image Analysis
-                │
-                ▼
-             🔤 OCR
-                │
-                ▼
-       🧩 Editable Elements
-                │
-                ▼
-          ✏️ Manual Editing
-                │
-                ▼
-           🖼️ PNG Export
-```
-
-### Currently supported
-
-* 🖼️ Upload PNG, JPEG and WebP reference images
-* 📐 Detect display dimensions
-* 🔍 Analyze reference images
-* 🔤 OCR text using Tesseract.js
-* 📝 Create and edit text elements
-* ▭ Rectangles
-* ─ Lines
-* ○ Circles
-* 🗂️ Layers, element selection and Z-index reordering
-* 🎯 Grid and snapping
-* 🔎 Zoom and Fit View
-* 👁️ Reference ghost overlay comparison with opacity control
-* 📑 Duplicate, Copy and Paste elements
-* 📐 Instant alignment and horizontal/vertical distribution tools
-* ↩️ Full Undo / Redo history
-* ↔️ Keyboard-based element movement
-* 🎨 Display background, orientation and classic LCD palette presets
-* 💾 New / Open / Save projects
-* 📦 `.lcd.json` project files
-* 🔲 Visual 8-point resize handles with boundary and grid snapping
-* ✏️ Direct inline text editing on canvas via double-click
-* 🔤 Authentic dot-matrix & embedded fonts (VT323, Share Tech Mono) and custom font upload (.ttf, .otf, .woff, .woff2)
-* 🔋 Pre-built compound LCD UI stencils (Battery, Progress Bar, Status Badge, Numeric Gauge)
-* 🎯 Real-time canvas pixel cursor coordinates (X, Y) on the status bar
-* 🖨️ Native-resolution PNG export
-* 📐 Crisp, scalable vector SVG export
+---SVG export
 * 💻 Embedded C Bitmap Header Export (.h / XBM) with live 1-bit hardware preview for Arduino, ESP32, U8g2 & Adafruit_GFX
 
 ---

@@ -104,12 +104,38 @@ export function fitCanvasToReference() {
   })
 }
 
+export function loadReferenceFromUrl(url, fileName = 'sample.png') {
+  return new Promise((resolve, reject) => {
+    if (currentObjectUrl) {
+      URL.revokeObjectURL(currentObjectUrl)
+      currentObjectUrl = null
+    }
+
+    const image = new Image()
+    image.crossOrigin = 'anonymous'
+    image.onload = () => {
+      updateReference({
+        src: url,
+        fileName,
+        naturalWidth: image.naturalWidth,
+        naturalHeight: image.naturalHeight,
+      })
+      resolve({
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        src: url,
+      })
+    }
+    image.onerror = () => {
+      reject(new Error('Sample image could not be loaded.'))
+    }
+    image.src = url
+  })
+}
+
 export function removeReferenceImage() {
   if (currentObjectUrl) {
-    URL.revokeObjectURL(
-      currentObjectUrl,
-    )
-
+    URL.revokeObjectURL(currentObjectUrl)
     currentObjectUrl = null
   }
 
