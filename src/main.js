@@ -269,25 +269,25 @@ document.querySelector('#app').innerHTML = `
           hidden
         >
           <div class="reference-info-meta">
-            <strong id="reference-name">Görsel</strong>
+            <strong id="reference-name">Image</strong>
             <span id="reference-size"></span>
           </div>
           <button
             class="reference-remove-btn"
             id="remove-reference"
             type="button"
-            title="Yüklenen görseli kaldır"
+            title="Remove reference image"
           >
-            ✕ Kaldır
+            ✕ Remove
           </button>
         </div>
 
         <div class="analysis-mode-tabs">
           <button type="button" class="analysis-mode-tab active" id="tab-mode-lcd" data-mode="lcd" title="Extract text & UI from physical LCD displays">
-            📟 LCD Ekran
+            📟 LCD Screen
           </button>
           <button type="button" class="analysis-mode-tab" id="tab-mode-dither" data-mode="dither" title="High-fidelity retro telegraph and 1-bit scanline engraving">
-            📡 Telgraf &amp; Foto
+            📡 Telegraph &amp; Photo
           </button>
         </div>
 
@@ -298,26 +298,26 @@ document.querySelector('#app').innerHTML = `
             style="margin: 8px 0; font-size: 11px;"
           >
             <summary style="cursor: pointer; color: #a8d9a8; font-weight: bold; margin-bottom: 6px;">
-              ⚙ Analiz Ayarları
+              ⚙ Analysis Settings
             </summary>
             <div style="display: flex; flex-direction: column; gap: 5px; padding: 6px 8px; background: rgba(0,0,0,0.25); border-radius: 4px; border: 1px solid #334438;">
               <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                <input type="checkbox" id="opt-detect-text" checked> Metin (OCR &amp; 7-Segment)
+                <input type="checkbox" id="opt-detect-text" checked> Text (OCR &amp; 7-Segment)
               </label>
               <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                <input type="checkbox" id="opt-detect-frames" checked> Çerçeve ve Çizgiler
+                <input type="checkbox" id="opt-detect-frames" checked> Frames &amp; Lines
               </label>
               <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                <input type="checkbox" id="opt-detect-badges" checked> Dolu Rozet ve Barlar
+                <input type="checkbox" id="opt-detect-badges" checked> Badges &amp; Bars
               </label>
               <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                <input type="checkbox" id="opt-detect-circles" checked> Daire ve Noktalar
+                <input type="checkbox" id="opt-detect-circles" checked> Circles &amp; Dots
               </label>
               <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                <input type="checkbox" id="opt-detect-symbols" checked> Simgeler ve İkonlar
+                <input type="checkbox" id="opt-detect-symbols" checked> Symbols &amp; Icons
               </label>
               <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                <input type="checkbox" id="opt-auto-theme" checked> Ekran Rengini Otomatik Uyarla
+                <input type="checkbox" id="opt-auto-theme" checked> Auto-Adopt Display Palette
               </label>
             </div>
           </details>
@@ -328,53 +328,53 @@ document.querySelector('#app').innerHTML = `
             type="button"
             disabled
           >
-            ✦ LCD Ekranı Çözümle
+            ✦ Analyze LCD Screen
           </button>
 
           <button
             class="wide-button secondary-button"
             id="match-reference-size"
             type="button"
-            title="Ekran boyutunu yüklenen görselin çözünürlüğüne eşitler"
+            title="Match canvas dimensions to reference image"
             style="margin-top: 6px; font-size: 11px; padding: 7px 10px;"
           >
-            📐 Ekran Boyutunu Eşle
+            📐 Match Screen Size
           </button>
         </div>
 
         <div class="mode-container-dither" id="mode-container-dither" hidden>
           <div class="dither-settings-box">
             <div class="dither-field">
-              <label for="dither-algo-select">Gravür / Çizim Stili:</label>
+              <label for="dither-algo-select">Engraving &amp; Dither Style:</label>
               <select id="dither-algo-select" class="sidebar-select">
-                <option value="telegraphic" selected>📡 Telgraf Gravürü (Wirephoto) ★</option>
+                <option value="telegraphic" selected>📡 Telegraph Engraving (Wirephoto) ★</option>
                 <option value="atkinson">🕹️ 1-Bit Dither (Macintosh 1984)</option>
-                <option value="floyd-steinberg">Floyd-Steinberg (Yumuşak Gölgeli)</option>
-                <option value="bayer4">📰 Gazete Matrisi (Bayer 4×4)</option>
-                <option value="bayer8">Bayer 8×8 (İnce Piksel Matrisi)</option>
-                <option value="threshold">🖋️ Çizgi Roman / Stencil</option>
+                <option value="floyd-steinberg">Floyd-Steinberg (Smooth Shading)</option>
+                <option value="bayer4">📰 Halftone Matrix (Bayer 4×4)</option>
+                <option value="bayer8">Bayer 8×8 (Fine Pixel Matrix)</option>
+                <option value="threshold">🖋️ Comic Ink / Stencil</option>
               </select>
             </div>
 
             <!-- Primary Telegraph Settings (shown when telegraphic is active) -->
             <div id="telegraphic-options-box" class="telegraphic-options-box">
               <div class="dither-field">
-                <label for="telegraphic-spacing">Çizgi Sıklığı (Tarama Yoğunluğu):</label>
+                <label for="telegraphic-spacing">Scanline Spacing (Density):</label>
                 <select id="telegraphic-spacing" class="sidebar-select">
-                  <option value="2">2 px (Ultra Yüksek Detay)</option>
-                  <option value="3">3 px (İnce &amp; Net Gravür)</option>
-                  <option value="4" selected>4 px (Klasik Telgraf Faksı - Önerilen)</option>
-                  <option value="6">6 px (Retro Geniş Çizgiler)</option>
+                  <option value="2">2 px (Ultra High Detail)</option>
+                  <option value="3">3 px (Fine &amp; Crisp Engraving)</option>
+                  <option value="4" selected>4 px (Classic Telegraph Facsimile - Recommended)</option>
+                  <option value="6">6 px (Retro Wide Scanlines)</option>
                 </select>
               </div>
 
               <div class="dither-field">
-                <label for="telegraphic-angle">Tarama Açısı:</label>
+                <label for="telegraphic-angle">Scanline Angle:</label>
                 <select id="telegraphic-angle" class="sidebar-select">
-                  <option value="horizontal" selected>Yatay (0° Klasik Wirephoto)</option>
-                  <option value="diagonal">Diyagonal (45° Gravür &amp; Para Baskısı)</option>
-                  <option value="crosshatch">Çapraz (Çift Yönlü Çizgi)</option>
-                  <option value="vertical">Dikey (90° Tarama)</option>
+                  <option value="horizontal" selected>Horizontal (0° Classic Wirephoto)</option>
+                  <option value="diagonal">Diagonal (45° Currency Engraving)</option>
+                  <option value="crosshatch">Crosshatch (Dual-Axis Shading)</option>
+                  <option value="vertical">Vertical (90° Raster)</option>
                 </select>
               </div>
             </div>
@@ -382,7 +382,7 @@ document.querySelector('#app').innerHTML = `
             <!-- Contrast slider (key control) -->
             <div class="dither-slider-group">
               <div class="slider-row">
-                <label for="dither-contrast">Kontrast</label>
+                <label for="dither-contrast">Contrast</label>
                 <span id="dither-contrast-val">+25%</span>
               </div>
               <input type="range" id="dither-contrast" min="-100" max="100" value="25" step="5">
@@ -391,33 +391,33 @@ document.querySelector('#app').innerHTML = `
             <!-- Clean Collapsible for Advanced / Secondary Settings -->
             <details class="dither-advanced-details" style="font-size: 11px; margin-top: 4px;">
               <summary style="cursor: pointer; color: #8b949e; font-size: 10px; font-weight: 600; padding: 4px 0;">
-                ⚙ Detaylı Ayarlar (Çözünürlük, Eşik, Parlaklık)
+                ⚙ Advanced Settings (Scaling, Threshold, Brightness)
               </summary>
               <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.08);">
                 <div class="dither-field">
-                  <label for="dither-target-select">Hedef Ekran Boyutu:</label>
+                  <label for="dither-target-select">Target Display Size:</label>
                   <select id="dither-target-select" class="sidebar-select">
-                    <option value="fit" selected>Mevcut Ekrana Sığdır</option>
-                    <option value="proportional">Fotoğraf Oranını Koru</option>
-                    <option value="avatar">👤 Köşeye Avatar Olarak Ekle</option>
+                    <option value="fit" selected>Fit to Current Screen</option>
+                    <option value="proportional">Preserve Photo Aspect Ratio</option>
+                    <option value="avatar">👤 Insert as Corner Avatar</option>
                     <option value="ssd1306">128 × 64 (OLED / SSD1306)</option>
                     <option value="badge">250 × 122 (e-Paper Badge)</option>
                     <option value="nokia">84 × 48 (Nokia 5110)</option>
-                    <option value="smartwatch">128 × 128 (Akıllı Saat)</option>
+                    <option value="smartwatch">128 × 128 (Smartwatch)</option>
                   </select>
                 </div>
 
                 <div class="dither-field" id="modulation-field">
-                  <label for="telegraphic-modulation">Modülasyon:</label>
+                  <label for="telegraphic-modulation">Modulation:</label>
                   <select id="telegraphic-modulation" class="sidebar-select">
-                    <option value="continuous" selected>Sürekli Değişken Kalınlık</option>
-                    <option value="pulse">Mors / Telgraf Kesik Darbeli</option>
+                    <option value="continuous" selected>Continuous Stroke Weight</option>
+                    <option value="pulse">Morse / Telegraph Pulsed Raster</option>
                   </select>
                 </div>
 
                 <div class="dither-slider-group" id="max-thickness-group">
                   <div class="slider-row">
-                    <label for="telegraphic-max-thickness">Maks. Çizgi Kalınlığı</label>
+                    <label for="telegraphic-max-thickness">Max Stroke Thickness</label>
                     <span id="telegraphic-max-thickness-val">4.5 px</span>
                   </div>
                   <input type="range" id="telegraphic-max-thickness" min="2" max="10" value="4.5" step="0.5">
@@ -425,7 +425,7 @@ document.querySelector('#app').innerHTML = `
 
                 <div class="dither-slider-group">
                   <div class="slider-row">
-                    <label for="dither-brightness">Parlaklık</label>
+                    <label for="dither-brightness">Brightness</label>
                     <span id="dither-brightness-val">0%</span>
                   </div>
                   <input type="range" id="dither-brightness" min="-100" max="100" value="0" step="5">
@@ -433,7 +433,7 @@ document.querySelector('#app').innerHTML = `
 
                 <div class="dither-slider-group" id="threshold-slider-group">
                   <div class="slider-row">
-                    <label for="dither-threshold">Eşik Değeri</label>
+                    <label for="dither-threshold">Threshold</label>
                     <span id="dither-threshold-val">128</span>
                   </div>
                   <input type="range" id="dither-threshold" min="30" max="225" value="128" step="1">
@@ -441,7 +441,7 @@ document.querySelector('#app').innerHTML = `
 
                 <div class="dither-checkbox-row">
                   <label>
-                    <input type="checkbox" id="dither-invert"> Renkleri Ters Çevir (Invert)
+                    <input type="checkbox" id="dither-invert"> Invert Colors (Negative)
                   </label>
                 </div>
               </div>
@@ -455,7 +455,7 @@ document.querySelector('#app').innerHTML = `
             type="button"
             disabled
           >
-            📡 Telgraf Gravürü Oluştur
+            📡 Generate Telegraph Engraving
           </button>
         </div>
 
@@ -1870,7 +1870,7 @@ async function applyReference(loadPromise) {
       referenceInfo.hidden = false
       const nameEl = document.querySelector('#reference-name')
       const sizeEl = document.querySelector('#reference-size')
-      if (nameEl) nameEl.textContent = result.name || 'Görsel'
+      if (nameEl) nameEl.textContent = result.name || 'Image'
       if (sizeEl) sizeEl.textContent = `${result.width} × ${result.height} px`
     }
     if (referenceActions) referenceActions.hidden = true
@@ -2044,8 +2044,8 @@ analyzeTelegraphicButton?.addEventListener('click', async () => {
 
   const originalLabel = analyzeTelegraphicButton.textContent
   analyzeTelegraphicButton.disabled = true
-  analyzeTelegraphicButton.textContent = 'Taranıyor...'
-  showToast('📡 Telgraf / Wirephoto çizgi taraması yapılıyor...', 'info')
+  analyzeTelegraphicButton.textContent = 'Scanning...'
+  showToast('📡 Scanning telegraph / wirephoto scanlines...', 'info')
 
   try {
     const img = await loadImage(editorState.reference.src)
@@ -2098,7 +2098,7 @@ analyzeTelegraphicButton?.addEventListener('click', async () => {
     const newElement = {
       id: `bmp_tele_${Date.now()}`,
       type: 'bitmap',
-      name: 'Telgraf / Wirephoto Taraması',
+      name: 'Telegraph / Wirephoto Engraving',
       x: 0,
       y: 0,
       width: targetW,
@@ -2115,10 +2115,10 @@ analyzeTelegraphicButton?.addEventListener('click', async () => {
     editorState.selectedId = newElement.id
     notify()
     requestAnimationFrame(() => fitCanvasToWorkspace())
-    showToast('📡 Telgraf / Wirephoto taraması oluşturuldu! C kodları ve SVG güncellendi.', 'info')
+    showToast('📡 Telegraph / wirephoto engraving generated! C code and SVG updated.', 'info')
   } catch (err) {
     console.error('Telegraphic scan error:', err)
-    showToast('Tarama hatası: ' + err.message, 'error')
+    showToast('Scan error: ' + err.message, 'error')
   } finally {
     analyzeTelegraphicButton.disabled = !editorState.reference.src
     analyzeTelegraphicButton.textContent = originalLabel
@@ -3421,8 +3421,8 @@ function initDitheringStudio() {
     if (threshGroup) threshGroup.hidden = isTele
     if (applyDitherBtn) {
       applyDitherBtn.textContent = isTele
-        ? '📡 Telgraf Gravürü Oluştur'
-        : '✨ 1-Bit Gravüre Dönüştür'
+        ? '📡 Generate Telegraph Engraving'
+        : '✨ Generate 1-Bit Dither'
     }
   }
 
@@ -3528,7 +3528,7 @@ function initDitheringStudio() {
 
       const elementTitle = isAvatarOnly
         ? 'Dithered Avatar'
-        : (isTele ? 'Telgraf / Wirephoto Gravürü' : '1-Bit Dither Portrait')
+        : (isTele ? 'Telegraph / Wirephoto Engraving' : '1-Bit Dither Portrait')
 
       const newElement = {
         id: `bmp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -3559,7 +3559,7 @@ function initDitheringStudio() {
         requestAnimationFrame(() => fitCanvasToWorkspace())
         showToast(
           isTele
-            ? '📡 Telgraf / Wirephoto gravürü oluşturuldu! Mikrodenetleyici C kodları hazır.'
+            ? '📡 Telegraph / wirephoto engraving generated! Microcontroller C code ready.'
             : '✨ 1-Bit Dither Portrait generated! Click "Export C Code" for microcontroller code.',
           'info'
         )

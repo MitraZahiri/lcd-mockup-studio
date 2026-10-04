@@ -380,21 +380,21 @@ function renderStudioTelegraphScene({
   cv.fillRect(PREV_X + PREV_W - 32, PREV_Y + PREV_H + 3, 32, 11, 2)
   cv.drawText('x Remove', PREV_X + PREV_W - 30, PREV_Y + PREV_H + 5, 16)
 
-  // Mode Tabs: [ LCD Ekran ]  [ Telgraf & Foto ]
+  // Mode Tabs: [ LCD Screen ]  [ Telegraph & Photo ]
   const TAB_Y = 154
   const TAB_W = Math.floor((SIDEBAR_W - 28) / 2)
   const isLcdTab = activeTab === 'lcd'
   const isDitherTab = activeTab === 'dither'
 
-  // Tab 1: LCD Ekran
+  // Tab 1: LCD Screen
   cv.fillRect(12, TAB_Y, TAB_W, 20, isLcdTab ? 8 : 2)
   cv.strokeRect(12, TAB_Y, TAB_W, 20, isLcdTab ? 10 : 3)
-  cv.drawText('LCD Ekran', 20, TAB_Y + 6, isLcdTab ? 29 : 5)
+  cv.drawText('LCD Screen', 18, TAB_Y + 6, isLcdTab ? 29 : 5)
 
-  // Tab 2: Telgraf & Foto
+  // Tab 2: Telegraph & Photo
   cv.fillRect(12 + TAB_W + 4, TAB_Y, TAB_W, 20, isDitherTab ? (heroBtnHovered ? 9 : 8) : (tabHovered ? 3 : 2))
   cv.strokeRect(12 + TAB_W + 4, TAB_Y, TAB_W, 20, isDitherTab ? 10 : 3)
-  cv.drawText('Telgraf', 16 + TAB_W + 8, TAB_Y + 6, isDitherTab ? 29 : 6)
+  cv.drawText('Telegraph', 16 + TAB_W + 8, TAB_Y + 6, isDitherTab ? 29 : 6)
 
   if (isDitherTab) {
     // Clean unified settings card (no nested borders!)
@@ -404,25 +404,25 @@ function renderStudioTelegraphScene({
     cv.strokeRect(12, CARD_Y, SIDEBAR_W - 24, CARD_H, 3)
 
     // Option 1: Style
-    cv.drawText('Gravur Stili:', 18, CARD_Y + 8, 5)
+    cv.drawText('Engraving Style:', 18, CARD_Y + 8, 5)
     cv.fillRect(18, CARD_Y + 19, SIDEBAR_W - 36, 16, 1)
     cv.strokeRect(18, CARD_Y + 19, SIDEBAR_W - 36, 16, 3)
-    cv.drawText('Telgraf Wirephoto *', 24, CARD_Y + 23, 7)
+    cv.drawText('Wirephoto Facsimile', 24, CARD_Y + 23, 7)
 
     // Option 2: Line spacing
-    cv.drawText('Cizgi Sikligi:', 18, CARD_Y + 39, 5)
+    cv.drawText('Scanline Spacing:', 18, CARD_Y + 39, 5)
     cv.fillRect(18, CARD_Y + 50, SIDEBAR_W - 36, 16, 1)
     cv.strokeRect(18, CARD_Y + 50, SIDEBAR_W - 36, 16, 3)
-    cv.drawText('4px (Klasik Faks)', 24, CARD_Y + 54, 6)
+    cv.drawText('4px (Classic Fax)', 24, CARD_Y + 54, 6)
 
     // Option 3: Angle
-    cv.drawText('Tarama Acisi:', 18, CARD_Y + 70, 5)
+    cv.drawText('Scanline Angle:', 18, CARD_Y + 70, 5)
     cv.fillRect(18, CARD_Y + 81, SIDEBAR_W - 36, 16, 1)
     cv.strokeRect(18, CARD_Y + 81, SIDEBAR_W - 36, 16, 3)
-    cv.drawText('Yatay (0 deg Wirephoto)', 24, CARD_Y + 85, 6)
+    cv.drawText('Horizontal (0 deg)', 24, CARD_Y + 85, 6)
 
     // Contrast slider
-    cv.drawText('Kontrast:', 18, CARD_Y + 102, 5)
+    cv.drawText('Contrast:', 18, CARD_Y + 102, 5)
     cv.drawText('+25%', SIDEBAR_W - 48, CARD_Y + 102, 13)
     // Slider track
     cv.fillRect(18, CARD_Y + 114, SIDEBAR_W - 36, 4, 3)
@@ -431,15 +431,15 @@ function renderStudioTelegraphScene({
     cv.fillRect(18 + Math.floor((SIDEBAR_W - 36) * 0.65) - 3, CARD_Y + 111, 7, 10, 7)
 
     // Collapsible details link
-    cv.drawText('> Detayli Ayarlar', 18, CARD_Y + 125, 5)
+    cv.drawText('> Advanced Settings', 18, CARD_Y + 125, 5)
 
-    // Single Prominent Hero Button: 📡 Telgraf Gravürü Oluştur
+    // Single Prominent Hero Button: 📡 Generate Telegraph Engraving
     const BTN_Y = 325
     const BTN_H = 26
     const btnBg = heroBtnPressed ? 10 : (heroBtnHovered ? 9 : 8)
     cv.fillRect(12, BTN_Y, SIDEBAR_W - 24, BTN_H, btnBg)
     cv.strokeRect(12, BTN_Y, SIDEBAR_W - 24, BTN_H, 10)
-    cv.drawText('Telgraf Gravuru Yap', 22, BTN_Y + 9, 29)
+    cv.drawText('Engrave Wirephoto', 22, BTN_Y + 9, 29)
   }
 
   // 4. Center Workspace Canvas
@@ -510,7 +510,7 @@ function renderStudioTelegraphScene({
   if (engravingDone || scanning) {
     cv.fillRect(RIGHT_X + 8, 136, 112, 22, 2)
     cv.strokeRect(RIGHT_X + 8, 136, 112, 22, 10)
-    cv.drawText('Telgraf Gravur', RIGHT_X + 14, 142, 10)
+    cv.drawText('Wirephoto Engraving', RIGHT_X + 14, 142, 10)
     cv.drawText('Bitmap 1-bit', RIGHT_X + 14, 150, 5)
   }
 
@@ -522,7 +522,7 @@ function renderStudioTelegraphScene({
     const TOAST_Y = HEIGHT - 46
     cv.fillRect(TOAST_X, TOAST_Y, TOAST_W, TOAST_H, 1)
     cv.strokeRect(TOAST_X, TOAST_Y, TOAST_W, TOAST_H, 10)
-    cv.drawText('Telgraf gravuru hazir! C kodu cikti.', TOAST_X + 10, TOAST_Y + 8, 10)
+    cv.drawText('Wirephoto ready! C code exported.', TOAST_X + 10, TOAST_Y + 8, 10)
   }
 
   // 8. C Code Export Modal (when open)
