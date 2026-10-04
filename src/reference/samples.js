@@ -1,9 +1,9 @@
 export const LCD_SAMPLES = [
   {
-    id: 'vending',
-    title: '🥤 Vending Machine',
+    id: 'controller',
+    title: '🎛️ Industrial HMI',
     subtitle: '128 × 64 Graphic LCD',
-    url: './samples/vending-machine.png',
+    url: './samples/controller.png',
   },
   {
     id: 'marlin-3d',

@@ -473,8 +473,8 @@ function isDuplicateRowWord(
    *
    * Example:
    *
-   *   SATIS
-   *      IS
+   *   SYSTEM
+   *      EM
    *
    * or:
    *
@@ -756,7 +756,7 @@ function calculateMaximumWordGap(
    *
    * We want:
    *
-   *   SATIS OTOMATI HAZIR
+   *   SYSTEM CONTROLLER READY
    *
    * to become one editable text region when words are
    * naturally close, while:

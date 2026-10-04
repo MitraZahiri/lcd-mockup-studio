@@ -29,11 +29,11 @@
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
-│  WWW.ELEKTRAL.COM.TR                                    CONNECT ᛒ     │
-│  SATIS OTOMATI HAZIR                                     ▂ ▄ ▆ █ 📶    │
+│  SYSTEM CONTROLLER v2.4                                 CONNECT ᛒ     │
+│  AUTOMATIC CYCLE READY                                   ▂ ▄ ▆ █ 📶    │
 │  ────────────────────────────────────────────────────────────────────  │
-│    1    2    3    4    5    6    7    8    9              [■■■■□] 🔋   │
-│  23°C                                                    12:30         │
+│    CH-1   CH-2   CH-3   CH-4   CH-5   CH-6              [■■■■□] 🔋   │
+│  23.5°C                                                  12:30         │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -47,7 +47,7 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
 
 * 🚀 **Zero Install Live Web App**: Built with Vite, Canvas, Web Workers, and WebAssembly OCR. Nothing is sent to any server.
 * 📋 **Global Clipboard Paste (`Ctrl + V`)**: Copy any screenshot with Snipping Tool or browser and press `Ctrl + V` to load instantly.
-* 🧪 **1-Click Interactive Gallery**: Test right away with built-in realistic LCD samples (Vending Machine, 3D Printer Marlin, IoT OLED Weather Station).
+* 🧪 **1-Click Interactive Gallery**: Test right away with built-in realistic LCD samples (Industrial HMI, 3D Printer Marlin, IoT OLED Weather Station).
 * 🔍 **Intelligent Computer Vision Pipeline**:
   * **Text & Segment OCR**: Recognizes dot-matrix and 7-segment digits, clock times, telemetry units (`°C`, `%`, `hPa`, `RPM`, `V`, `A`), and labels.
   * **Geometry & Shapes**: Automatically extracts border frames, dividing lines, circular indicators, and solid badges.
