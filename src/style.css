@@ -626,36 +626,7 @@ button {
 }
 
 .reference-info {
-  margin-bottom: 12px;
-
-  padding: 8px;
-
-  border-radius: 6px;
-
-  background: #11161b;
-}
-
-.reference-info strong {
-  display: block;
-
-  overflow: hidden;
-
-  color: #d9dfe5;
-
-  font-size: 11px;
-
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.reference-info span {
-  display: block;
-
-  margin-top: 4px;
-
-  color: #68727d;
-
-  font-size: 10px;
+  display: none !important;
 }
 
 .reference-controls input[type="range"] {
@@ -810,19 +781,38 @@ button:focus-visible {
   display: block;
 }
 
-.reference-panel > .wide-button,
-.reference-actions > .wide-button {
+.reference-panel > .wide-button {
   margin-bottom: 8px;
 }
 
+.reference-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.reference-actions > .wide-button {
+  margin-bottom: 0;
+  flex: 1;
+  padding: 7px 4px;
+  font-size: 11px;
+}
+
 .analysis-message {
-  margin: 8px 0;
-  padding: 10px;
-  color: #aeb7c1;
-  background: #11161b;
-  border-radius: 6px;
-  font-size: 12px;
-  line-height: 1.5;
+  margin: 6px 0;
+  padding: 6px 10px;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  border-radius: 4px;
+  font-size: 11px;
+  text-align: center;
+}
+
+.analysis-message.error {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.2);
 }
 
 .display-canvas.grid-enabled {

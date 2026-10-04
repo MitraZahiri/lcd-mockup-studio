@@ -220,19 +220,12 @@ document.querySelector('#app').innerHTML = `
         <div
           class="reference-info"
           id="reference-info"
+          style="display: none;"
           hidden
         >
-
-          <strong
-            id="reference-name"
-          ></strong>
-
-          <span
-            id="reference-size"
-          ></span>
-
+          <strong id="reference-name"></strong>
+          <span id="reference-size"></span>
         </div>
-
 
         <details
           class="analysis-options"
@@ -256,7 +249,7 @@ document.querySelector('#app').innerHTML = `
               <input type="checkbox" id="opt-detect-circles" checked> Detect Circles & Dots
             </label>
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="checkbox" id="opt-detect-symbols" checked> Detect Symbols & Icons (Battery, Signal, Arrows)
+              <input type="checkbox" id="opt-detect-symbols" checked> Detect Symbols & Icons
             </label>
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
               <input type="checkbox" id="opt-auto-theme" checked> Auto-adopt LCD Screen Theme
@@ -273,26 +266,24 @@ document.querySelector('#app').innerHTML = `
           ✦ Analyze Image
         </button>
 
-
         <div
           class="analysis-message"
           id="analysis-message"
           hidden
         ></div>
 
-
         <div
           class="reference-actions"
           id="reference-actions"
           hidden
         >
-
           <button
             class="wide-button"
             id="match-reference-size"
             type="button"
+            title="Match Document Size to Reference"
           >
-            Match Document Size
+            Match Size
           </button>
 
           <button
@@ -300,9 +291,8 @@ document.querySelector('#app').innerHTML = `
             id="remove-reference"
             type="button"
           >
-            Remove Reference
+            Remove
           </button>
-
         </div>
 
       </section>
@@ -1534,331 +1524,120 @@ function refreshReferenceInterface() {
   referencePreviewImage.hidden = !hasReference
   referencePlaceholder.hidden = hasReference
   referencePreview.classList.toggle('empty', !hasReference)
-  referenceInfo.hidden = referenceActions.hidden = !hasReference
-  analyzeReferenceButton.disabled = !hasReference
-  referenceName.textContent = ref.fileName || ''
-  referenceSize.textContent = hasReference
-    ? `${ref.naturalWidth} × ${ref.naturalHeight} px` : ''
-  analysisMessage.hidden = true
+  if (referenceInfo) referenceInfo.hidden = true
+  if (referenceActions) referenceActions.hidden = !hasReference
+  if (analyzeReferenceButton) analyzeReferenceButton.disabled = !hasReference
+  if (analysisMessage) analysisMessage.hidden = true
 }
 
-uploadReferenceButton.addEventListener(
-  'click',
-  () => {
-    referenceFileInput.click()
-  },
-)
+uploadReferenceButton.addEventListener('click', () => {
+  referenceFileInput.click()
+})
 
+referenceFileInput.addEventListener('change', async () => {
+  const file = referenceFileInput.files?.[0]
+  if (!file) return
 
-referenceFileInput.addEventListener(
-  'change',
-  async () => {
-
-    const file =
-      referenceFileInput.files?.[0]
-
-    if (!file) {
-      return
-    }
-
-    referenceLoading = true
-    try {
-
-      analysisMessage.hidden = true
-
-      const result =
-        await loadReferenceImage(file)
-
-      referencePreviewImage.src =
-        result.src
-
-      referencePreviewImage.hidden =
-        false
-
-      referencePlaceholder.hidden =
-        true
-
-      referencePreview.classList.remove(
-        'empty',
-      )
-
-      referenceInfo.hidden =
-        false
-
-      referenceActions.hidden =
-        false
-
-      analyzeReferenceButton.disabled =
-        false
-
-      referenceName.textContent =
-        file.name
-
-      referenceSize.textContent =
-        `${result.width} × ${result.height} px`
-
-      /*
-       * Reference dimensions become the
-       * logical document dimensions.
-       *
-       * The image itself still remains
-       * ONLY in the left sidebar.
-       */
-
-      fitCanvasToReference()
-
-      requestAnimationFrame(() => {
-        fitCanvasToWorkspace()
-      })
-
-    } catch (error) {
-
-      console.error(error)
-
-      window.alert(
-        error?.message ||
-        'Reference image could not be loaded.',
-      )
-
-    } finally {
-
-      referenceFileInput.value = ''
-      referenceLoading = false
-
-    }
-
-  },
-)
-
-
-matchReferenceSizeButton.addEventListener(
-  'click',
-  () => {
+  referenceLoading = true
+  try {
+    if (analysisMessage) analysisMessage.hidden = true
+    const result = await loadReferenceImage(file)
+    referencePreviewImage.src = result.src
+    referencePreviewImage.hidden = false
+    referencePlaceholder.hidden = true
+    referencePreview.classList.remove('empty')
+    if (referenceInfo) referenceInfo.hidden = true
+    referenceActions.hidden = false
+    analyzeReferenceButton.disabled = false
 
     fitCanvasToReference()
+    requestAnimationFrame(() => fitCanvasToWorkspace())
+  } catch (error) {
+    console.error(error)
+    window.alert(error?.message || 'Reference image could not be loaded.')
+  } finally {
+    referenceFileInput.value = ''
+    referenceLoading = false
+  }
+})
 
-    requestAnimationFrame(() => {
-      fitCanvasToWorkspace()
-    })
+matchReferenceSizeButton.addEventListener('click', () => {
+  fitCanvasToReference()
+  requestAnimationFrame(() => fitCanvasToWorkspace())
+})
 
-  },
-)
-
-
-removeReferenceButton.addEventListener(
-  'click',
-  () => {
-
-    removeReferenceImage()
-
-    referencePreviewImage.removeAttribute(
-      'src',
-    )
-
-    referencePreviewImage.hidden =
-      true
-
-    referencePlaceholder.hidden =
-      false
-
-    referencePreview.classList.add(
-      'empty',
-    )
-
-    referenceInfo.hidden =
-      true
-
-    referenceActions.hidden =
-      true
-
-    analyzeReferenceButton.disabled =
-      true
-
-    analysisMessage.hidden =
-      true
-
-  },
-)
-
+removeReferenceButton.addEventListener('click', () => {
+  removeReferenceImage()
+  referencePreviewImage.removeAttribute('src')
+  referencePreviewImage.hidden = true
+  referencePlaceholder.hidden = false
+  referencePreview.classList.add('empty')
+  if (referenceInfo) referenceInfo.hidden = true
+  referenceActions.hidden = true
+  analyzeReferenceButton.disabled = true
+  if (analysisMessage) analysisMessage.hidden = true
+})
 
 // ======================================================
 // ANALYSIS
 // ======================================================
 
-analyzeReferenceButton.addEventListener(
-  'click',
-  async () => {
+analyzeReferenceButton.addEventListener('click', async () => {
+  if (!editorState.reference.src) return
 
-    if (!editorState.reference.src) {
-      return
+  analysisInProgress = true
+  const originalLabel = analyzeReferenceButton.textContent
+  analyzeReferenceButton.disabled = true
+  analyzeReferenceButton.textContent = 'Analyzing...'
+
+  analysisMessage.hidden = false
+  analysisMessage.className = 'analysis-message'
+  analysisMessage.textContent = 'Analyzing image...'
+
+  try {
+    const optDetectText = document.querySelector('#opt-detect-text')?.checked ?? true
+    const optDetectFrames = document.querySelector('#opt-detect-frames')?.checked ?? true
+    const optDetectBadges = document.querySelector('#opt-detect-badges')?.checked ?? true
+    const optDetectCircles = document.querySelector('#opt-detect-circles')?.checked ?? true
+    const optDetectSymbols = document.querySelector('#opt-detect-symbols')?.checked ?? true
+    const optAutoTheme = document.querySelector('#opt-auto-theme')?.checked ?? true
+
+    const result = await analyzeReferenceImage({
+      detectText: optDetectText,
+      detectFrames: optDetectFrames,
+      detectBadges: optDetectBadges,
+      detectCircles: optDetectCircles,
+      detectSymbols: optDetectSymbols,
+    })
+
+    removeAnalysisElements(false)
+
+    if (optAutoTheme && result.palette?.background) {
+      updateDisplay({ background: result.palette.background })
     }
 
-    analysisInProgress = true
-    const originalLabel =
-      analyzeReferenceButton.textContent
-
-    analyzeReferenceButton.disabled =
-      true
-
-    analyzeReferenceButton.textContent =
-      'Analyzing...'
-
-    analysisMessage.hidden =
-      false
-
-    analysisMessage.innerHTML = `
-      <strong>
-        Analyzing reference...
-      </strong>
-
-      <p>
-        Detecting LCD text and interface geometry.
-      </p>
-    `
-
-    try {
-      const optDetectText = document.querySelector('#opt-detect-text')?.checked ?? true
-      const optDetectFrames = document.querySelector('#opt-detect-frames')?.checked ?? true
-      const optDetectBadges = document.querySelector('#opt-detect-badges')?.checked ?? true
-      const optDetectCircles = document.querySelector('#opt-detect-circles')?.checked ?? true
-      const optDetectSymbols = document.querySelector('#opt-detect-symbols')?.checked ?? true
-      const optAutoTheme = document.querySelector('#opt-auto-theme')?.checked ?? true
-
-      const result =
-        await analyzeReferenceImage({
-          detectText: optDetectText,
-          detectFrames: optDetectFrames,
-          detectBadges: optDetectBadges,
-          detectCircles: optDetectCircles,
-          detectSymbols: optDetectSymbols,
-        })
-
-      /*
-       * Remove only elements generated by
-       * a previous analysis.
-       *
-       * Manual elements remain untouched.
-       */
-
-      removeAnalysisElements(false)
-
-      // Automatically match LCD display background color if detected and enabled
-      if (optAutoTheme && result.palette?.background) {
-        updateDisplay({
-          background: result.palette.background,
-        })
-      }
-
-      for (
-        const data
-        of result.elements
-      ) {
-
-        createElementFromAnalysis(
-          data,
-          false,
-        )
-
-      }
-
-      /*
-       * Render once after every detected
-       * element has been inserted.
-       */
-
-      notify()
-
-      requestAnimationFrame(() => {
-        fitCanvasToWorkspace()
-      })
-
-      const linesCount = result.stats.lines ?? 0
-      const framesCount = result.stats.hollowFrames ?? 0
-      const badgesCount = result.stats.solidBadges ?? 0
-      const circlesCount = result.stats.circles ?? 0
-      const symbolsCount = result.stats.symbols ?? 0
-      const textCount = result.stats.textRegions ?? 0
-
-      analysisMessage.innerHTML = `
-        <div style="font-weight: bold; font-size: 13px; color: #a8d9a8; margin-bottom: 4px;">
-          ✦ LCD Analysis Complete
-        </div>
-
-        <div style="font-size: 11px; color: #889988; margin-bottom: 8px;">
-          Reference image: ${result.width} × ${result.height} px
-        </div>
-
-        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px;">
-          ${textCount > 0 ? `<span class="pill-badge" style="background:#233527;border:1px solid #4a6f50;padding:2px 6px;border-radius:3px;font-size:10px;color:#c0f0c0;">${textCount} Text</span>` : ''}
-          ${framesCount > 0 ? `<span class="pill-badge" style="background:#233527;border:1px solid #4a6f50;padding:2px 6px;border-radius:3px;font-size:10px;color:#c0f0c0;">${framesCount} Frames</span>` : ''}
-          ${badgesCount > 0 ? `<span class="pill-badge" style="background:#233527;border:1px solid #4a6f50;padding:2px 6px;border-radius:3px;font-size:10px;color:#c0f0c0;">${badgesCount} Badges/Bars</span>` : ''}
-          ${circlesCount > 0 ? `<span class="pill-badge" style="background:#233527;border:1px solid #4a6f50;padding:2px 6px;border-radius:3px;font-size:10px;color:#c0f0c0;">${circlesCount} Circles/Dots</span>` : ''}
-          ${symbolsCount > 0 ? `<span class="pill-badge" style="background:#233527;border:1px solid #4a6f50;padding:2px 6px;border-radius:3px;font-size:10px;color:#c0f0c0;">${symbolsCount} Symbols & Icons</span>` : ''}
-          ${linesCount > 0 ? `<span class="pill-badge" style="background:#233527;border:1px solid #4a6f50;padding:2px 6px;border-radius:3px;font-size:10px;color:#c0f0c0;">${linesCount} Lines</span>` : ''}
-        </div>
-
-        ${result.suggestedResolution ? `
-          <div style="margin: 8px 0; padding: 6px 8px; background: rgba(80, 200, 120, 0.12); border: 1px solid #4ade80; border-radius: 4px;">
-            <div style="font-size: 11px; margin-bottom: 4px; color: #c4f0c4;">
-              Recognized Hardware: <strong>${result.suggestedResolution.name}</strong>
-            </div>
-            <button class="secondary-button" id="apply-suggested-res-btn" type="button" style="width: 100%; font-size: 10px; padding: 4px 6px; cursor: pointer;">
-              📐 Set Canvas to ${result.suggestedResolution.width} × ${result.suggestedResolution.height}
-            </button>
-          </div>
-        ` : ''}
-
-        <div style="font-size: 11px; margin-top: 6px; color: #a0baa0;">
-          Theme Palette:
-          <span style="display:inline-block;width:10px;height:10px;background:${result.palette?.background || '#1d2720'};border:1px solid #555;vertical-align:middle;margin:0 2px;"></span>
-          ${result.palette?.background || '#1d2720'} bg,
-          <span style="display:inline-block;width:10px;height:10px;background:${result.palette?.foreground || '#a8d9a8'};border:1px solid #555;vertical-align:middle;margin:0 2px;"></span>
-          ${result.palette?.foreground || '#a8d9a8'} fg.
-        </div>
-      `
-
-      const applyResBtn = document.querySelector('#apply-suggested-res-btn')
-      if (applyResBtn && result.suggestedResolution) {
-        applyResBtn.addEventListener('click', () => {
-          updateDisplay({
-            width: result.suggestedResolution.width,
-            height: result.suggestedResolution.height,
-          })
-          notify()
-          fitCanvasToWorkspace()
-        })
-      }
-
-    } catch (error) {
-
-      console.error(error)
-
-      analysisMessage.innerHTML = `
-        <strong>
-          Analysis failed.
-        </strong>
-
-        <p>
-          ${escapeHtml(
-            error?.message ||
-            'The reference image could not be analyzed.',
-          )}
-        </p>
-      `
-
-    } finally {
-
-      analyzeReferenceButton.disabled =
-        !editorState.reference.src
-
-      analyzeReferenceButton.textContent =
-        originalLabel
-      analysisInProgress = false
-
+    for (const data of result.elements) {
+      createElementFromAnalysis(data, false)
     }
 
-  },
-)
+    notify()
+    requestAnimationFrame(() => fitCanvasToWorkspace())
+
+    analysisMessage.hidden = false
+    analysisMessage.textContent = `✓ ${result.elements.length} elements detected`
+    setTimeout(() => {
+      if (!analysisInProgress) analysisMessage.hidden = true
+    }, 2500)
+  } catch (error) {
+    console.error(error)
+    analysisMessage.className = 'analysis-message error'
+    analysisMessage.textContent = error?.message || 'Analysis failed.'
+  } finally {
+    analyzeReferenceButton.disabled = !editorState.reference.src
+    analyzeReferenceButton.textContent = originalLabel
+    analysisInProgress = false
+  }
+})
 
 // ======================================================
 function escapeHtml(value) {
