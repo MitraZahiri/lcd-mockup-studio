@@ -8,7 +8,10 @@
  * 2. Atkinson: Classic Apple Macintosh (1984) & GameBoy Camera high-contrast dither.
  * 3. Bayer 4x4 & 8x8: Ordered matrix dither (vintage CRT / newspaper halftone).
  * 4. Stencil / Ink Stamp: High-contrast adaptive thresholding.
+ * 5. Telegraphic / Wirephoto: Vintage facsimile scanline engraving with thickness modulation.
  */
+
+import { generateTelegraphicBinary, generateTelegraphicVectorLines } from './telegraphic.js'
 
 // Bayer 4x4 matrix
 const BAYER_4X4 = [
@@ -206,7 +209,9 @@ export function binaryToImageData(binary, width, height, { fgColor = '#ffffff', 
   const fg = parseHex(fgColor);
   const bg = parseHex(bgColor);
 
-  const imgData = new ImageData(width, height);
+  const imgData = typeof ImageData !== 'undefined'
+    ? new ImageData(width, height)
+    : { width, height, data: new Uint8ClampedArray(width * height * 4) };
   const data = imgData.data;
 
   for (let i = 0; i < binary.length; i++) {
@@ -221,6 +226,8 @@ export function binaryToImageData(binary, width, height, { fgColor = '#ffffff', 
 
   return imgData;
 }
+
+export { generateTelegraphicBinary, generateTelegraphicVectorLines }
 
 /**
  * Main entrance: processes an ImageData buffer using the selected dithering method
@@ -240,7 +247,17 @@ export function processDithering(imageData, options = {}) {
   const grayscale = createAdjustedGrayscale(imageData, { contrast, brightness });
 
   let binary;
-  if (algorithm === 'floyd-steinberg') {
+  if (algorithm === 'telegraphic') {
+    binary = generateTelegraphicBinary(grayscale, width, height, {
+      lineSpacing: options.lineSpacing ?? 4,
+      minThickness: options.minThickness ?? 0.4,
+      maxThickness: options.maxThickness ?? ((options.lineSpacing ?? 4) * 1.05),
+      angle: options.angle ?? 'horizontal',
+      modulation: options.modulation ?? 'continuous',
+      gamma: options.gamma ?? 1.2,
+      invert
+    });
+  } else if (algorithm === 'floyd-steinberg') {
     binary = ditherFloydSteinberg(grayscale, width, height, { threshold, invert });
   } else if (algorithm === 'bayer4') {
     binary = ditherBayer(grayscale, width, height, { threshold, matrixSize: 4, invert });

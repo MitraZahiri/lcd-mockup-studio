@@ -65,7 +65,7 @@ import {
 import { encodeProjectToUrl, decodeProjectFromUrl } from './project/shareUrl.js'
 import { updateHardwareShellDOM } from './editor/deviceShell.js'
 import { startSimulation, stopSimulation, isSimulating } from './editor/simulation.js'
-import { processDithering } from './analysis/dithering.js'
+import { processDithering, generateTelegraphicVectorLines } from './analysis/dithering.js'
 import { loadImage } from './analysis/imageProcessing.js'
 
 
@@ -321,19 +321,71 @@ document.querySelector('#app').innerHTML = `
           >
             ✦ Analyze LCD Screen
           </button>
+
+          <button
+            class="wide-button telegraph-action-btn"
+            id="analyze-telegraphic"
+            type="button"
+            disabled
+            title="Scan portrait or photo with retro telegraph / wirephoto scanline engraving"
+            style="margin-top: 6px;"
+          >
+            📡 Telgraf / Wirephoto Taraması
+          </button>
         </div>
 
         <div class="mode-container-dither" id="mode-container-dither" hidden>
           <div class="dither-settings-box">
             <div class="dither-field">
-              <label for="dither-algo-select">Dither Algorithm:</label>
+              <label for="dither-algo-select">Algorithm / Style:</label>
               <select id="dither-algo-select" class="sidebar-select">
-                <option value="atkinson" selected>Atkinson (Original Mac 1984 / GameBoy) ★</option>
+                <option value="telegraphic" selected>📡 Wirephoto / Telgraf Gravür Taraması ★</option>
+                <option value="atkinson">Atkinson (Original Mac 1984 / GameBoy)</option>
                 <option value="floyd-steinberg">Floyd-Steinberg (Smooth Shading)</option>
                 <option value="bayer4">Bayer 4×4 (Retro CRT / Halftone)</option>
                 <option value="bayer8">Bayer 8×8 (Fine Matrix)</option>
                 <option value="threshold">Ink Stamp / Comic Stencil</option>
               </select>
+            </div>
+
+            <!-- Telegraphic / Wirephoto Dedicated Controls -->
+            <div id="telegraphic-options-box" class="telegraphic-options-box">
+              <div class="dither-field">
+                <label for="telegraphic-spacing">Çizgi Sıklığı (Line Pitch):</label>
+                <select id="telegraphic-spacing" class="sidebar-select">
+                  <option value="2">2 px (Ultra Yoğun / Maksimum Detay)</option>
+                  <option value="3">3 px (İnce & Net Taramalar)</option>
+                  <option value="4" selected>4 px (Klasik Telgraf & Belinograph)</option>
+                  <option value="5">5 px (Belirgin Gravür Çizgileri)</option>
+                  <option value="6">6 px (Retro Faks & TV Tarama Çizgisi)</option>
+                </select>
+              </div>
+
+              <div class="dither-field">
+                <label for="telegraphic-angle">Tarama Açısı & Stili:</label>
+                <select id="telegraphic-angle" class="sidebar-select">
+                  <option value="horizontal" selected>Yatay (0° Klasik Wirephoto Faks)</option>
+                  <option value="diagonal">Diyagonal (45° Gravür & Para Baskısı)</option>
+                  <option value="crosshatch">Çift Yönlü Çapraz (Crosshatch)</option>
+                  <option value="vertical">Dikey (90° Slit Scan)</option>
+                </select>
+              </div>
+
+              <div class="dither-field">
+                <label for="telegraphic-modulation">Modülasyon:</label>
+                <select id="telegraphic-modulation" class="sidebar-select">
+                  <option value="continuous" selected>Sürekli Değişken Kalınlık (Continuous)</option>
+                  <option value="pulse">Mors / Telgraf Kesik Nokta (Pulses)</option>
+                </select>
+              </div>
+
+              <div class="dither-slider-group">
+                <div class="slider-row">
+                  <label for="telegraphic-max-thickness">Maksimum Çizgi Kalınlığı</label>
+                  <span id="telegraphic-max-thickness-val">4.5 px</span>
+                </div>
+                <input type="range" id="telegraphic-max-thickness" min="2" max="10" value="4.5" step="0.5">
+              </div>
             </div>
 
             <div class="dither-field">
@@ -385,7 +437,18 @@ document.querySelector('#app').innerHTML = `
             type="button"
             disabled
           >
-            ✨ Convert to 1-Bit Dither Art
+            📡 Telgraf / Wirephoto Gravürü Oluştur
+          </button>
+
+          <button
+            class="wide-button vector-action-btn"
+            id="apply-vector-telegraph-button"
+            type="button"
+            disabled
+            style="margin-top: 6px;"
+            title="Convert photo into editable vector line elements on the canvas"
+          >
+            📐 Vektör Çizgilere Dönüştür (Düzenlenebilir)
           </button>
 
           <button
@@ -1801,9 +1864,13 @@ function refreshReferenceInterface() {
   if (referenceInfo) referenceInfo.hidden = true
   if (referenceActions) referenceActions.hidden = !hasReference
   if (analyzeReferenceButton) analyzeReferenceButton.disabled = !hasReference
+  const analyzeTelegraphicButton = document.querySelector('#analyze-telegraphic')
+  if (analyzeTelegraphicButton) analyzeTelegraphicButton.disabled = !hasReference
   const applyDitherButton = document.querySelector('#apply-dither-button')
+  const applyVectorButton = document.querySelector('#apply-vector-telegraph-button')
   const addAvatarButton = document.querySelector('#add-avatar-button')
   if (applyDitherButton) applyDitherButton.disabled = !hasReference
+  if (applyVectorButton) applyVectorButton.disabled = !hasReference
   if (addAvatarButton) addAvatarButton.disabled = !hasReference
   if (analysisMessage) analysisMessage.hidden = true
 }
@@ -1819,10 +1886,14 @@ async function applyReference(loadPromise) {
     referencePreview.classList.remove('empty')
     if (referenceInfo) referenceInfo.hidden = true
     referenceActions.hidden = false
-    analyzeReferenceButton.disabled = false
+    if (analyzeReferenceButton) analyzeReferenceButton.disabled = false
+    const analyzeTelegraphicButton = document.querySelector('#analyze-telegraphic')
+    if (analyzeTelegraphicButton) analyzeTelegraphicButton.disabled = false
     const applyDitherButton = document.querySelector('#apply-dither-button')
+    const applyVectorButton = document.querySelector('#apply-vector-telegraph-button')
     const addAvatarButton = document.querySelector('#add-avatar-button')
     if (applyDitherButton) applyDitherButton.disabled = false
+    if (applyVectorButton) applyVectorButton.disabled = false
     if (addAvatarButton) addAvatarButton.disabled = false
 
     fitCanvasToReference()
@@ -1982,6 +2053,93 @@ analyzeReferenceButton.addEventListener('click', async () => {
     analyzeReferenceButton.disabled = !editorState.reference.src
     analyzeReferenceButton.textContent = originalLabel
     analysisInProgress = false
+  }
+})
+
+const analyzeTelegraphicButton = document.querySelector('#analyze-telegraphic')
+analyzeTelegraphicButton?.addEventListener('click', async () => {
+  if (!editorState.reference.src) return
+
+  const originalLabel = analyzeTelegraphicButton.textContent
+  analyzeTelegraphicButton.disabled = true
+  analyzeTelegraphicButton.textContent = 'Taranıyor...'
+  showToast('📡 Telgraf / Wirephoto çizgi taraması yapılıyor...', 'info')
+
+  try {
+    const img = await loadImage(editorState.reference.src)
+    let targetW = editorState.display.width
+    let targetH = editorState.display.height
+
+    // If canvas is still at a small default e.g. 128x64 but image has rich portrait dimensions, adapt smoothly
+    if (editorState.display.width <= 128 && img.naturalWidth > 128) {
+      const aspect = img.naturalWidth / (img.naturalHeight || 1)
+      if (aspect >= 1) {
+        targetW = Math.min(img.naturalWidth, 256)
+        targetH = Math.max(32, Math.round(targetW / aspect))
+      } else {
+        targetH = Math.min(img.naturalHeight, 256)
+        targetW = Math.max(32, Math.round(targetH * aspect))
+      }
+      updateDisplay({ width: targetW, height: targetH })
+    }
+
+    const offscreen = document.createElement('canvas')
+    offscreen.width = targetW
+    offscreen.height = targetH
+    const ctx = offscreen.getContext('2d')
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(img, 0, 0, targetW, targetH)
+    const imgData = ctx.getImageData(0, 0, targetW, targetH)
+
+    const bgHex = editorState.display.background || '#18211b'
+    const isDarkBg = bgHex === '#000000' || bgHex === '#18211b' || bgHex.startsWith('#0') || bgHex.startsWith('#1')
+    const fgHex = isDarkBg ? '#a8d9a8' : '#18211b'
+
+    const ditherResult = processDithering(imgData, {
+      algorithm: 'telegraphic',
+      lineSpacing: 4,
+      minThickness: 0.4,
+      maxThickness: 4.5,
+      contrast: 25,
+      brightness: 0,
+      invert: false,
+      fgColor: fgHex,
+      bgColor: bgHex
+    })
+
+    const ditheredData = ditherResult.createImageData(fgHex, bgHex)
+    ctx.putImageData(ditheredData, 0, 0)
+    const dataUrl = offscreen.toDataURL('image/png')
+
+    const newElement = {
+      id: `bmp_tele_${Date.now()}`,
+      type: 'bitmap',
+      name: 'Telgraf / Wirephoto Taraması',
+      x: 0,
+      y: 0,
+      width: targetW,
+      height: targetH,
+      dataUrl,
+      canvas: offscreen,
+      ditherMethod: 'telegraphic',
+      contrast: 25,
+      brightness: 0,
+      threshold: 128,
+      invert: false
+    }
+
+    editorState.elements = [newElement]
+    editorState.selectedId = newElement.id
+    notify()
+    requestAnimationFrame(() => fitCanvasToWorkspace())
+    showToast('📡 Telgraf / Wirephoto taraması oluşturuldu! C kodları ve SVG güncellendi.', 'info')
+  } catch (err) {
+    console.error('Telegraphic scan error:', err)
+    showToast('Tarama hatası: ' + err.message, 'error')
+  } finally {
+    analyzeTelegraphicButton.disabled = !editorState.reference.src
+    analyzeTelegraphicButton.textContent = originalLabel
   }
 })
 
@@ -3258,6 +3416,33 @@ function initDitheringStudio() {
     if (thresholdVal) thresholdVal.textContent = thresholdInput.value
   })
 
+  // Telegraphic max thickness readout
+  const teleThicknessInput = document.querySelector('#telegraphic-max-thickness')
+  const teleThicknessVal = document.querySelector('#telegraphic-max-thickness-val')
+  teleThicknessInput?.addEventListener('input', () => {
+    if (teleThicknessVal) teleThicknessVal.textContent = teleThicknessInput.value + ' px'
+  })
+
+  // Dynamic show/hide of telegraphic options
+  const algoSelect = document.querySelector('#dither-algo-select')
+  const teleOptionsBox = document.querySelector('#telegraphic-options-box')
+  const applyDitherBtn = document.querySelector('#apply-dither-button')
+  const applyVectorBtn = document.querySelector('#apply-vector-telegraph-button')
+
+  function updateAlgoUi() {
+    const isTele = algoSelect?.value === 'telegraphic'
+    if (teleOptionsBox) teleOptionsBox.hidden = !isTele
+    if (applyVectorBtn) applyVectorBtn.hidden = !isTele
+    if (applyDitherBtn) {
+      applyDitherBtn.textContent = isTele
+        ? '📡 Telgraf / Wirephoto Gravürü Oluştur'
+        : '✨ Convert to 1-Bit Dither Art'
+    }
+  }
+
+  algoSelect?.addEventListener('change', updateAlgoUi)
+  updateAlgoUi()
+
   async function executeDither(isAvatarOnly) {
     if (!editorState.reference.src) {
       showToast('Please upload an image or portrait first', 'warn')
@@ -3270,15 +3455,27 @@ function initDitheringStudio() {
     if (avatarBtn) avatarBtn.disabled = true
 
     try {
-      showToast('Converting to high-detail 1-bit dither art...', 'info')
+      const isTele = algoSelect?.value === 'telegraphic'
+      showToast(
+        isTele
+          ? '📡 Generating authentic retro telegraph / wirephoto scanline engraving...'
+          : 'Converting to high-detail 1-bit dither art...',
+        'info'
+      )
 
       const img = await loadImage(editorState.reference.src)
       const targetSelect = document.querySelector('#dither-target-select')?.value || 'fit'
-      const algo = document.querySelector('#dither-algo-select')?.value || 'atkinson'
+      const algo = document.querySelector('#dither-algo-select')?.value || 'telegraphic'
       const contrast = parseInt(document.querySelector('#dither-contrast')?.value || '25', 10)
       const brightness = parseInt(document.querySelector('#dither-brightness')?.value || '0', 10)
       const threshold = parseInt(document.querySelector('#dither-threshold')?.value || '128', 10)
       const invert = Boolean(document.querySelector('#dither-invert')?.checked)
+
+      // Telegraphic specific parameters
+      const lineSpacing = parseInt(document.querySelector('#telegraphic-spacing')?.value || '4', 10)
+      const angle = document.querySelector('#telegraphic-angle')?.value || 'horizontal'
+      const modulation = document.querySelector('#telegraphic-modulation')?.value || 'continuous'
+      const maxThickness = parseFloat(document.querySelector('#telegraphic-max-thickness')?.value || '4.5')
 
       let targetW = editorState.display.width
       let targetH = editorState.display.height
@@ -3327,6 +3524,10 @@ function initDitheringStudio() {
 
       const ditherResult = processDithering(imgData, {
         algorithm: algo,
+        lineSpacing,
+        angle,
+        modulation,
+        maxThickness,
         contrast,
         brightness,
         threshold,
@@ -3339,10 +3540,14 @@ function initDitheringStudio() {
       ctx.putImageData(ditheredData, 0, 0)
       const dataUrl = offscreen.toDataURL('image/png')
 
+      const elementTitle = isAvatarOnly
+        ? 'Dithered Avatar'
+        : (isTele ? 'Telgraf / Wirephoto Gravürü' : '1-Bit Dither Portrait')
+
       const newElement = {
         id: `bmp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
         type: 'bitmap',
-        name: isAvatarOnly ? 'Dithered Avatar' : '1-Bit Dither Portrait',
+        name: elementTitle,
         x: isAvatarOnly ? 10 : 0,
         y: isAvatarOnly ? 10 : 0,
         width: targetW,
@@ -3367,7 +3572,12 @@ function initDitheringStudio() {
         editorState.selectedId = newElement.id
         notify()
         requestAnimationFrame(() => fitCanvasToWorkspace())
-        showToast('✨ 1-Bit Dither Portrait generated! Click "Export C Code" for microcontroller code.', 'info')
+        showToast(
+          isTele
+            ? '📡 Telgraf / Wirephoto gravürü oluşturuldu! Mikrodenetleyici C kodları hazır.'
+            : '✨ 1-Bit Dither Portrait generated! Click "Export C Code" for microcontroller code.',
+          'info'
+        )
       }
     } catch (err) {
       console.error('Dithering error:', err)
@@ -3378,9 +3588,100 @@ function initDitheringStudio() {
     }
   }
 
+  // Vector line generator
+  async function executeVectorLines() {
+    if (!editorState.reference.src) {
+      showToast('Please upload an image or portrait first', 'warn')
+      return
+    }
+
+    const vectorBtn = document.querySelector('#apply-vector-telegraph-button')
+    if (vectorBtn) vectorBtn.disabled = true
+
+    try {
+      showToast('📐 Generating editable vector wirephoto lines...', 'info')
+
+      const img = await loadImage(editorState.reference.src)
+      const targetSelect = document.querySelector('#dither-target-select')?.value || 'fit'
+      const contrast = parseInt(document.querySelector('#dither-contrast')?.value || '25', 10)
+      const brightness = parseInt(document.querySelector('#dither-brightness')?.value || '0', 10)
+      const invert = Boolean(document.querySelector('#dither-invert')?.checked)
+      const lineSpacing = parseInt(document.querySelector('#telegraphic-spacing')?.value || '4', 10)
+      const maxThickness = parseFloat(document.querySelector('#telegraphic-max-thickness')?.value || '4.5')
+
+      let targetW = editorState.display.width
+      let targetH = editorState.display.height
+
+      if (targetSelect === 'ssd1306') {
+        targetW = 128
+        targetH = 64
+      } else if (targetSelect === 'badge') {
+        targetW = 250
+        targetH = 122
+      } else if (targetSelect === 'nokia') {
+        targetW = 84
+        targetH = 48
+      } else if (targetSelect === 'smartwatch') {
+        targetW = 128
+        targetH = 128
+      } else if (targetSelect === 'proportional') {
+        const aspect = img.naturalWidth / (img.naturalHeight || 1)
+        if (aspect >= 1) {
+          targetW = Math.min(img.naturalWidth, 256)
+          targetH = Math.max(16, Math.round(targetW / aspect))
+        } else {
+          targetH = Math.min(img.naturalHeight, 256)
+          targetW = Math.max(16, Math.round(targetH * aspect))
+        }
+      }
+
+      const offscreen = document.createElement('canvas')
+      offscreen.width = targetW
+      offscreen.height = targetH
+      const ctx = offscreen.getContext('2d')
+      ctx.imageSmoothingEnabled = true
+      ctx.imageSmoothingQuality = 'high'
+      ctx.drawImage(img, 0, 0, targetW, targetH)
+      const imgData = ctx.getImageData(0, 0, targetW, targetH)
+
+      const bgHex = editorState.display.background || '#18211b'
+      const isDarkBg = bgHex === '#000000' || bgHex === '#18211b' || bgHex.startsWith('#0') || bgHex.startsWith('#1')
+      const fgHex = isDarkBg ? '#a8d9a8' : '#18211b'
+
+      const vectorLines = generateTelegraphicVectorLines(imgData, targetW, targetH, {
+        lineSpacing,
+        minThickness: 1,
+        maxThickness,
+        contrast,
+        brightness,
+        invert,
+        color: fgHex
+      })
+
+      if (vectorLines.length === 0) {
+        showToast('No prominent wirephoto lines detected. Try increasing contrast.', 'warn')
+        return
+      }
+
+      updateDisplay({ width: targetW, height: targetH })
+      editorState.elements = vectorLines
+      editorState.selectedId = vectorLines[0]?.id || null
+      notify()
+      requestAnimationFrame(() => fitCanvasToWorkspace())
+      showToast(`📐 ${vectorLines.length} adet düzenlenebilir telgraf vektör çizgisi oluşturuldu!`, 'info')
+    } catch (err) {
+      console.error('Vector wirephoto error:', err)
+      showToast('Vektör oluşturma hatası: ' + err.message, 'error')
+    } finally {
+      if (vectorBtn) vectorBtn.disabled = !editorState.reference.src
+    }
+  }
+
   document.querySelector('#apply-dither-button')?.addEventListener('click', () => executeDither(false))
+  document.querySelector('#apply-vector-telegraph-button')?.addEventListener('click', executeVectorLines)
   document.querySelector('#add-avatar-button')?.addEventListener('click', () => executeDither(true))
 }
 
 initDitheringStudio()
+
 

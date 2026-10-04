@@ -1796,6 +1796,48 @@ kbd {
   display: block;
 }
 
+/* Telegraphic / Wirephoto Engraving Styles */
+.telegraphic-options-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(18, 42, 32, 0.45);
+  border: 1px solid #2e6648;
+  border-radius: 5px;
+  padding: 8px 10px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
 
+.telegraph-action-btn {
+  background: linear-gradient(135deg, #1f4a38 0%, #153827 100%) !important;
+  border: 1px solid #4da375 !important;
+  color: #c4f9dc !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(31, 74, 56, 0.4) !important;
+  cursor: pointer;
+  transition: all 0.15s ease !important;
+}
 
+.telegraph-action-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #285e47 0%, #1c4b35 100%) !important;
+  border-color: #5bc48d !important;
+  box-shadow: 0 4px 14px rgba(40, 94, 71, 0.6) !important;
+  transform: translateY(-1px);
+}
 
+.vector-action-btn {
+  background: #172b21 !important;
+  border: 1px solid #3d805c !important;
+  color: #a8d9a8 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 7px 10px !important;
+  cursor: pointer;
+  transition: all 0.15s ease !important;
+}
+
+.vector-action-btn:hover:not(:disabled) {
+  background: #1e3a2c !important;
+  border-color: #4da375 !important;
+  color: #ffffff !important;
+}
