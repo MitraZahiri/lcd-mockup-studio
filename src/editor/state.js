@@ -37,8 +37,21 @@ const undoStack = []
 const redoStack = []
 let historyRestoring = false
 
+export function safeClone(value) {
+  try {
+    return structuredClone(value)
+  } catch {
+    return JSON.parse(JSON.stringify(value, (key, val) => {
+      if (typeof HTMLElement !== 'undefined' && val instanceof HTMLElement) return undefined
+      if (typeof HTMLCanvasElement !== 'undefined' && val instanceof HTMLCanvasElement) return undefined
+      if (typeof OffscreenCanvas !== 'undefined' && val instanceof OffscreenCanvas) return undefined
+      return val
+    }))
+  }
+}
+
 function clone(value) {
-  return structuredClone(value)
+  return safeClone(value)
 }
 
 function createHistorySnapshot() {
@@ -280,7 +293,7 @@ export function duplicateElement(id = editorState.selectedId) {
   const element = editorState.elements.find((item) => item.id === id)
   if (!element) return null
 
-  const clone = structuredClone(element)
+  const clone = safeClone(element)
   clone.id = createId()
   const offset = 8
 
@@ -300,13 +313,13 @@ export function duplicateElement(id = editorState.selectedId) {
 export function copyElement(id = editorState.selectedId) {
   const element = editorState.elements.find((item) => item.id === id)
   if (!element) return null
-  clipboard = structuredClone(element)
+  clipboard = safeClone(element)
   return clipboard
 }
 
 export function pasteElement() {
   if (!clipboard) return null
-  const clone = structuredClone(clipboard)
+  const clone = safeClone(clipboard)
   clone.id = createId()
   const offset = 8
 
