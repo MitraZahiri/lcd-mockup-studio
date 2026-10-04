@@ -52,88 +52,38 @@ const STANDARD_RESOLUTIONS = [
 // ======================================================
 
 export async function analyzeReferenceImage(options = {}) {
-  const reference =
-    editorState.reference
-
+  const reference = editorState.reference
   if (!reference?.src) {
-    throw new Error(
-      'Upload a reference image before analyzing.',
-    )
+    throw new Error('Upload a reference image before analyzing.')
   }
 
-  // ----------------------------------------------------
-  // Load reference image
-  // ----------------------------------------------------
+  const image = await loadImage(reference.src)
+  const source = prepareSourceImage(image)
+  const { width, height, threshold, polarity, binaryMask, imageData } = source
+  const palette = extractDominantColors(imageData, binaryMask)
 
-  const image =
-    await loadImage(
-      reference.src,
-    )
-
-  // ----------------------------------------------------
-  // Basic image processing & palette extraction
-  // ----------------------------------------------------
-
-  const source =
-    prepareSourceImage(
-      image,
-    )
-
-  const {
+  const ocr = await recognizeLcdText({
+    image,
     width,
     height,
     threshold,
     polarity,
-    binaryMask,
-    imageData,
-  } = source
+  })
 
-  const palette = extractDominantColors(
-    imageData,
+  const geometry = detectGeometry(
     binaryMask,
+    width,
+    height,
+    ocr.regions,
+    options,
   )
 
-  // ----------------------------------------------------
-  // OCR
-  // ----------------------------------------------------
-
-  const ocr =
-    await recognizeLcdText({
-      image,
-      width,
-      height,
-      threshold,
-      polarity,
-    })
-
-  // ----------------------------------------------------
-  // Detect graphical geometry & shapes
-  // Suppresses false-positive lines inside text regions
-  // ----------------------------------------------------
-
-  const geometry =
-    detectGeometry(
-      binaryMask,
-      width,
-      height,
-      ocr.regions,
-      options,
-    )
-
-  // ----------------------------------------------------
-  // Convert analysis results to editor elements
-  // ----------------------------------------------------
-
   const textElements = options.detectText !== false
-    ? ocr.regions.map(
-        (region) => ocrRegionToElement(region, palette.foreground),
-      )
+    ? ocr.regions.map((region) => ocrRegionToElement(region, palette.foreground))
     : []
 
   const lineElements = options.detectFrames !== false
-    ? geometry.lines.map(
-        (line) => lineGeometryToElement(line, palette.foreground),
-      )
+    ? geometry.lines.map((line) => lineGeometryToElement(line, palette.foreground))
     : []
 
   const rectElements = geometry.rectangles
@@ -142,22 +92,15 @@ export async function analyzeReferenceImage(options = {}) {
       if (!rect.filled && options.detectFrames === false) return false
       return true
     })
-    .map(
-      (rect) => rectangleGeometryToElement(rect, palette.foreground),
-    )
+    .map((rect) => rectangleGeometryToElement(rect, palette.foreground))
 
   const circleElements = options.detectCircles !== false
-    ? (geometry.circles || []).map(
-        (circle) => circleGeometryToElement(circle, palette.foreground),
-      )
+    ? (geometry.circles || []).map((circle) => circleGeometryToElement(circle, palette.foreground))
     : []
 
   const symbolElements = options.detectSymbols !== false
     ? (geometry.symbols || []).map((sym) => {
-        if (sym.type === 'text') {
-          return { ...sym, color: sym.color || palette.foreground }
-        }
-        if (sym.type === 'line') {
+        if (sym.type === 'text' || sym.type === 'line') {
           return { ...sym, color: sym.color || palette.foreground }
         }
         return {
@@ -169,8 +112,7 @@ export async function analyzeReferenceImage(options = {}) {
     : []
 
   // Inverted text badge contrast handling:
-  // If a text element is placed inside a solid rectangle,
-  // set text color to the display background color for contrast!
+  // If a text element is placed inside a solid rectangle, set text color to display background
   for (const text of textElements) {
     for (const rect of rectElements) {
       if (rect.fill !== 'transparent') {
@@ -194,69 +136,32 @@ export async function analyzeReferenceImage(options = {}) {
     ...textElements,
   ]
 
-  elements.sort(
-    sortElements,
-  )
-
+  elements.sort(sortElements)
   const suggestedResolution = findSuggestedResolution(width, height)
-
-  // ----------------------------------------------------
-  // Result
-  // ----------------------------------------------------
 
   return {
     width,
     height,
-
     threshold,
     polarity,
     palette,
     suggestedResolution,
-
     elements,
-
-    text:
-      ocr.text,
-
+    text: ocr.text,
     stats: {
-      textRegions:
-        textElements.length,
-
-      lines:
-        lineElements.length,
-
-      rectangles:
-        rectElements.length,
-
-      hollowFrames:
-        geometry.stats?.hollowFrames ?? 0,
-
-      solidBadges:
-        geometry.stats?.solidBadges ?? 0,
-
-      circles:
-        circleElements.length,
-
-      symbols:
-        symbolElements.length,
-
-      totalElements:
-        elements.length,
-
-      ocrCandidates:
-        ocr.candidates.length,
-
-      ocrClusters:
-        ocr.clusters.length,
-
-      ocrWords:
-        ocr.words.length,
-
-      ocrScale:
-        ocr.scale,
-
-      ocrPadding:
-        ocr.padding,
+      textRegions: textElements.length,
+      lines: lineElements.length,
+      rectangles: rectElements.length,
+      hollowFrames: geometry.stats?.hollowFrames ?? 0,
+      solidBadges: geometry.stats?.solidBadges ?? 0,
+      circles: circleElements.length,
+      symbols: symbolElements.length,
+      totalElements: elements.length,
+      ocrCandidates: ocr.candidates.length,
+      ocrClusters: ocr.clusters.length,
+      ocrWords: ocr.words.length,
+      ocrScale: ocr.scale,
+      ocrPadding: ocr.padding,
     },
   }
 }
