@@ -256,6 +256,9 @@ document.querySelector('#app').innerHTML = `
               <input type="checkbox" id="opt-detect-circles" checked> Detect Circles & Dots
             </label>
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="opt-detect-symbols" checked> Detect Symbols & Icons (Battery, Signal, Arrows)
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
               <input type="checkbox" id="opt-auto-theme" checked> Auto-adopt LCD Screen Theme
             </label>
           </div>
@@ -1718,6 +1721,7 @@ analyzeReferenceButton.addEventListener(
       const optDetectFrames = document.querySelector('#opt-detect-frames')?.checked ?? true
       const optDetectBadges = document.querySelector('#opt-detect-badges')?.checked ?? true
       const optDetectCircles = document.querySelector('#opt-detect-circles')?.checked ?? true
+      const optDetectSymbols = document.querySelector('#opt-detect-symbols')?.checked ?? true
       const optAutoTheme = document.querySelector('#opt-auto-theme')?.checked ?? true
 
       const result =
@@ -1726,6 +1730,7 @@ analyzeReferenceButton.addEventListener(
           detectFrames: optDetectFrames,
           detectBadges: optDetectBadges,
           detectCircles: optDetectCircles,
+          detectSymbols: optDetectSymbols,
         })
 
       /*
@@ -1771,6 +1776,7 @@ analyzeReferenceButton.addEventListener(
       const framesCount = result.stats.hollowFrames ?? 0
       const badgesCount = result.stats.solidBadges ?? 0
       const circlesCount = result.stats.circles ?? 0
+      const symbolsCount = result.stats.symbols ?? 0
       const textCount = result.stats.textRegions ?? 0
 
       analysisMessage.innerHTML = `
@@ -1787,6 +1793,7 @@ analyzeReferenceButton.addEventListener(
           ${framesCount > 0 ? `<span class="pill-badge" style="background:#233527;border:1px solid #4a6f50;padding:2px 6px;border-radius:3px;font-size:10px;color:#c0f0c0;">${framesCount} Frames</span>` : ''}
           ${badgesCount > 0 ? `<span class="pill-badge" style="background:#233527;border:1px solid #4a6f50;padding:2px 6px;border-radius:3px;font-size:10px;color:#c0f0c0;">${badgesCount} Badges/Bars</span>` : ''}
           ${circlesCount > 0 ? `<span class="pill-badge" style="background:#233527;border:1px solid #4a6f50;padding:2px 6px;border-radius:3px;font-size:10px;color:#c0f0c0;">${circlesCount} Circles/Dots</span>` : ''}
+          ${symbolsCount > 0 ? `<span class="pill-badge" style="background:#233527;border:1px solid #4a6f50;padding:2px 6px;border-radius:3px;font-size:10px;color:#c0f0c0;">${symbolsCount} Symbols & Icons</span>` : ''}
           ${linesCount > 0 ? `<span class="pill-badge" style="background:#233527;border:1px solid #4a6f50;padding:2px 6px;border-radius:3px;font-size:10px;color:#c0f0c0;">${linesCount} Lines</span>` : ''}
         </div>
 

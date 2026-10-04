@@ -457,6 +457,17 @@ export function sanitizeRecognizedText(
   // Standardize LCD telemetry units (e.g. 50Hz, 12V, 3.3V, 240VAC)
   text = text.replace(/(\d+(?:\.\d+)?)\s*(V|mV|mA|uA|A|W|kW|Hz|kHz|MHz|RPM|rpm|PSI|psi|bar|BAR|km\/h|mph|ms|us|dB)\b/g, '$1 $2')
 
+  // Standardize standalone LCD icon / symbol OCR misrecognitions
+  text = text.replace(/^>+$|^->+$|^>>+$|^»+$|^I>+$/g, '▶')
+  text = text.replace(/^<+$|^<-+$|^<<+$|^«+$|^<I+$/g, '◄')
+  text = text.replace(/^\^+$|^\/\^\\+$/g, '▲')
+  text = text.replace(/^\[=\]$|^\[--\]$|^\[III\]$|^CIIID$/g, '🔋')
+  text = text.replace(/^\|{3,5}$|^[ıI]{3,5}$/g, '📶')
+  text = text.replace(/^\[[xX]\]$/g, '☑')
+  text = text.replace(/^\[\s*\]$/g, '☐')
+  text = text.replace(/^\([oO*]\)$/g, '🔘')
+  text = text.replace(/^\(\s*\)$/g, '⚪')
+
   // Clean common LCD noise artifact characters from boundaries
   text = text.replace(/^[~^`'",._-]+|[~^`'",._-]+$/g, '').trim()
 

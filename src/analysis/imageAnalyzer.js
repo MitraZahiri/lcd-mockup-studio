@@ -152,6 +152,22 @@ export async function analyzeReferenceImage(options = {}) {
       )
     : []
 
+  const symbolElements = options.detectSymbols !== false
+    ? (geometry.symbols || []).map((sym) => {
+        if (sym.type === 'text') {
+          return { ...sym, color: sym.color || palette.foreground }
+        }
+        if (sym.type === 'line') {
+          return { ...sym, color: sym.color || palette.foreground }
+        }
+        return {
+          ...sym,
+          stroke: sym.stroke || palette.foreground,
+          fill: sym.fill === 'transparent' ? 'transparent' : (sym.fill || palette.foreground),
+        }
+      })
+    : []
+
   // Inverted text badge contrast handling:
   // If a text element is placed inside a solid rectangle,
   // set text color to the display background color for contrast!
@@ -173,6 +189,7 @@ export async function analyzeReferenceImage(options = {}) {
   const elements = [
     ...rectElements,
     ...circleElements,
+    ...symbolElements,
     ...lineElements,
     ...textElements,
   ]
@@ -221,7 +238,7 @@ export async function analyzeReferenceImage(options = {}) {
         circleElements.length,
 
       symbols:
-        geometry.stats?.symbols ?? 0,
+        symbolElements.length,
 
       totalElements:
         elements.length,
