@@ -3449,6 +3449,7 @@ function initDitheringStudio() {
 
       const img = await loadImage(editorState.reference.src)
       const targetSelect = document.querySelector('#dither-target-select')?.value || 'fit'
+      const isAvatarOnly = targetSelect === 'avatar'
       const algo = document.querySelector('#dither-algo-select')?.value || 'telegraphic'
       const contrast = parseInt(document.querySelector('#dither-contrast')?.value || '25', 10)
       const brightness = parseInt(document.querySelector('#dither-brightness')?.value || '0', 10)

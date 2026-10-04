@@ -39,7 +39,7 @@ button {
   display: grid;
 
   grid-template-columns:
-    230px
+    290px
     minmax(500px, 1fr)
     260px;
 
@@ -627,14 +627,29 @@ button {
 
 .reference-upload-row {
   display: flex;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .reference-upload-row > .wide-button,
 .reference-upload-row > .sample-dropdown-container {
   flex: 1;
   margin-bottom: 0;
+}
+
+.reference-upload-row button {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  transition: all 0.15s ease;
 }
 
 .sample-dropdown-container {
