@@ -62,6 +62,10 @@ import {
   analyzeReferenceImage,
 } from './analysis/imageAnalyzer.js'
 
+import { encodeProjectToUrl, decodeProjectFromUrl } from './project/shareUrl.js'
+import { updateHardwareShellDOM } from './editor/deviceShell.js'
+import { startSimulation, stopSimulation, isSimulating } from './editor/simulation.js'
+
 
 // ======================================================
 // APP
@@ -144,6 +148,17 @@ document.querySelector('#app').innerHTML = `
           title="Export as C Header / Embedded Monochrome Bitmap (Adafruit GFX / U8g2 / XBM)"
         >
           Export C Code
+        </button>
+
+        <div class="separator"></div>
+
+        <button
+          type="button"
+          class="share-button"
+          id="share-project"
+          title="Share Project URL (Creates zero-backend permanent link and copies to clipboard)"
+        >
+          🔗 Share
         </button>
 
         <div class="separator"></div>
@@ -486,6 +501,26 @@ document.querySelector('#app').innerHTML = `
             </label>
             <input type="range" id="overlay-opacity" min="0.05" max="1" step="0.05" value="0.4" title="Overlay Opacity">
           </div>
+
+          <button
+            id="toggle-hardware-shell"
+            type="button"
+            class="workspace-toggle-btn"
+            title="Toggle Realistic Physical Hardware Breakout PCB & Pins"
+          >
+            🔘 Hardware Shell
+          </button>
+
+          <button
+            id="toggle-simulation"
+            type="button"
+            class="workspace-toggle-btn simulation-btn"
+            title="Live Hardware Simulation (Animate clock, battery & telemetry)"
+          >
+            ▶ Live Preview
+          </button>
+
+          <div class="separator"></div>
 
           <button
             id="fit-workspace"
@@ -2828,6 +2863,15 @@ function updateInterface() {
     hardwarePresetSelect.value = matchingKey || ''
   }
 
+  const displayFrame = document.querySelector('.display-frame')
+  if (displayFrame && editorState.hardwareShellEnabled) {
+    updateHardwareShellDOM(displayFrame, {
+      width,
+      height,
+      enabled: true
+    })
+  }
+
   renderLayers()
 
   renderProperties()
@@ -2976,3 +3020,101 @@ function initQuickstart() {
 initHardwarePresets()
 initShortcutsModal()
 initQuickstart()
+
+function initShareUrl() {
+  const shareBtn = document.querySelector('#share-project')
+  shareBtn?.addEventListener('click', async () => {
+    try {
+      const hash = await encodeProjectToUrl(editorState)
+      if (!hash) {
+        showToast('Empty project cannot be shared', 'warn')
+        return
+      }
+      window.location.hash = `p=${hash}`
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(window.location.href)
+        showToast('🔗 Share URL copied to clipboard! (Lossless permalink)', 'info')
+      } else {
+        showToast('URL updated in address bar!', 'info')
+      }
+    } catch (e) {
+      console.error(e)
+      showToast('Failed to create share link', 'error')
+    }
+  })
+
+  // Auto-load project if URL hash is present
+  if (window.location.hash && window.location.hash.startsWith('#p=')) {
+    decodeProjectFromUrl(window.location.hash).then((project) => {
+      if (project && project.display && Array.isArray(project.elements)) {
+        Object.assign(editorState, {
+          display: project.display,
+          elements: project.elements,
+          selectedId: null
+        })
+        notify()
+        fitCanvasToWorkspace()
+        showToast('✨ Loaded shared mockup from URL!', 'info')
+      }
+    }).catch((err) => {
+      console.warn('Could not load project from URL:', err)
+    })
+  }
+}
+
+function initSimulationControls() {
+  const simBtn = document.querySelector('#toggle-simulation')
+  if (!simBtn) return
+
+  simBtn.addEventListener('click', () => {
+    if (isSimulating()) {
+      stopSimulation(editorState, () => {
+        renderCanvas()
+        simBtn.innerHTML = '▶ Live Preview'
+        simBtn.classList.remove('active')
+        document.querySelector('.workspace')?.classList.remove('simulating')
+        showToast('Simulation stopped — original state restored', 'info')
+      })
+    } else {
+      if (!editorState.elements || editorState.elements.length === 0) {
+        showToast('Add or load some elements first to simulate', 'warn')
+        return
+      }
+      const started = startSimulation(editorState, () => {
+        renderCanvas()
+      })
+      if (started) {
+        simBtn.innerHTML = '⏸ Stop Sim'
+        simBtn.classList.add('active')
+        document.querySelector('.workspace')?.classList.add('simulating')
+        showToast('▶ Live simulation running (clock & telemetry active)', 'info')
+      }
+    }
+  })
+}
+
+function initHardwareShellControls() {
+  const shellBtn = document.querySelector('#toggle-hardware-shell')
+  const displayFrame = document.querySelector('.display-frame')
+  if (!shellBtn || !displayFrame) return
+
+  shellBtn.addEventListener('click', () => {
+    editorState.hardwareShellEnabled = !editorState.hardwareShellEnabled
+    updateHardwareShellDOM(displayFrame, {
+      width: editorState.display.width,
+      height: editorState.display.height,
+      enabled: editorState.hardwareShellEnabled
+    })
+    shellBtn.classList.toggle('active', Boolean(editorState.hardwareShellEnabled))
+    showToast(
+      editorState.hardwareShellEnabled
+        ? '🔘 Breakout PCB & bezel frame enabled'
+        : 'Display shell hidden',
+      'info'
+    )
+  })
+}
+
+initShareUrl()
+initSimulationControls()
+initHardwareShellControls()

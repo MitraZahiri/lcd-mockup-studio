@@ -3,7 +3,7 @@
 
 [![Deploy to GitHub Pages](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml/badge.svg)](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml)
 [![Live Studio](https://img.shields.io/badge/🚀%20Live%20Studio-Online-4ade80?style=for-the-badge&logo=googlechrome&logoColor=white)](https://mitrazahiri.github.io/lcd-mockup-studio/)
-[![Tests](https://img.shields.io/badge/Tests-59%2F59%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
+[![Tests](https://img.shields.io/badge/Tests-64%2F64%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
 [![License: MIT](https://img.shields.io/badge/License-MIT-facc15?style=for-the-badge)](LICENSE)
 
 **[👉 Launch Studio in Browser (No Install Needed)](https://mitrazahiri.github.io/lcd-mockup-studio/)**  
@@ -40,6 +40,12 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
 ## ⚡ Key Capabilities
 
 * 🚀 **Zero Install Live Web App**: Built with Vite, Canvas, Web Workers, and WebAssembly OCR. Nothing is sent to any server.
+* 🔗 **1-Click Viral URL Sharing (Zero-Backend Permalinks)**:
+  * Lossless `CompressionStream('deflate-raw')` compression packs complete projects directly into URL hashes. Share mockups with a single link without needing servers or databases.
+* 🔘 **Hardware Realistic Breakout PCB Simulator**:
+  * Simulates physical breakout boards for **SSD1306 OLED**, **Nokia 5110 (PCD8544)**, and **HD44780 Character LCDs** with realistic gold-plated header pins (GND, VCC, SCL, SDA), corner mounting screws, and subtle glass glare reflections.
+* ▶ **Live Interactive Simulation Mode**:
+  * Real-time hardware preview with ticking clocks (blinking `:` colons), fluctuating temperature/voltage telemetry jitter, and animated battery / progress bar sweeps. Non-destructive: original values restore seamlessly on stop.
 * 📋 **Global Clipboard Paste (`Ctrl + V`)**: Copy any screenshot with Snipping Tool or browser and press `Ctrl + V` to load instantly.
 * 🧪 **1-Click Interactive Gallery**: Test right away with built-in realistic LCD samples (Industrial HMI, 3D Printer Marlin, IoT OLED Weather Station).
 * 🔍 **Intelligent Computer Vision Pipeline**:
@@ -139,12 +145,18 @@ npm install
 # Start local Vite development server
 npm run dev
 
-# Run test suite (56 tests)
+# Run test suite (64 unit tests)
 npm test
 
 # Build production bundle
 npm run build
 ```
+
+---
+
+## 🤝 Contributing
+
+Contributions, bug reports, and suggestions are warmly welcome! Please check out [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
 ---
 
