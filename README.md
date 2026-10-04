@@ -21,6 +21,12 @@
 **[👉 Launch Studio in Browser (No Install Needed)](https://mitrazahiri.github.io/lcd-mockup-studio/)**  
 *100% Client-Side · Zero Server Uploads · Runs Entirely in Your Browser*
 
+<br />
+
+<img src="docs/assets/demo.gif" alt="LCD Mockup Studio Interactive Workflow" width="700" style="max-width: 100%; border-radius: 8px; border: 1px solid #30363d; box-shadow: 0 8px 24px rgba(0,0,0,0.45);" />
+
+*Live studio workflow: 1-Click sample loading ➜ Computer vision OCR scan ➜ Vector elements ➜ Microcontroller C code export*
+
 </div>
 
 ---

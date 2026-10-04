@@ -10,6 +10,7 @@
     "test": "node --test tests/*.test.js"
   },
   "devDependencies": {
+    "omggif": "^1.0.10",
     "vite": "^8.3.0"
   },
   "dependencies": {
