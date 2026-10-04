@@ -10,7 +10,7 @@ function project() {
     display: { width: 249, height: 128, background: '#18211b' },
     grid: { enabled: true, snap: false, size: 1 }, reference: null,
     elements: [
-      { id: 'text', type: 'text', name: 'OCR text', text: 'Sıcaklık 23°C',
+      { id: 'text', type: 'text', name: 'OCR text', text: 'Temp 23°C',
         x: 5, y: 10, width: 120, height: 14, fontFamily: 'monospace',
         fontSize: 12, fontWeight: 700, color: '#a8d9a8', source: 'analysis', confidence: 87 },
       { id: 'rect', type: 'rectangle', name: 'Rectangle', x: 0, y: 40,
@@ -59,7 +59,7 @@ test('snapshot is independent of subsequent edits and excludes selection and zoo
   const state = { ...project(), reference: { src: null }, selectedId: 'text', view: { scale: 4 } }
   const snapshot = snapshotProject(state, 'Before')
   state.elements[0].text = 'After'
-  assert.equal(snapshot.elements[0].text, 'Sıcaklık 23°C')
+  assert.equal(snapshot.elements[0].text, 'Temp 23°C')
   assert.equal(snapshot.view, undefined)
   assert.equal(snapshot.selectedId, undefined)
 })
