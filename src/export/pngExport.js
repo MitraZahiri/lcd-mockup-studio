@@ -64,14 +64,22 @@ function drawShape(context, element) {
   }
 }
 
+const bitmapCache = new Map()
+
+export function setBitmapCache(dataUrl, source) {
+  if (dataUrl && source) {
+    bitmapCache.set(dataUrl, source)
+  }
+}
+
 function drawBitmap(context, element) {
-  if (element.canvas) {
-    if (context.drawImage) {
-      context.drawImage(element.canvas, element.x, element.y, element.width, element.height)
-    }
+  if (!element.dataUrl) return
+  const cached = bitmapCache.get(element.dataUrl)
+  if (cached && context.drawImage) {
+    context.drawImage(cached, element.x, element.y, element.width, element.height)
     return
   }
-  if (element.dataUrl && typeof Image !== 'undefined') {
+  if (typeof Image !== 'undefined') {
     const img = new Image()
     img.src = element.dataUrl
     if (img.complete && img.naturalWidth > 0 && context.drawImage) {
