@@ -1,16 +1,4 @@
 # 📺 LCD Mockup Studio
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│  📺 LCD MOCKUP STUDIO                                         v1.0.0   │
-│  Interactive Embedded Display Reverse Engineering & Mockup Studio      │
-├────────────────────────────────────────────────────────────────────────┤
-│  [📷 PHOTO / CLIPBOARD] ──► [🔍 CV & OCR] ──► [⚡ VECTOR & ARDUINO C]  │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-<div align="center">
-
 ### Turn photos of real LCD / OLED / HMI screens into editable vector mockups & microcontroller C code.
 
 [![Deploy to GitHub Pages](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml/badge.svg)](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml)
