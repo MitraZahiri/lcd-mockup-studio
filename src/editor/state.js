@@ -462,5 +462,58 @@ export function applyLcdPreset(presetKey) {
   notify()
 }
 
+// HARDWARE DISPLAY PRESETS
+export const HARDWARE_PRESETS = {
+  'ssd1306-128x64': {
+    name: 'SSD1306 128×64 (0.96" OLED)',
+    width: 128,
+    height: 64,
+    colorPreset: 'oled-cyan',
+  },
+  'ssd1306-128x32': {
+    name: 'SSD1306 128×32 (0.91" OLED)',
+    width: 128,
+    height: 32,
+    colorPreset: 'oled-cyan',
+  },
+  'st7920-128x64': {
+    name: 'ST7920 128×64 (Graphic LCD)',
+    width: 128,
+    height: 64,
+    colorPreset: 'stn-blue',
+  },
+  'nokia-84x48': {
+    name: 'PCD8544 84×48 (Nokia 5110)',
+    width: 84,
+    height: 48,
+    colorPreset: 'nokia',
+  },
+  'hd44780-16x2': {
+    name: 'HD44780 16×2 (Character LCD)',
+    width: 160,
+    height: 32,
+    colorPreset: 'stn-blue',
+  },
+  'st7789-240x240': {
+    name: 'ST7789 240×240 (Square IPS)',
+    width: 240,
+    height: 240,
+    colorPreset: 'emerald',
+  },
+}
+
+export function applyHardwarePreset(presetKey) {
+  const preset = HARDWARE_PRESETS[presetKey]
+  if (!preset) return
+
+  editorState.display.width = preset.width
+  editorState.display.height = preset.height
+  if (preset.colorPreset && LCD_PRESETS[preset.colorPreset]) {
+    editorState.display.background = LCD_PRESETS[preset.colorPreset].background
+  }
+  recordHistory()
+  notify()
+}
+
 // Initialize history with the initial editor state.
 resetHistory()
