@@ -3,6 +3,9 @@ import assert from 'node:assert/strict'
 import {
   generateMonochromeBytes,
   formatCSource,
+  formatJsonOutput,
+  formatHexOutput,
+  formatBase64,
 } from '../src/export/cExport.js'
 
 function createTestImageData(width, height, fillFn) {
@@ -139,4 +142,68 @@ test('formatCSource handles complete Arduino sketch export correctly', () => {
   assert.ok(code.includes('void setup()'))
   assert.ok(code.includes('void loop()'))
 })
+
+test('formatJsonOutput generates valid JSON for project and elements', () => {
+  const fakeState = {
+    display: { width: 128, height: 64, background: '#18211b' },
+    grid: { enabled: true, snap: true, size: 8 },
+    reference: { src: null },
+    elements: [
+      { id: 'el-1', type: 'text', name: 'Header', text: 'HELLO', x: 0, y: 0, width: 50, height: 12, fontWeight: 700 },
+      { id: 'el-2', type: 'rectangle', name: 'Frame', x: 0, y: 0, width: 128, height: 64, stroke: '#a8d9a8' },
+    ],
+  }
+
+  const projectJson = formatJsonOutput(fakeState, 'json_project', true)
+  assert.ok(projectJson.includes('"format": "lcd-mockup-studio"'))
+  assert.ok(projectJson.includes('"width": 128'))
+  assert.ok(projectJson.includes('HELLO'))
+
+  const parsed = JSON.parse(projectJson)
+  assert.equal(parsed.elements.length, 2)
+  assert.equal(parsed.display.width, 128)
+
+  const elementsJson = formatJsonOutput(fakeState, 'json_elements', true)
+  const parsedElems = JSON.parse(elementsJson)
+  assert.equal(parsedElems.length, 2)
+  assert.equal(parsedElems[0].id, 'el-1')
+})
+
+test('formatHexOutput produces correct array, space-separated, dump and raw formats', () => {
+  const bytes = new Uint8Array([0x00, 0x1f, 0xff, 0xa5, 0x5a, 0x01, 0x02, 0x03])
+
+  // C Array
+  const cArr = formatHexOutput(bytes, 'hex_array')
+  assert.ok(cArr.includes('const uint8_t hex_bytes[8] = {'))
+  assert.ok(cArr.includes('0x00, 0x1f, 0xff, 0xa5, 0x5a, 0x01, 0x02, 0x03'))
+
+  // Space-separated
+  const space = formatHexOutput(bytes, 'hex_space')
+  assert.equal(space, '00 1F FF A5 5A 01 02 03')
+
+  // Raw
+  const raw = formatHexOutput(bytes, 'hex_raw')
+  assert.equal(raw, '001FFFA55A010203')
+
+  // Hex dump
+  const dump = formatHexOutput(bytes, 'hex_dump')
+  assert.ok(dump.includes('00000000:'))
+  assert.ok(dump.includes('00 1f ff a5'))
+})
+
+test('formatBase64 extracts raw base64 and formats html img snippet', () => {
+  const dataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg=='
+
+  const full = formatBase64(dataUrl, 'base64_dataurl')
+  assert.equal(full, dataUrl)
+
+  const raw = formatBase64(dataUrl, 'base64_raw')
+  assert.equal(raw, 'iVBORw0KGgoAAAANSUhEUg==')
+
+  const html = formatBase64(dataUrl, 'base64_html', 128, 64)
+  assert.ok(html.includes('<img src="data:image/png;base64,'))
+  assert.ok(html.includes('width="128"'))
+  assert.ok(html.includes('height="64"'))
+})
+
 

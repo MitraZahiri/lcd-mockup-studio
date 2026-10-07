@@ -148,9 +148,9 @@ document.querySelector('#app').innerHTML = `
           type="button"
           class="export-button export-c-button"
           id="export-c"
-          title="Export as C Header / Embedded Monochrome Bitmap (Adafruit GFX / U8g2 / XBM)"
+          title="Export Code: C / C++, JSON, Hex, Arduino, MicroPython, Base64"
         >
-          Export C Code
+          Code
         </button>
 
         <button
@@ -1179,6 +1179,37 @@ document.querySelector('#app').innerHTML = `
 
           </div>
 
+          <div id="bitmap-properties" hidden>
+            <div class="field">
+              <span>Bitmap Vectorization</span>
+              <button type="button" class="wide-button primary-button" id="property-bitmap-vectorize" style="margin-top: 4px;" title="Extract text, boxes, and shapes from this bitmap into editable vector elements">
+                ✨ Convert to Editable Elements
+              </button>
+            </div>
+
+            <div class="field-row" style="margin-top: 8px;">
+              <button type="button" class="wide-button" id="property-bitmap-invert" title="Invert bitmap pixels">
+                🔄 Invert Pixels
+              </button>
+              <button type="button" class="wide-button" id="property-bitmap-open-decoder" title="Open this bitmap in Hex to Image decoder">
+                📥 Open in Hex
+              </button>
+            </div>
+
+            <label class="field" style="margin-top: 8px;">
+              <span>Bitmap Tint / Recolor</span>
+              <div class="field-row">
+                <input id="property-bitmap-tint" type="color" value="#a8d9a8">
+                <button type="button" class="icon-button" id="property-bitmap-apply-tint" title="Apply tint color to pixels" style="padding: 4px 8px; font-size: 11px;">Apply</button>
+              </div>
+            </label>
+
+            <label class="field" style="margin-top: 8px;">
+              <span>Bitmap Opacity: <strong id="property-bitmap-opacity-val">100%</strong></span>
+              <input id="property-bitmap-opacity" type="range" min="10" max="100" value="100">
+            </label>
+          </div>
+
 
           <div class="field">
             <span>Alignment & Distribution</span>
@@ -1273,29 +1304,41 @@ document.querySelector('#app').innerHTML = `
     </footer>
 
     <div id="c-export-modal" class="modal-backdrop" hidden style="display: none;">
-      <div class="modal-dialog">
+      <div class="modal-dialog" style="max-width: 860px;">
         <div class="modal-header">
           <div class="modal-title">
-            <span>Embedded C Bitmap Export</span>
+            <span>💻 Code Export</span>
             <span id="c-export-resolution" class="badge">128 × 64 px</span>
+            <span id="c-export-format-badge" class="badge" style="background: #1f2a3a; color: #58a6ff;">C / C++</span>
           </div>
           <button type="button" class="icon-button modal-close" id="c-export-close" title="Close (Esc)">✕</button>
         </div>
+
+        <!-- CODE CATEGORY TABS -->
+        <div class="code-export-tabs" id="code-export-tabs">
+          <button type="button" class="code-tab-btn active" data-tab="c">💻 C / C++ Code</button>
+          <button type="button" class="code-tab-btn" data-tab="json">📋 JSON Code</button>
+          <button type="button" class="code-tab-btn" data-tab="hex">🔢 Hex Code</button>
+          <button type="button" class="code-tab-btn" data-tab="micropython">🐍 MicroPython</button>
+          <button type="button" class="code-tab-btn" data-tab="base64">⚡ Base64 / URI</button>
+        </div>
+
         <div class="modal-body">
           <div class="c-export-preview-column">
-            <span class="column-title">1-Bit Monochrome Hardware Preview</span>
-            <div class="preview-container">
+            <span class="column-title" id="code-preview-title">1-Bit Monochrome Hardware Preview</span>
+            <div class="preview-container" id="code-preview-container">
               <canvas id="c-export-preview" class="c-preview-canvas"></canvas>
             </div>
-            <div class="c-export-options">
+
+            <!-- MONOCHROME / IMAGE OPTIONS (C, Hex, MicroPython, Base64) -->
+            <div class="c-export-options" id="code-mono-options">
               <label class="field">
-                <span>Target Hardware Format</span>
+                <span id="code-format-label">Target Format</span>
                 <select id="c-export-format">
                   <option value="adafruit">Adafruit_GFX (Horizontal MSB-first .h)</option>
                   <option value="u8g2">U8g2 / SSD1306 (Vertical 8-px Pages .h)</option>
                   <option value="xbm">XBM (Standard X BitMap / LSB-first .h)</option>
                   <option value="arduino_sketch">Complete Arduino Sketch (.ino)</option>
-                  <option value="micropython">MicroPython framebuf (ESP32/Pico .py)</option>
                 </select>
               </label>
               <div class="field-row">
@@ -1309,9 +1352,25 @@ document.querySelector('#app').innerHTML = `
                 </label>
               </div>
             </div>
+
+            <!-- JSON EXPORT OPTIONS -->
+            <div class="c-export-options" id="code-json-options" hidden style="display: none;">
+              <div class="field-row" style="margin-top: 4px;">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="code-json-pretty" checked>
+                  Pretty-Print (2-space indent)
+                </label>
+              </div>
+              <div class="json-summary-card" style="margin-top: 12px; background: #111518; padding: 12px; border-radius: 6px; font-size: 11px; color: #8fa394; border: 1px solid #282f37; display: flex; flex-direction: column; gap: 6px;">
+                <div>📐 Display: <strong id="json-info-res" style="color: #c9d1d9;">128 × 64 px</strong></div>
+                <div>🧩 Elements: <strong id="json-info-count" style="color: #c9d1d9;">0 elements</strong></div>
+                <div>🎨 Background: <strong id="json-info-bg" style="color: #c9d1d9;">#18211b</strong></div>
+              </div>
+            </div>
           </div>
+
           <div class="c-export-code-column">
-            <span class="column-title">Generated C Header / Array</span>
+            <span class="column-title" id="code-column-title">Generated Code</span>
             <textarea id="c-export-code" class="c-code-area" readonly spellcheck="false"></textarea>
             <div class="modal-actions">
               <button type="button" class="wide-button" id="c-export-copy">📋 Copy C Code</button>
@@ -1816,6 +1875,15 @@ const propertyStrokeWidth =
   document.querySelector(
     '#property-stroke-width',
   )
+
+const bitmapProperties = document.querySelector('#bitmap-properties')
+const propertyBitmapVectorize = document.querySelector('#property-bitmap-vectorize')
+const propertyBitmapInvert = document.querySelector('#property-bitmap-invert')
+const propertyBitmapTint = document.querySelector('#property-bitmap-tint')
+const propertyBitmapApplyTint = document.querySelector('#property-bitmap-apply-tint')
+const propertyBitmapOpacity = document.querySelector('#property-bitmap-opacity')
+const propertyBitmapOpacityVal = document.querySelector('#property-bitmap-opacity-val')
+const propertyBitmapOpenDecoder = document.querySelector('#property-bitmap-open-decoder')
 
 const deleteElementButton =
   document.querySelector(
@@ -2766,6 +2834,17 @@ function renderProperties() {
       element.strokeWidth || 1
 
   }
+
+  const isBitmap = element.type === 'bitmap'
+  if (bitmapProperties) {
+    bitmapProperties.hidden = !isBitmap
+    if (isBitmap) {
+      const op = Math.round((element.opacity !== undefined ? element.opacity : 1) * 100)
+      if (propertyBitmapOpacity) propertyBitmapOpacity.value = op
+      if (propertyBitmapOpacityVal) propertyBitmapOpacityVal.textContent = `${op}%`
+      if (propertyBitmapTint && element.tint) propertyBitmapTint.value = element.tint
+    }
+  }
 }
 
 
@@ -3053,6 +3132,141 @@ deleteElementButton.addEventListener(
 
   },
 )
+
+function invertImageDataUrl(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const c = document.createElement('canvas')
+      c.width = img.width
+      c.height = img.height
+      const ctx = c.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      const idata = ctx.getImageData(0, 0, c.width, c.height)
+      const d = idata.data
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i + 3] > 0) {
+          d[i] = 255 - d[i]
+          d[i + 1] = 255 - d[i + 1]
+          d[i + 2] = 255 - d[i + 2]
+        }
+      }
+      ctx.putImageData(idata, 0, 0)
+      const newUrl = c.toDataURL('image/png')
+      setBitmapCache(newUrl, c)
+      resolve(newUrl)
+    }
+    img.src = dataUrl
+  })
+}
+
+function tintImageDataUrl(dataUrl, hexColor) {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const c = document.createElement('canvas')
+      c.width = img.width
+      c.height = img.height
+      const ctx = c.getContext('2d')
+      ctx.drawImage(img, 0, 0)
+      const idata = ctx.getImageData(0, 0, c.width, c.height)
+      const d = idata.data
+      const hex = hexColor.replace('#', '')
+      const tr = parseInt(hex.slice(0, 2), 16) || 0
+      const tg = parseInt(hex.slice(2, 4), 16) || 0
+      const tb = parseInt(hex.slice(4, 6), 16) || 0
+
+      for (let i = 0; i < d.length; i += 4) {
+        const lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]
+        if (d[i + 3] > 20 && lum > 20) {
+          d[i] = tr
+          d[i + 1] = tg
+          d[i + 2] = tb
+        }
+      }
+      ctx.putImageData(idata, 0, 0)
+      const newUrl = c.toDataURL('image/png')
+      setBitmapCache(newUrl, c)
+      resolve(newUrl)
+    }
+    img.src = dataUrl
+  })
+}
+
+propertyBitmapVectorize?.addEventListener('click', async () => {
+  const element = getSelectedElement()
+  if (!element || element.type !== 'bitmap' || !element.dataUrl) return
+
+  const origLabel = propertyBitmapVectorize.textContent
+  propertyBitmapVectorize.disabled = true
+  propertyBitmapVectorize.textContent = '⏳ Vectorizing...'
+
+  try {
+    const result = await analyzeReferenceImage({
+      detectText: true,
+      detectFrames: true,
+      detectBadges: true,
+      detectCircles: true,
+      detectSymbols: true,
+    }, element.dataUrl)
+
+    if (result && result.elements && result.elements.length > 0) {
+      const ox = element.x || 0
+      const oy = element.y || 0
+      removeElement(element.id)
+
+      for (const data of result.elements) {
+        createElementFromAnalysis({
+          ...data,
+          x: (data.x || 0) + ox,
+          y: (data.y || 0) + oy,
+        }, false)
+      }
+      notify()
+      showToast(`✨ Converted bitmap to ${result.elements.length} editable elements!`, 'info')
+    } else {
+      showToast('No distinct text or shape elements detected in this bitmap.', 'warn')
+    }
+  } catch (err) {
+    console.error(err)
+    showToast('Vectorization error: ' + err.message, 'error')
+  } finally {
+    propertyBitmapVectorize.disabled = false
+    propertyBitmapVectorize.textContent = origLabel
+  }
+})
+
+propertyBitmapInvert?.addEventListener('click', async () => {
+  const element = getSelectedElement()
+  if (!element || element.type !== 'bitmap' || !element.dataUrl) return
+  const invertedUrl = await invertImageDataUrl(element.dataUrl)
+  updateSelectedElement({ dataUrl: invertedUrl })
+  notify()
+  showToast('🔄 Bitmap pixels inverted', 'info')
+})
+
+propertyBitmapApplyTint?.addEventListener('click', async () => {
+  const element = getSelectedElement()
+  if (!element || element.type !== 'bitmap' || !element.dataUrl) return
+  const tintColor = propertyBitmapTint?.value || '#a8d9a8'
+  const tintedUrl = await tintImageDataUrl(element.dataUrl, tintColor)
+  updateSelectedElement({ dataUrl: tintedUrl, tint: tintColor })
+  notify()
+  showToast('🎨 Applied tint color to bitmap', 'info')
+})
+
+propertyBitmapOpacity?.addEventListener('input', () => {
+  const val = Number(propertyBitmapOpacity.value) || 100
+  if (propertyBitmapOpacityVal) propertyBitmapOpacityVal.textContent = `${val}%`
+  updateSelectedElement({ opacity: val / 100 })
+})
+
+propertyBitmapOpenDecoder?.addEventListener('click', () => {
+  const element = getSelectedElement()
+  if (!element || element.type !== 'bitmap') return
+  const openHexBtn = document.querySelector('#open-hex-decoder')
+  if (openHexBtn) openHexBtn.click()
+})
 
 
 // ======================================================
@@ -3362,7 +3576,7 @@ initProjectControls({
 initPngExport(editorState)
 initSvgExport(editorState)
 initCExport(editorState)
-initHexDecoder(editorState)
+initHexDecoder(editorState, { showToast })
 
 // ======================================================
 // PRO FEATURES: TOASTS, PRESETS, QUICKSTART & SHORTCUTS

@@ -51,13 +51,13 @@ const STANDARD_RESOLUTIONS = [
 // MAIN ANALYSIS
 // ======================================================
 
-export async function analyzeReferenceImage(options = {}) {
-  const reference = editorState.reference
-  if (!reference?.src) {
+export async function analyzeReferenceImage(options = {}, customImageSrc = null) {
+  const src = customImageSrc || editorState.reference?.src
+  if (!src) {
     throw new Error('Upload a reference image before analyzing.')
   }
 
-  const image = await loadImage(reference.src)
+  const image = await loadImage(src)
   const source = prepareSourceImage(image)
   const { width, height, threshold, polarity, binaryMask, imageData } = source
   const palette = extractDominantColors(imageData, binaryMask)

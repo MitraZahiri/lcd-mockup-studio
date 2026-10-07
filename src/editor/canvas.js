@@ -471,6 +471,7 @@ function renderBitmapElement(node, element) {
     node.appendChild(img)
   }
   img.src = element.dataUrl || ''
+  img.style.opacity = element.opacity !== undefined ? String(element.opacity) : '1'
 }
 
 function renderTextElement(

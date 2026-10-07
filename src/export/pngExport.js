@@ -74,9 +74,14 @@ export function setBitmapCache(dataUrl, source) {
 
 function drawBitmap(context, element) {
   if (!element.dataUrl) return
+  const prevAlpha = context.globalAlpha
+  if (element.opacity !== undefined && element.opacity >= 0 && element.opacity <= 1) {
+    context.globalAlpha = prevAlpha * element.opacity
+  }
   const cached = bitmapCache.get(element.dataUrl)
   if (cached && context.drawImage) {
     context.drawImage(cached, element.x, element.y, element.width, element.height)
+    context.globalAlpha = prevAlpha
     return
   }
   if (typeof Image !== 'undefined') {
@@ -86,6 +91,7 @@ function drawBitmap(context, element) {
       context.drawImage(img, element.x, element.y, element.width, element.height)
     }
   }
+  context.globalAlpha = prevAlpha
 }
 
 export function renderProjectCanvas(project, canvas) {

@@ -6,6 +6,8 @@
 
 import { updateDisplay, updateReference, addElement, createId, notify } from '../editor/state.js'
 import { setBitmapCache } from '../export/pngExport.js'
+import { analyzeReferenceImage } from '../analysis/imageAnalyzer.js'
+import { createElementFromAnalysis } from '../editor/elements.js'
 
 /**
  * Parses raw text input containing C arrays, hex dumps, XBM, or raw hex byte streams.
@@ -675,7 +677,8 @@ export const HEX_SAMPLES = [
 /**
  * Initializes the Hex to Image Decoder UI and interactions.
  */
-export function initHexDecoder(state) {
+export function initHexDecoder(state, options = {}) {
+  const showToast = options.showToast || (() => {})
   const openBtn = document.querySelector('#open-hex-decoder')
   const refFromHexBtn = document.querySelector('#reference-from-hex-btn')
   const modal = document.querySelector('#hex-decoder-modal')
@@ -982,31 +985,75 @@ export function initHexDecoder(state) {
   })
 
   // Action: Set as Project Screen
-  setProjectBtn.addEventListener('click', () => {
+  setProjectBtn.addEventListener('click', async () => {
     if (!previewCanvas || currentBytes.length === 0) return
     const dataUrl = previewCanvas.toDataURL('image/png')
     setBitmapCache(dataUrl, previewCanvas)
 
-    updateDisplay({
-      width: currentWidth,
-      height: currentHeight,
-      background: bgColorInput.value,
-    })
+    const origLabel = setProjectBtn.textContent
+    setProjectBtn.textContent = '⏳ Creating Mockup...'
+    setProjectBtn.disabled = true
 
-    const newElement = {
-      id: createId(),
-      type: 'bitmap',
-      name: `Decoded Screen (${currentWidth}×${currentHeight})`,
-      x: 0,
-      y: 0,
-      width: currentWidth,
-      height: currentHeight,
-      dataUrl,
+    try {
+      updateDisplay({
+        width: currentWidth,
+        height: currentHeight,
+        background: bgColorInput.value,
+      })
+
+      // Always set the original decoded bitmap as background reference image
+      // so user can trace, compare, and use the reference tools!
+      updateReference({
+        src: dataUrl,
+        fileName: `hex_${currentWidth}x${currentHeight}.png`,
+        naturalWidth: currentWidth,
+        naturalHeight: currentHeight,
+      })
+
+      let vectorized = false
+      try {
+        const result = await analyzeReferenceImage({
+          detectText: true,
+          detectFrames: true,
+          detectBadges: true,
+          detectCircles: true,
+          detectSymbols: true,
+        }, dataUrl)
+
+        if (result && result.elements && result.elements.length > 0) {
+          state.elements = []
+          for (const data of result.elements) {
+            createElementFromAnalysis(data, false)
+          }
+          notify()
+          vectorized = true
+          showToast(`✨ Created editable mockup with ${result.elements.length} elements! (Original in Reference)`, 'info')
+        }
+      } catch (err) {
+        console.warn('Auto-vectorization skipped:', err)
+      }
+
+      if (!vectorized) {
+        const newElement = {
+          id: createId(),
+          type: 'bitmap',
+          name: `Decoded Screen (${currentWidth}×${currentHeight})`,
+          x: 0,
+          y: 0,
+          width: currentWidth,
+          height: currentHeight,
+          dataUrl,
+        }
+        state.elements = [newElement]
+        notify()
+        showToast('🖥️ Mockup created with decoded bitmap layer & background reference.', 'info')
+      }
+
+      closeModal()
+    } finally {
+      setProjectBtn.textContent = origLabel
+      setProjectBtn.disabled = false
     }
-
-    state.elements = [newElement]
-    notify()
-    closeModal()
   })
 
   // Event Listeners
@@ -1019,13 +1066,14 @@ export function initHexDecoder(state) {
   fgColorInput.addEventListener('input', decodeAndUpdate)
   bgColorInput.addEventListener('input', decodeAndUpdate)
 
-  function openModal() {
+  function openModal(customText = null) {
     modal.removeAttribute('hidden')
     modal.hidden = false
     modal.classList.add('open')
     modal.style.display = 'flex'
-    // If empty on open, load the default SSD1306 sample for immediate visual WOW
-    if (!inputArea.value.trim()) {
+    if (typeof customText === 'string') {
+      inputArea.value = customText
+    } else if (!inputArea.value.trim()) {
       const defaultSample = HEX_SAMPLES[0]
       inputArea.value = defaultSample.getCode()
       formatSelect.value = defaultSample.format
@@ -1043,8 +1091,8 @@ export function initHexDecoder(state) {
   }
 
   // Modal open/close bindings
-  openBtn?.addEventListener('click', openModal)
-  refFromHexBtn?.addEventListener('click', openModal)
+  openBtn?.addEventListener('click', () => openModal())
+  refFromHexBtn?.addEventListener('click', () => openModal())
   closeBtn?.addEventListener('click', closeModal)
 
   modal.addEventListener('click', (e) => {
@@ -1063,4 +1111,6 @@ export function initHexDecoder(state) {
 
   // Ensure initially hidden
   closeModal()
+
+  return { openModal, closeModal }
 }

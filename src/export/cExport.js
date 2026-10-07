@@ -1,4 +1,5 @@
 import { renderProjectCanvas } from './pngExport.js'
+import { snapshotProject } from '../project/projectFormat.js'
 
 export function generateMonochromeBytes(imageData, options = {}) {
   const { width, height, data } = imageData
@@ -267,12 +268,121 @@ export function renderMonochromeToCanvas(canvas, bitmapBytes, width, height, for
   ctx.putImageData(imgData, 0, 0)
 }
 
+export function formatJsonOutput(state, format = 'json_project', pretty = true) {
+  if (format === 'json_elements') {
+    return JSON.stringify(state.elements || [], null, pretty ? 2 : 0)
+  }
+  const snapshot = snapshotProject(state, state.name || 'LCD Mockup')
+  return JSON.stringify(snapshot, null, pretty ? 2 : 0)
+}
+
+export function formatHexOutput(bitmapBytes, format = 'hex_array') {
+  if (!bitmapBytes || bitmapBytes.length === 0) return ''
+
+  if (format === 'hex_space') {
+    const lines = []
+    for (let i = 0; i < bitmapBytes.length; i += 16) {
+      const chunk = Array.from(bitmapBytes.slice(i, i + 16))
+        .map(b => b.toString(16).padStart(2, '0').toUpperCase())
+        .join(' ')
+      lines.push(chunk)
+    }
+    return lines.join('\n')
+  }
+
+  if (format === 'hex_raw') {
+    return Array.from(bitmapBytes)
+      .map(b => b.toString(16).padStart(2, '0').toUpperCase())
+      .join('')
+  }
+
+  if (format === 'hex_dump') {
+    const lines = []
+    for (let i = 0; i < bitmapBytes.length; i += 16) {
+      const offset = i.toString(16).padStart(8, '0')
+      const slice = Array.from(bitmapBytes.slice(i, i + 16))
+      const hexParts = []
+      let ascii = ''
+      for (let j = 0; j < 16; j++) {
+        if (j < slice.length) {
+          const b = slice[j]
+          hexParts.push(b.toString(16).padStart(2, '0'))
+          ascii += (b >= 32 && b <= 126) ? String.fromCharCode(b) : '.'
+        } else {
+          hexParts.push('  ')
+        }
+      }
+      const groupedHex = `${hexParts.slice(0, 4).join(' ')}  ${hexParts.slice(4, 8).join(' ')}  ${hexParts.slice(8, 12).join(' ')}  ${hexParts.slice(12, 16).join(' ')}`
+      lines.push(`${offset}: ${groupedHex}  |${ascii}|`)
+    }
+    return lines.join('\n')
+  }
+
+  // Default 'hex_array': C-style comma separated hex bytes
+  const bytesPerLine = 12
+  const lines = []
+  for (let i = 0; i < bitmapBytes.length; i += bytesPerLine) {
+    const chunk = Array.from(bitmapBytes.slice(i, i + bytesPerLine))
+      .map(b => '0x' + b.toString(16).padStart(2, '0'))
+      .join(', ')
+    lines.push('  ' + chunk + (i + bytesPerLine < bitmapBytes.length ? ',' : ''))
+  }
+  return `// Raw Hex Byte Array (${bitmapBytes.length} bytes / ${bitmapBytes.length * 8} bits)\nconst uint8_t hex_bytes[${bitmapBytes.length}] = {\n${lines.join('\n')}\n};`
+}
+
+export function formatBase64(canvasOrDataUrl, format = 'base64_dataurl', width = 128, height = 64) {
+  let dataUrl = ''
+  if (typeof canvasOrDataUrl === 'string') {
+    dataUrl = canvasOrDataUrl
+  } else if (canvasOrDataUrl && canvasOrDataUrl.toDataURL) {
+    dataUrl = canvasOrDataUrl.toDataURL('image/png')
+  }
+
+  if (format === 'base64_raw') {
+    return dataUrl.replace(/^data:image\/[a-z]+;base64,/, '')
+  }
+
+  if (format === 'base64_html') {
+    return `<img src="${dataUrl}" width="${width}" height="${height}" alt="LCD Mockup" style="image-rendering: pixelated;" />`
+  }
+
+  return dataUrl
+}
+
+const CATEGORY_FORMATS = {
+  c: [
+    { value: 'adafruit', label: 'Adafruit_GFX (Horizontal MSB-first .h)' },
+    { value: 'u8g2', label: 'U8g2 / SSD1306 (Vertical 8-px Pages .h)' },
+    { value: 'xbm', label: 'XBM (Standard X BitMap / LSB-first .h)' },
+    { value: 'arduino_sketch', label: 'Complete Arduino Sketch (.ino)' },
+  ],
+  json: [
+    { value: 'json_project', label: 'Full Project Layout & Elements (.json)' },
+    { value: 'json_elements', label: 'Canvas Elements Only Array (.json)' },
+  ],
+  hex: [
+    { value: 'hex_array', label: 'C Hex Array (0x00, 0x1F, ...)' },
+    { value: 'hex_space', label: 'Space-Separated Bytes (00 1F FF ...)' },
+    { value: 'hex_dump', label: 'Formatted Memory Hex Dump' },
+    { value: 'hex_raw', label: 'Continuous Hex Stream (001FFF...)' },
+  ],
+  micropython: [
+    { value: 'micropython', label: 'MicroPython framebuf (ESP32/Pico .py)' },
+  ],
+  base64: [
+    { value: 'base64_dataurl', label: 'PNG Data URI (data:image/png;base64,...)' },
+    { value: 'base64_raw', label: 'Raw Base64 Payload String' },
+    { value: 'base64_html', label: 'HTML <img> Tag Snippet' },
+  ],
+}
+
 export function initCExport(state) {
   const exportBtn = document.querySelector('#export-c')
   const modal = document.querySelector('#c-export-modal')
   if (!exportBtn || !modal) return
 
   const closeBtn = modal.querySelector('#c-export-close')
+  const tabBtns = modal.querySelectorAll('.code-tab-btn')
   const formatSelect = modal.querySelector('#c-export-format')
   const thresholdSlider = modal.querySelector('#c-export-threshold')
   const thresholdVal = modal.querySelector('#c-export-threshold-val')
@@ -281,10 +391,68 @@ export function initCExport(state) {
   const copyBtn = modal.querySelector('#c-export-copy')
   const downloadBtn = modal.querySelector('#c-export-download')
   const previewCanvas = modal.querySelector('#c-export-preview')
+  const previewContainer = modal.querySelector('#code-preview-container')
+  const previewTitle = modal.querySelector('#code-preview-title')
   const resolutionInfo = modal.querySelector('#c-export-resolution')
+  const formatBadge = modal.querySelector('#c-export-format-badge')
+  const monoOptions = modal.querySelector('#code-mono-options')
+  const jsonOptions = modal.querySelector('#code-json-options')
+  const jsonPrettyCheck = modal.querySelector('#code-json-pretty')
 
+  let currentCategory = 'c'
   let currentCode = ''
   let currentBytes = null
+
+  function populateFormatSelect(category) {
+    if (!formatSelect) return
+    const options = CATEGORY_FORMATS[category] || CATEGORY_FORMATS.c
+    formatSelect.innerHTML = ''
+    for (const opt of options) {
+      const el = document.createElement('option')
+      el.value = opt.value
+      el.textContent = opt.label
+      formatSelect.appendChild(el)
+    }
+  }
+
+  function setCategory(category) {
+    currentCategory = category
+    tabBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === category)
+    })
+    populateFormatSelect(category)
+
+    if (monoOptions && jsonOptions) {
+      if (category === 'json') {
+        monoOptions.hidden = true
+        monoOptions.style.display = 'none'
+        jsonOptions.hidden = false
+        jsonOptions.style.display = 'flex'
+        if (previewContainer) previewContainer.style.display = 'none'
+        if (previewTitle) previewTitle.style.display = 'none'
+      } else {
+        monoOptions.hidden = false
+        monoOptions.style.display = 'flex'
+        jsonOptions.hidden = true
+        jsonOptions.style.display = 'none'
+        if (previewContainer) previewContainer.style.display = 'flex'
+        if (previewTitle) previewTitle.style.display = 'block'
+      }
+    }
+
+    if (formatBadge) {
+      const labels = {
+        c: 'C / C++',
+        json: 'JSON',
+        hex: 'Hex Code',
+        micropython: 'Python',
+        base64: 'Base64',
+      }
+      formatBadge.textContent = labels[category] || 'Code'
+    }
+
+    updateExport()
+  }
 
   function updateExport() {
     const { width, height } = state.display
@@ -296,44 +464,82 @@ export function initCExport(state) {
     if (!ctx) return
     const imageData = ctx.getImageData(0, 0, width, height)
 
-    const format = formatSelect.value
-    const threshold = Number(thresholdSlider.value)
-    const invert = invertCheck.checked
+    const format = formatSelect ? formatSelect.value : 'adafruit'
+    const threshold = thresholdSlider ? Number(thresholdSlider.value) : 128
+    const invert = invertCheck ? invertCheck.checked : false
 
-    thresholdVal.textContent = String(threshold)
-    resolutionInfo.textContent = `${width} × ${height} px`
+    if (thresholdVal) thresholdVal.textContent = String(threshold)
+    if (resolutionInfo) resolutionInfo.textContent = `${width} × ${height} px`
 
-    const previewFormat = format === 'arduino_sketch' ? 'xbm' : (format === 'micropython' ? 'adafruit' : format)
-    currentBytes = generateMonochromeBytes(imageData, { threshold, invert, format })
-    renderMonochromeToCanvas(previewCanvas, currentBytes, width, height, previewFormat)
+    // Update JSON summary card if present
+    const jsonRes = modal.querySelector('#json-info-res')
+    const jsonCount = modal.querySelector('#json-info-count')
+    const jsonBg = modal.querySelector('#json-info-bg')
+    if (jsonRes) jsonRes.textContent = `${width} × ${height} px`
+    if (jsonCount) jsonCount.textContent = `${state.elements?.length || 0} elements`
+    if (jsonBg) jsonBg.textContent = state.display?.background || '#000000'
 
-    currentCode = formatCSource({
-      bitmapBytes: currentBytes,
-      width,
-      height,
-      format,
-      variableName: 'lcd_mockup_bitmap',
-      projectName: 'LCD Mockup',
-    })
-
-    codeArea.value = currentCode
-
-    if (copyBtn) {
-      if (format === 'arduino_sketch') copyBtn.textContent = '📋 Copy Arduino Sketch'
-      else if (format === 'micropython') copyBtn.textContent = '📋 Copy Python Code'
-      else copyBtn.textContent = '📋 Copy C Code'
+    if (currentCategory === 'json') {
+      const pretty = jsonPrettyCheck ? jsonPrettyCheck.checked : true
+      currentCode = formatJsonOutput(state, format, pretty)
+      if (codeArea) codeArea.value = currentCode
+      if (copyBtn) copyBtn.textContent = '📋 Copy JSON Code'
+      if (downloadBtn) downloadBtn.textContent = '⭳ Download .json File'
+      return
     }
 
-    if (downloadBtn) {
-      if (format === 'arduino_sketch') downloadBtn.textContent = '⭳ Download .ino Sketch'
-      else if (format === 'micropython') downloadBtn.textContent = '⭳ Download .py Script'
-      else if (format === 'xbm') downloadBtn.textContent = '⭳ Download .xbm File'
-      else downloadBtn.textContent = '⭳ Download .h Header'
+    // For image-based formats (c, hex, micropython, base64)
+    const previewFormat = (format === 'arduino_sketch' || format === 'xbm') ? 'xbm' : 'adafruit'
+    currentBytes = generateMonochromeBytes(imageData, { threshold, invert, format: previewFormat })
+    if (previewCanvas) {
+      renderMonochromeToCanvas(previewCanvas, currentBytes, width, height, previewFormat)
     }
+
+    if (currentCategory === 'hex') {
+      currentCode = formatHexOutput(currentBytes, format)
+      if (copyBtn) copyBtn.textContent = '📋 Copy Hex Code'
+      if (downloadBtn) downloadBtn.textContent = '⭳ Download .hex File'
+    } else if (currentCategory === 'micropython') {
+      currentCode = formatCSource({
+        bitmapBytes: currentBytes,
+        width,
+        height,
+        format: 'micropython',
+        variableName: 'lcd_mockup_bitmap',
+        projectName: 'LCD Mockup',
+      })
+      if (copyBtn) copyBtn.textContent = '📋 Copy Python Code'
+      if (downloadBtn) downloadBtn.textContent = '⭳ Download .py Script'
+    } else if (currentCategory === 'base64') {
+      currentCode = formatBase64(previewCanvas || offscreen, format, width, height)
+      if (copyBtn) copyBtn.textContent = '📋 Copy Base64'
+      if (downloadBtn) downloadBtn.textContent = '⭳ Download .txt File'
+    } else {
+      // Default: C / C++
+      currentCode = formatCSource({
+        bitmapBytes: currentBytes,
+        width,
+        height,
+        format,
+        variableName: 'lcd_mockup_bitmap',
+        projectName: 'LCD Mockup',
+      })
+      if (copyBtn) {
+        if (format === 'arduino_sketch') copyBtn.textContent = '📋 Copy Arduino Sketch'
+        else copyBtn.textContent = '📋 Copy C Code'
+      }
+      if (downloadBtn) {
+        if (format === 'arduino_sketch') downloadBtn.textContent = '⭳ Download .ino Sketch'
+        else if (format === 'xbm') downloadBtn.textContent = '⭳ Download .xbm File'
+        else downloadBtn.textContent = '⭳ Download .h Header'
+      }
+    }
+
+    if (codeArea) codeArea.value = currentCode
   }
 
   function openModal() {
-    updateExport()
+    setCategory(currentCategory || 'c')
     modal.removeAttribute('hidden')
     modal.hidden = false
     modal.classList.add('open')
@@ -360,9 +566,17 @@ export function initCExport(state) {
     }
   })
 
+  // Category tab clicks
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      setCategory(btn.dataset.tab)
+    })
+  })
+
   formatSelect?.addEventListener('change', updateExport)
   thresholdSlider?.addEventListener('input', updateExport)
   invertCheck?.addEventListener('change', updateExport)
+  jsonPrettyCheck?.addEventListener('change', updateExport)
 
   copyBtn?.addEventListener('click', async () => {
     if (!currentCode) return
@@ -382,11 +596,14 @@ export function initCExport(state) {
   downloadBtn?.addEventListener('click', () => {
     if (!currentCode) return
     const { width, height } = state.display
-    const format = formatSelect.value
+    const format = formatSelect ? formatSelect.value : 'c'
     let ext = 'h'
-    if (format === 'arduino_sketch') ext = 'ino'
-    else if (format === 'micropython') ext = 'py'
+    if (currentCategory === 'json') ext = 'json'
+    else if (currentCategory === 'hex') ext = 'hex'
+    else if (currentCategory === 'micropython' || format === 'micropython') ext = 'py'
+    else if (format === 'arduino_sketch') ext = 'ino'
     else if (format === 'xbm') ext = 'xbm'
+    else if (currentCategory === 'base64') ext = 'txt'
 
     const blob = new Blob([currentCode], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)

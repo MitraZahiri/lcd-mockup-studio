@@ -69,7 +69,10 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
     * **Grayscale**: 8-bit (1 byte per pixel)
   * **Smart Auto-Detection**: Auto-detects dimensions from `#define ..._width` / `height` directives, computes total byte/bit statistics, and suggests standard display resolutions (SSD1306 128×64 / 128×32, Nokia 5110 84×48, ST7735 128×128, ST7789 240×240).
   * **Interactive Screen Emulation**: Switch between OLED Cyan, Matrix Green, Amber Yellow, Nokia Teal, or custom themes; inspect individual pixel bits and coordinates on hover, toggle pixel grids, and zoom up to 8×.
-  * **Seamless Studio Actions**: Copy decoded image to clipboard, download PNG, insert as canvas layer, set as reference image, or create a brand new mockup from it.
+  * **Seamless Studio Actions & Full Vectorization**:
+    * **🖥️ Create Editable Mockup From This**: Automatically updates display size, saves the decoded image as a persistent 1:1 trace reference, and runs computer vision to vectorize the screen into fully editable Text, Rectangle frames, Lines, and Symbol layers!
+    * **Layer Bitmap Controls**: If kept as a bitmap, fine-tune with 1-click Invert, Recolor/Tint to theme color, Opacity slider (10%–100%), or convert to editable vector elements at any time.
+    * Copy decoded image to clipboard, download PNG, or insert as canvas layer.
 * 📡 **1-Bit Retro Wirephoto & Telegraphic Scanline Engraving Engine**:
   * Transform real photographic portraits, faces, and technical schematics into authentic 20th-century **Belinograph facsimile & wirephoto scanline engravings**.
   * **Dynamic Thickness Modulation**: Modulates scanline stroke weight and thickness in real-time based on local image luminance and darkness gradients.
@@ -102,11 +105,14 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
   * **Geometry & Shapes**: Automatically extracts border frames, dividing lines, circular indicators, and solid badges.
   * **Dedicated LCD Symbols**: Detects ascending Wi-Fi/cellular signal bars, battery meters with internal charge level, directional arrows, locks, and checkboxes.
   * **Color Palette Auto-Adoption**: Automatically samples display background and foreground pixel colors from the photo.
-* 💻 **Microcontroller & Embedded Firmware Export**:
-  * Live 1-bit monochrome hardware preview with real-time luminance threshold and inversion toggles.
-  * **Adafruit_GFX & U8g2 Headers**: Generates clean `.h` header arrays for horizontal MSB-first, vertical page-packed LSB-first, and XBM formats.
-  * **⚡ Complete Arduino Sketch (`.ino`)**: Ready-to-flash complete sketch with I2C initialization and `u8g2.drawXBMP()`.
-  * **🐍 MicroPython Script (`.py`)**: Generates `framebuf.FrameBuffer(bitmap, ...)` bytearrays ready for ESP32 and Raspberry Pi Pico.
+* 💻 **Unified Multi-Format Code Export ("Code" Modal)**:
+  * Click **"Code"** in the top navigation bar to access instant exports across 5 interactive tabs:
+    * **C / C++ Code**: Adafruit_GFX (`.h`), U8g2 (`.h`), XBM (`.h`), and complete Arduino Sketch (`.ino`) with live monochrome hardware preview and polarity inversion.
+    * **JSON Code**: Complete project schema (`.json`) with all vector layers, geometries, and fonts, or canvas elements array only.
+    * **Hex Code**: C byte array (`0x00, 0xFF, ...`), space-separated byte pairs (`00 FF ...`), formatted hex dump with offsets, and continuous raw hex stream.
+    * **MicroPython Script (`.py`)**: Generates `framebuf.FrameBuffer(bytearray([...]), ...)` ready for ESP32 and Raspberry Pi Pico.
+    * **Base64 / Data URI**: Direct Web Data URI (`data:image/png;base64,...`), raw base64 string, and HTML `<img>` tag ready to paste into web apps.
+  * Real-time 1-click **Copy to Clipboard** and **Download File** (`.h`, `.json`, `.hex`, `.py`, `.txt`) for all formats.
 * 🎛️ **Target Hardware Display Presets**:
   * 1-Click dimensions and color mapping for **SSD1306** (128×64 & 128×32 OLED), **ST7920** (128×64 Graphic LCD), **PCD8544** (Nokia 5110), **HD44780** (16×2 Character LCD), and **ST7789** (240×240 IPS).
 * 📐 **Vector & Document Export**:
