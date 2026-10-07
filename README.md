@@ -3,7 +3,7 @@
 
 [![Deploy to GitHub Pages](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml/badge.svg)](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml)
 [![Live Studio](https://img.shields.io/badge/🚀%20Live%20Studio-Online-4ade80?style=for-the-badge&logo=googlechrome&logoColor=white)](https://mitrazahiri.github.io/lcd-mockup-studio/)
-[![Tests](https://img.shields.io/badge/Tests-95%2F95%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
+[![Tests](https://img.shields.io/badge/Tests-97%2F97%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
 [![License: MIT](https://img.shields.io/badge/License-MIT-facc15?style=for-the-badge)](LICENSE)
 
 **[👉 Launch Studio in Browser (No Install Needed)](https://mitrazahiri.github.io/lcd-mockup-studio/)**  
@@ -117,6 +117,7 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
   * Real-time 1-click **Copy to Clipboard** and **Download File** (`.h`, `.json`, `.hex`, `.py`, `.txt`) for all formats.
 * 🎛️ **Target Hardware Display Presets**:
   * 1-Click dimensions and color mapping for **SSD1306** (128×64 & 128×32 OLED), **ST7920** (128×64 Graphic LCD), **PCD8544** (Nokia 5110), **HD44780** (16×2 Character LCD), and **ST7789** (240×240 IPS).
+* 🖼️ **Custom PNG Logo & Asset Layers**: Insert company logos, device icons, or graphic sprites directly via the **"🖼️ Image / Logo"** tool or by dragging and dropping PNG/SVG/JPG files onto the canvas. Fully resizable and draggable with dedicated controls for Opacity, Invert, Recolor/Tint to match the display theme, and 1-click vector conversion.
 * 📐 **Vector & Document Export**:
   * **SVG Vector Export**: Scalable vector graphics with precise clip paths for manuals, datasheets, and schematics.
   * **Native PNG Export**: Pixel-for-pixel hardware resolution preservation.
@@ -204,7 +205,7 @@ npm install
 # Start local Vite development server
 npm run dev
 
-# Run test suite (95 unit tests)
+# Run test suite (97 unit tests)
 npm test
 
 # Build production bundle

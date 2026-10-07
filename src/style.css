@@ -301,6 +301,13 @@ button {
   min-height: 0;
 
   background: #11151a;
+  transition: outline 0.15s ease, background-color 0.15s ease;
+}
+
+.workspace.drag-over {
+  background-color: #152219 !important;
+  outline: 2px dashed #8be28b !important;
+  outline-offset: -4px;
 }
 
 .workspace-header {

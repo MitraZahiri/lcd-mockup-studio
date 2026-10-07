@@ -79,11 +79,64 @@ export function createElement(type) {
       color: '#a8d9a8',
       strokeWidth: 2,
     }
+  } else if (type === 'icon') {
+    const size = Math.max(16, Math.min(32, Math.round(editorState.display.height * 0.2)))
+    const position = getCenterPosition(size, size)
+    element = {
+      id: createId(),
+      type: 'text',
+      name: 'Symbol Icon',
+      x: position.x,
+      y: position.y,
+      width: size,
+      height: size,
+      text: '⚡',
+      fontSize: Math.max(12, Math.round(size * 0.75)),
+      fontFamily: 'Courier New',
+      fontWeight: 700,
+      color: '#a8d9a8',
+    }
   }
 
   if (element) {
     addElement(element)
   }
+}
+
+export function createBitmapElementFromData(options = {}) {
+  const { dataUrl, name = 'Logo', naturalWidth = 64, naturalHeight = 64, x, y } = options
+  const dispW = editorState.display.width || 128
+  const dispH = editorState.display.height || 64
+
+  // Adaptive scale to fit comfortably within display (max 50% width and height)
+  let targetW = naturalWidth
+  let targetH = naturalHeight
+  const maxW = Math.max(16, Math.round(dispW * 0.5))
+  const maxH = Math.max(16, Math.round(dispH * 0.5))
+
+  if (targetW > maxW || targetH > maxH) {
+    const ratio = Math.min(maxW / targetW, maxH / targetH)
+    targetW = Math.max(8, Math.round(targetW * ratio))
+    targetH = Math.max(8, Math.round(targetH * ratio))
+  }
+
+  const posX = x !== undefined ? x : Math.max(0, Math.round((dispW - targetW) / 2))
+  const posY = y !== undefined ? y : Math.max(0, Math.round((dispH - targetH) / 2))
+
+  const element = {
+    id: createId(),
+    type: 'bitmap',
+    name: name || 'Logo',
+    x: posX,
+    y: posY,
+    width: targetW,
+    height: targetH,
+    dataUrl,
+    opacity: 1,
+  }
+
+  addElement(element)
+  return element
 }
 
 export function createElementFromAnalysis(data, shouldNotify = true) {

@@ -15,6 +15,10 @@ import {
   setOverlayOpacity,
   LCD_PRESETS,
 } from '../src/editor/state.js'
+import {
+  createElement,
+  createBitmapElementFromData,
+} from '../src/editor/elements.js'
 
 function setupTestState() {
   clearElements()
@@ -190,5 +194,32 @@ test('distributeElements evenly spaces elements along horizontal and vertical ax
   assert.equal(el1.x, 10)
   assert.equal(el2.x, 115)
   assert.equal(el3.x, 200)
+})
+
+test('createBitmapElementFromData creates and adaptively scales custom image logo layer', () => {
+  setupTestState()
+  const el = createBitmapElementFromData({
+    dataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    name: 'CompanyLogo',
+    naturalWidth: 400,
+    naturalHeight: 300,
+  })
+
+  assert.equal(el.type, 'bitmap')
+  assert.equal(el.name, 'CompanyLogo')
+  // Display is 300x200, max width 150, max height 100.
+  // 400x300 scaled down with ratio: max(150/400, 100/300) = 0.3333 => w: 133, h: 100
+  assert.ok(el.width <= 150)
+  assert.ok(el.height <= 100)
+  assert.ok(editorState.elements.some(e => e.id === el.id))
+})
+
+test('createElement supports icon symbol element', () => {
+  setupTestState()
+  createElement('icon')
+  const icon = editorState.elements[editorState.elements.length - 1]
+  assert.equal(icon.type, 'text')
+  assert.equal(icon.name, 'Symbol Icon')
+  assert.equal(icon.text, '⚡')
 })
 

@@ -40,6 +40,7 @@ import {
 import {
   createElement,
   createElementFromAnalysis,
+  createBitmapElementFromData,
 } from './editor/elements.js'
 
 import {
@@ -551,7 +552,44 @@ document.querySelector('#app').innerHTML = `
             </span>
           </button>
 
+          <button
+            class="element-card"
+            id="btn-upload-image-element"
+            type="button"
+            title="Upload custom PNG image, logo or icon as a canvas layer"
+          >
+            <span class="element-icon">
+              🖼️
+            </span>
+
+            <span>
+              Image / Logo
+            </span>
+          </button>
+
+          <button
+            class="element-card"
+            data-element-type="icon"
+            type="button"
+            title="Insert LCD Icon / Symbol (⚡, ★, ♥, ⚙️)"
+          >
+            <span class="element-icon">
+              ⚡
+            </span>
+
+            <span>
+              Icon
+            </span>
+          </button>
+
         </div>
+
+        <input
+          id="image-element-file-input"
+          type="file"
+          accept="image/png,image/jpeg,image/svg+xml,image/webp,image/gif"
+          hidden
+        >
 
         <div class="panel-subtitle" style="margin-top: 14px; margin-bottom: 8px; font-size: 11px; font-weight: 700; color: #8fa394; text-transform: uppercase; letter-spacing: 0.5px;">
           LCD Stencils
@@ -2073,6 +2111,78 @@ document
     )
 
   })
+
+// ======================================================
+// CUSTOM IMAGE / LOGO ELEMENT UPLOAD & DRAG-AND-DROP
+// ======================================================
+
+function insertImageElementFromFile(file) {
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const dataUrl = e.target.result
+    const img = new Image()
+    img.onload = () => {
+      const naturalWidth = img.naturalWidth || 64
+      const naturalHeight = img.naturalHeight || 64
+      const rawName = file.name ? file.name.replace(/\.[^/.]+$/, '') : 'Logo'
+      const cleanName = rawName.charAt(0).toUpperCase() + rawName.slice(1)
+      const element = createBitmapElementFromData({
+        dataUrl,
+        name: cleanName,
+        naturalWidth,
+        naturalHeight,
+      })
+      showToast(`✨ Added "${cleanName}" (${element.width}×${element.height}px) to canvas!`, 'info')
+    }
+    img.src = dataUrl
+  }
+  reader.readAsDataURL(file)
+}
+
+const btnUploadImage = document.querySelector('#btn-upload-image-element')
+const imageFileInput = document.querySelector('#image-element-file-input')
+
+if (btnUploadImage && imageFileInput) {
+  btnUploadImage.addEventListener('click', () => {
+    imageFileInput.click()
+  })
+
+  imageFileInput.addEventListener('change', () => {
+    const file = imageFileInput.files?.[0]
+    if (file) {
+      insertImageElementFromFile(file)
+      imageFileInput.value = ''
+    }
+  })
+}
+
+// Workspace drag & drop image to insert as logo layer
+const workspaceEl = document.querySelector('.workspace')
+if (workspaceEl) {
+  workspaceEl.addEventListener('dragover', (e) => {
+    e.preventDefault()
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
+    workspaceEl.classList.add('drag-over')
+  })
+
+  workspaceEl.addEventListener('dragleave', (e) => {
+    e.preventDefault()
+    workspaceEl.classList.remove('drag-over')
+  })
+
+  workspaceEl.addEventListener('drop', (e) => {
+    e.preventDefault()
+    workspaceEl.classList.remove('drag-over')
+    const files = e.dataTransfer?.files
+    if (files && files.length > 0) {
+      const file = files[0]
+      if (file.type.startsWith('image/')) {
+        insertImageElementFromFile(file)
+      }
+    }
+  })
+}
 
 
 // ======================================================
