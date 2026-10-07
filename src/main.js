@@ -3,6 +3,7 @@ import { initProjectControls } from './project/projectControls.js'
 import { initPngExport, setBitmapCache } from './export/pngExport.js'
 import { initSvgExport } from './export/svgExport.js'
 import { initCExport } from './export/cExport.js'
+import { initHexDecoder } from './display/hexDecoder.js'
 
 import {
   editorState,
@@ -152,6 +153,15 @@ document.querySelector('#app').innerHTML = `
           Export C Code
         </button>
 
+        <button
+          type="button"
+          class="export-button hex-decoder-button"
+          id="open-hex-decoder"
+          title="Hex to Image: Decode C Arrays, Hex Bytes, XBM into Visual Bitmaps"
+        >
+          📥 Hex to Image
+        </button>
+
         <div class="separator"></div>
 
         <button
@@ -260,6 +270,14 @@ document.querySelector('#app').innerHTML = `
             </button>
             <div class="sample-dropdown-menu" id="sample-dropdown-menu" hidden></div>
           </div>
+          <button
+            class="wide-button secondary-button"
+            id="reference-from-hex-btn"
+            type="button"
+            title="Import reference from C code or hex byte array"
+          >
+            📥 From Hex
+          </button>
         </div>
 
 
@@ -1304,6 +1322,174 @@ document.querySelector('#app').innerHTML = `
       </div>
     </div>
 
+    <!-- HEX TO IMAGE DECODER MODAL -->
+    <div id="hex-decoder-modal" class="modal-backdrop" hidden style="display: none;">
+      <div class="modal-dialog hex-modal-dialog">
+        <div class="modal-header">
+          <div class="modal-title">
+            <span>📥 Hex to Image — Embedded C Bitmap &amp; Byte Decoder</span>
+            <span id="hex-decoder-byte-count" class="badge">0 Bytes (0 Bits)</span>
+            <span id="hex-decoder-resolution-badge" class="badge">128 × 64 px</span>
+            <span id="hex-decoder-status-badge" class="badge status-match">Ready</span>
+          </div>
+          <button type="button" class="icon-button modal-close" id="hex-decoder-close" title="Close (Esc)">✕</button>
+        </div>
+        <div class="modal-body hex-modal-body">
+          <!-- LEFT COLUMN: CODE INPUT & CONTROLS -->
+          <div class="hex-input-column">
+            <div class="hex-column-header">
+              <span class="column-title">Hex Code / C Array Input</span>
+              <div class="hex-sample-controls">
+                <select id="hex-decoder-samples" class="hex-select-compact" title="Load real-world LCD sample code">
+                  <option value="">Load Sample Hex ▾</option>
+                </select>
+                <button type="button" id="hex-decoder-clear" class="hex-btn-compact" title="Clear input">✕ Clear</button>
+              </div>
+            </div>
+
+            <textarea
+              id="hex-decoder-input"
+              class="c-code-area hex-code-area"
+              spellcheck="false"
+              placeholder="// Paste C array, XBM bits, MicroPython bytearray, or raw hex bytes here...&#10;// Example:&#10;// static const unsigned char PROGMEM logo_bmp[] = { 0x00, 0xFF, ... };&#10;// Or raw: 00 FF A1 B2 ... or 0x00, 0xFF..."
+            ></textarea>
+
+            <div id="hex-decoder-hint" class="hex-status-banner">
+              Paste any C header, XBM, MicroPython array, or raw hex bytes to decode.
+            </div>
+
+            <div class="hex-config-card">
+              <div class="hex-config-row">
+                <label class="field" style="flex: 1.4;">
+                  <span>Format / Scan Direction</span>
+                  <select id="hex-decoder-format">
+                    <option value="adafruit">Adafruit_GFX (Horizontal MSB-first .h)</option>
+                    <option value="u8g2">U8g2 / SSD1306 (Vertical 8-px Pages .h)</option>
+                    <option value="xbm">XBM (Standard X BitMap / LSB-first .h)</option>
+                    <option value="vertical_msb">Vertical / Column-major MSB-first</option>
+                    <option value="rgb565_be">RGB565 Color (16-bit Big-Endian / TFT)</option>
+                    <option value="rgb565_le">RGB565 Color (16-bit Little-Endian)</option>
+                    <option value="gray8">Grayscale (8-bit / 1 Byte per px)</option>
+                  </select>
+                </label>
+
+                <label class="field" style="flex: 1;">
+                  <span>Quick Preset</span>
+                  <select id="hex-decoder-presets">
+                    <option value="">Choose Preset ▾</option>
+                    <option value="128x64">128 × 64 (SSD1306 / ST7920)</option>
+                    <option value="128x32">128 × 32 (SSD1306 0.91")</option>
+                    <option value="84x48">84 × 48 (Nokia 5110 PCD8544)</option>
+                    <option value="128x128">128 × 128 (ST7735 / Color)</option>
+                    <option value="240x240">240 × 240 (ST7789 IPS)</option>
+                    <option value="240x320">240 × 320 (ILI9341 TFT)</option>
+                    <option value="96x64">96 × 64 (OLED)</option>
+                    <option value="64x64">64 × 64 (Square Icon)</option>
+                    <option value="32x32">32 × 32 (Badge)</option>
+                    <option value="16x16">16 × 16 (Small Icon)</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="hex-config-row" style="align-items: flex-end;">
+                <label class="field" style="flex: 1;">
+                  <span>Width (px)</span>
+                  <input type="number" id="hex-decoder-width" min="1" max="1024" value="128">
+                </label>
+
+                <label class="field" style="flex: 1;">
+                  <span>Height (px)</span>
+                  <input type="number" id="hex-decoder-height" min="1" max="1024" value="64">
+                </label>
+
+                <button type="button" id="hex-decoder-auto-height" class="hex-btn-tool" title="Auto-calculate height from byte count and width">
+                  ⚡ Auto Height
+                </button>
+
+                <button type="button" id="hex-decoder-swap-dim" class="hex-btn-tool" title="Swap Width and Height">
+                  ⇄ Swap
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: LIVE SCREEN PREVIEW & ACTIONS -->
+          <div class="hex-preview-column">
+            <div class="hex-column-header">
+              <span class="column-title">Live Hardware Screen Preview</span>
+              <div class="hex-zoom-group">
+                <span style="font-size: 11px; color: #8fa394; margin-right: 4px;">Zoom:</span>
+                <button type="button" class="hex-zoom-btn" data-zoom="1">1×</button>
+                <button type="button" class="hex-zoom-btn active" data-zoom="2">2×</button>
+                <button type="button" class="hex-zoom-btn" data-zoom="4">4×</button>
+                <button type="button" class="hex-zoom-btn" data-zoom="8">8×</button>
+              </div>
+            </div>
+
+            <div class="hex-preview-container">
+              <canvas id="hex-decoder-preview" class="hex-preview-canvas"></canvas>
+            </div>
+
+            <div id="hex-decoder-pixel-info" class="hex-pixel-info">
+              Hover over canvas to inspect individual bits and coordinates
+            </div>
+
+            <div class="hex-appearance-bar">
+              <label class="field" style="margin-bottom: 0;">
+                <span style="font-size: 10px;">Color Theme</span>
+                <select id="hex-decoder-theme" style="padding: 3px 6px; font-size: 11px;">
+                  <option value="matrix">LCD Matrix Green</option>
+                  <option value="oled_blue">OLED Cyan Blue</option>
+                  <option value="oled_white">OLED Pure White</option>
+                  <option value="oled_amber">OLED Amber Yellow</option>
+                  <option value="nokia">Nokia 5110 Teal</option>
+                  <option value="bw">Paper Black &amp; White</option>
+                </select>
+              </label>
+
+              <label class="field" style="margin-bottom: 0; width: 45px;">
+                <span style="font-size: 10px;">Pixel</span>
+                <input type="color" id="hex-decoder-fg-color" value="#a8d9a8" style="padding: 1px; height: 24px; cursor: pointer;">
+              </label>
+
+              <label class="field" style="margin-bottom: 0; width: 45px;">
+                <span style="font-size: 10px;">Back</span>
+                <input type="color" id="hex-decoder-bg-color" value="#18211b" style="padding: 1px; height: 24px; cursor: pointer;">
+              </label>
+
+              <label class="checkbox-label" style="margin-top: 14px; white-space: nowrap; font-size: 11px;">
+                <input type="checkbox" id="hex-decoder-invert">
+                Invert
+              </label>
+
+              <label class="checkbox-label" style="margin-top: 14px; white-space: nowrap; font-size: 11px;">
+                <input type="checkbox" id="hex-decoder-grid">
+                Pixel Grid
+              </label>
+            </div>
+
+            <div class="hex-actions-grid">
+              <button type="button" class="wide-button" id="hex-decoder-copy-img" title="Copy PNG image directly to clipboard">
+                📋 Copy Image
+              </button>
+              <button type="button" class="wide-button" id="hex-decoder-download-png" title="Download decoded image as PNG file">
+                ⭳ Download PNG
+              </button>
+              <button type="button" class="wide-button primary-button" id="hex-decoder-insert-layer" title="Insert decoded bitmap as a new layer into canvas">
+                🖼️ Insert as Layer
+              </button>
+              <button type="button" class="wide-button secondary-button" id="hex-decoder-set-reference" title="Set decoded image as background reference in left sidebar">
+                📐 Set as Reference
+              </button>
+              <button type="button" class="wide-button" id="hex-decoder-set-project" title="Resize project screen and load decoded bitmap as display">
+                🖥️ Create Mockup From This
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- KEYBOARD SHORTCUTS MODAL -->
     <div id="shortcuts-modal" class="modal-backdrop" hidden style="display: none;">
       <div class="modal-dialog" style="max-width: 580px;">
@@ -1336,6 +1522,10 @@ document.querySelector('#app').innerHTML = `
               <div class="shortcut-row">
                 <span>Redo Action</span>
                 <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>Y</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Hex to Image Decoder</span>
+                <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>H</kbd></div>
               </div>
             </div>
             <div class="shortcut-group">
@@ -3172,6 +3362,7 @@ initProjectControls({
 initPngExport(editorState)
 initSvgExport(editorState)
 initCExport(editorState)
+initHexDecoder(editorState)
 
 // ======================================================
 // PRO FEATURES: TOASTS, PRESETS, QUICKSTART & SHORTCUTS

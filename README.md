@@ -3,7 +3,7 @@
 
 [![Deploy to GitHub Pages](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml/badge.svg)](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml)
 [![Live Studio](https://img.shields.io/badge/🚀%20Live%20Studio-Online-4ade80?style=for-the-badge&logo=googlechrome&logoColor=white)](https://mitrazahiri.github.io/lcd-mockup-studio/)
-[![Tests](https://img.shields.io/badge/Tests-78%2F78%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
+[![Tests](https://img.shields.io/badge/Tests-92%2F92%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
 [![License: MIT](https://img.shields.io/badge/License-MIT-facc15?style=for-the-badge)](LICENSE)
 
 **[👉 Launch Studio in Browser (No Install Needed)](https://mitrazahiri.github.io/lcd-mockup-studio/)**  
@@ -58,6 +58,18 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
 ## ⚡ Key Capabilities
 
 * 🚀 **Zero Install Live Web App**: Built with Vite, Canvas, Web Workers, and WebAssembly OCR. Nothing is sent to any server.
+* 📥 **Hex to Image Decoder & Previewer (Two-Way Embedded Workflow)**:
+  * Reconstruct and view images directly from C headers (`const unsigned char ...[] = { 0x00, 0xFF, ... };`), XBM bitmaps (`#define ..._bits[]`), MicroPython `bytearray([...])`, or raw hex byte streams.
+  * **Complete Hardware Format Coverage**:
+    * **Adafruit_GFX**: Horizontal MSB-first (.h)
+    * **U8g2 / SSD1306**: Vertical 8-px page mode (.h)
+    * **XBM**: Horizontal LSB-first (.h)
+    * **Vertical MSB**: Column-major MSB-first
+    * **RGB565 Color**: 16-bit Big-Endian & Little-Endian for TFT displays
+    * **Grayscale**: 8-bit (1 byte per pixel)
+  * **Smart Auto-Detection**: Auto-detects dimensions from `#define ..._width` / `height` directives, computes total byte/bit statistics, and suggests standard display resolutions (SSD1306 128×64 / 128×32, Nokia 5110 84×48, ST7735 128×128, ST7789 240×240).
+  * **Interactive Screen Emulation**: Switch between OLED Cyan, Matrix Green, Amber Yellow, Nokia Teal, or custom themes; inspect individual pixel bits and coordinates on hover, toggle pixel grids, and zoom up to 8×.
+  * **Seamless Studio Actions**: Copy decoded image to clipboard, download PNG, insert as canvas layer, set as reference image, or create a brand new mockup from it.
 * 📡 **1-Bit Retro Wirephoto & Telegraphic Scanline Engraving Engine**:
   * Transform real photographic portraits, faces, and technical schematics into authentic 20th-century **Belinograph facsimile & wirephoto scanline engravings**.
   * **Dynamic Thickness Modulation**: Modulates scanline stroke weight and thickness in real-time based on local image luminance and darkness gradients.
@@ -109,22 +121,21 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
 ## 🔄 The Pipeline
 
 ```text
-       [ Reference Photo / Clipboard ]
-                      │
-       ┌──────────────┴──────────────┐
-       ▼                             ▼
-┌──────────────────────────┐  ┌──────────────────────────────┐
-│  Computer Vision (OCR)   │  │  1-Bit Photo & Wirephoto     │
-│  • Auto Palette Extract  │  │  • Atkinson / Floyd-St.      │
-│  • Connected Components  │  │  • Belinograph Scanlines     │
-│  • Shape/Symbol Detect   │  │  • Diagonal & Morse Pulses   │
-│  • Tesseract.js Text     │  │  • Local Contrast Boost      │
-└──────────────┬───────────┘  └──────────────┬───────────────┘
-               │                             │
-               └──────────────┬──────────────┘
-                              │
+   [ Reference Photo / Clipboard ]         [ C Array / Hex / XBM ]
+                  │                                   │
+   ┌──────────────┴──────────────┐                    ▼
+   ▼                             ▼        ┌────────────────────────┐
+┌──────────────────────────┐  ┌───────────│ 📥 Hex-to-Image Engine │
+│  Computer Vision (OCR)   │  │  1-Bit    │ • Adafruit / U8g2 / XBM│
+│  • Auto Palette Extract  │  │  Photo &  │ • RGB565 / Grayscale   │
+│  • Connected Components  │  │  Wirephoto│ • Auto-Detect Res & HW │
+│  • Shape/Symbol Detect   │  │  Engraving└───────────┬────────────┘
+│  • Tesseract.js Text     │  │  Engine               │
+└──────────────┬───────────┘  └─────┬─────────────────┘
+               │                    │                 │
+               └──────────────┬─────┴─────────────────┘
                               ▼
-                 [ Interactive Vector Canvas ]
+                [ Interactive Vector Canvas ]
                               │
                 ┌─────────────┼──────────────┐
                 ▼             ▼              ▼
