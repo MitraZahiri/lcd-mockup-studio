@@ -150,16 +150,7 @@ document.querySelector('#app').innerHTML = `
           id="export-c"
           title="Export Code: C / C++, JSON, Hex, Arduino, MicroPython, Base64"
         >
-          Code
-        </button>
-
-        <button
-          type="button"
-          class="export-button hex-decoder-button"
-          id="open-hex-decoder"
-          title="Hex to Image: Decode C Arrays, Hex Bytes, XBM into Visual Bitmaps"
-        >
-          📥 Hex to Image
+          Export Code
         </button>
 
         <div class="separator"></div>
@@ -3264,7 +3255,7 @@ propertyBitmapOpacity?.addEventListener('input', () => {
 propertyBitmapOpenDecoder?.addEventListener('click', () => {
   const element = getSelectedElement()
   if (!element || element.type !== 'bitmap') return
-  const openHexBtn = document.querySelector('#open-hex-decoder')
+  const openHexBtn = document.querySelector('#reference-from-hex-btn') || document.querySelector('#open-hex-decoder')
   if (openHexBtn) openHexBtn.click()
 })
 

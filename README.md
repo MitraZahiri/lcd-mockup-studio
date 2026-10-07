@@ -105,8 +105,8 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
   * **Geometry & Shapes**: Automatically extracts border frames, dividing lines, circular indicators, and solid badges.
   * **Dedicated LCD Symbols**: Detects ascending Wi-Fi/cellular signal bars, battery meters with internal charge level, directional arrows, locks, and checkboxes.
   * **Color Palette Auto-Adoption**: Automatically samples display background and foreground pixel colors from the photo.
-* 💻 **Unified Multi-Format Code Export ("Code" Modal)**:
-  * Click **"Code"** in the top navigation bar to access instant exports across 5 interactive tabs:
+* 💻 **Unified Multi-Format Code Export ("Export Code" Modal)**:
+  * Click **"Export Code"** in the top navigation bar to access instant exports across 5 interactive tabs:
     * **C / C++ Code**: Adafruit_GFX (`.h`), U8g2 (`.h`), XBM (`.h`), and complete Arduino Sketch (`.ino`) with live monochrome hardware preview and polarity inversion.
     * **JSON Code**: Complete project schema (`.json`) with all vector layers, geometries, and fonts, or canvas elements array only.
     * **Hex Code**: C byte array (`0x00, 0xFF, ...`), space-separated byte pairs (`00 FF ...`), formatted hex dump with offsets, and continuous raw hex stream.
