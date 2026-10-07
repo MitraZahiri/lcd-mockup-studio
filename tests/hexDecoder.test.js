@@ -5,6 +5,18 @@ import {
   suggestDimensions,
   calculateHeightFromWidth,
   decodeHexToImageData,
+  decodeBytesToPixels,
+  encodePixelsToBytes,
+  rotatePixels90,
+  flipPixelsX,
+  flipPixelsY,
+  invertPixels,
+  clearPixels,
+  floodFillPixels,
+  drawLinePixels,
+  drawRectPixels,
+  formatBytesIntoSource,
+  decodeBmpToPixels,
   getPixelAt,
   HEX_SAMPLES,
 } from '../src/display/hexDecoder.js'
@@ -290,3 +302,200 @@ test('HEX_SAMPLES provides valid built-in demonstration hex codes', () => {
     assert.ok(parsed.totalBytes > 0, `${sample.name} should parse valid bytes`)
   }
 })
+
+test('encodePixelsToBytes and decodeBytesToPixels round-trip for adafruit format', () => {
+  const w = 16, h = 8
+  const pixels = new Uint8Array(w * h)
+  // Draw an X pattern
+  for (let i = 0; i < 8; i++) {
+    pixels[i * w + i] = 1
+    pixels[i * w + (15 - i)] = 1
+  }
+
+  const encodedBytes = encodePixelsToBytes(pixels, w, h, 'adafruit')
+  assert.equal(encodedBytes.length, 16) // (16 / 8) * 8 = 16 bytes
+
+  const decodedPixels = decodeBytesToPixels(encodedBytes, w, h, 'adafruit')
+  assert.deepEqual(decodedPixels, pixels)
+})
+
+test('encodePixelsToBytes and decodeBytesToPixels round-trip for xbm format', () => {
+  const w = 16, h = 8
+  const pixels = new Uint8Array(w * h)
+  pixels[0] = 1
+  pixels[1] = 1
+  pixels[7] = 1
+  pixels[8] = 1
+  pixels[15] = 1
+
+  const encodedBytes = encodePixelsToBytes(pixels, w, h, 'xbm')
+  const decodedPixels = decodeBytesToPixels(encodedBytes, w, h, 'xbm')
+  assert.deepEqual(decodedPixels, pixels)
+})
+
+test('encodePixelsToBytes and decodeBytesToPixels round-trip for u8g2 page format', () => {
+  const w = 12, h = 16 // 2 pages of 12 columns
+  const pixels = new Uint8Array(w * h)
+  pixels[0 * w + 0] = 1 // page 0, col 0, bit 0
+  pixels[7 * w + 0] = 1 // page 0, col 0, bit 7
+  pixels[8 * w + 5] = 1 // page 1, col 5, bit 0
+  pixels[15 * w + 11] = 1 // page 1, col 11, bit 7
+
+  const encodedBytes = encodePixelsToBytes(pixels, w, h, 'u8g2')
+  assert.equal(encodedBytes.length, 24) // 2 pages * 12 cols = 24 bytes
+
+  const decodedPixels = decodeBytesToPixels(encodedBytes, w, h, 'u8g2')
+  assert.deepEqual(decodedPixels, pixels)
+})
+
+test('pixel transformation functions rotate90, flipX, flipY, invert, clear', () => {
+  const w = 4, h = 2
+  // Row 0: 1 0 0 0
+  // Row 1: 0 0 1 0
+  const orig = new Uint8Array([
+    1, 0, 0, 0,
+    0, 0, 1, 0
+  ])
+
+  // Flip X:
+  // Row 0: 0 0 0 1
+  // Row 1: 0 1 0 0
+  const fx = flipPixelsX(orig, w, h)
+  assert.deepEqual(fx, new Uint8Array([
+    0, 0, 0, 1,
+    0, 1, 0, 0
+  ]))
+
+  // Flip Y:
+  // Row 0: 0 0 1 0
+  // Row 1: 1 0 0 0
+  const fy = flipPixelsY(orig, w, h)
+  assert.deepEqual(fy, new Uint8Array([
+    0, 0, 1, 0,
+    1, 0, 0, 0
+  ]))
+
+  // Invert:
+  const inv = invertPixels(orig)
+  assert.deepEqual(inv, new Uint8Array([
+    0, 1, 1, 1,
+    1, 1, 0, 1
+  ]))
+
+  // Clear:
+  const clr = clearPixels(orig)
+  assert.equal(clr.every(v => v === 0), true)
+
+  // Rotate 90° Clockwise: 4x2 becomes 2x4
+  // (0,0)->(1,0), (3,0)->(1,3), (2,1)->(0,2)
+  const rot = rotatePixels90(orig, w, h)
+  assert.equal(rot.width, 2)
+  assert.equal(rot.height, 4)
+  assert.equal(rot.pixels[0 * 2 + 1], 1) // row 0, col 1
+  assert.equal(rot.pixels[2 * 2 + 0], 1) // row 2, col 0
+})
+
+test('floodFillPixels fills connected region properly', () => {
+  const w = 4, h = 4
+  const pixels = new Uint8Array(16)
+  // Fill all from center
+  floodFillPixels(pixels, w, h, 1, 1, 1)
+  assert.equal(pixels.every(v => v === 1), true)
+
+  // With a barrier line
+  const boxed = new Uint8Array(16)
+  // Column 2 is barrier
+  boxed[0 * 4 + 2] = 1
+  boxed[1 * 4 + 2] = 1
+  boxed[2 * 4 + 2] = 1
+  boxed[3 * 4 + 2] = 1
+
+  floodFillPixels(boxed, w, h, 0, 0, 1)
+  // Left side is 1
+  assert.equal(boxed[0 * 4 + 0], 1)
+  assert.equal(boxed[1 * 4 + 1], 1)
+  // Right side untouched (remains 0)
+  assert.equal(boxed[0 * 4 + 3], 0)
+  assert.equal(boxed[1 * 4 + 3], 0)
+})
+
+test('drawLinePixels and drawRectPixels render correct geometric shapes', () => {
+  const w = 8, h = 8
+  const lineBuf = new Uint8Array(64)
+  drawLinePixels(lineBuf, w, h, 0, 0, 7, 7, 1)
+  assert.equal(lineBuf[0], 1)
+  assert.equal(lineBuf[7 * 8 + 7], 1)
+  assert.equal(lineBuf[3 * 8 + 3], 1)
+
+  const rectBuf = new Uint8Array(64)
+  drawRectPixels(rectBuf, w, h, 1, 1, 4, 4, 1)
+  // Corners
+  assert.equal(rectBuf[1 * 8 + 1], 1)
+  assert.equal(rectBuf[1 * 8 + 4], 1)
+  assert.equal(rectBuf[4 * 8 + 1], 1)
+  assert.equal(rectBuf[4 * 8 + 4], 1)
+  // Interior remains 0
+  assert.equal(rectBuf[2 * 8 + 2], 0)
+})
+
+test('formatBytesIntoSource updates C array in place preserving defines and variable names', () => {
+  const origSource = `
+#define MY_ICON_WIDTH 16
+#define MY_ICON_HEIGHT 8
+static const unsigned char PROGMEM my_icon[] = {
+  0x00, 0x00
+};
+  `
+  const newBytes = new Uint8Array([0xff, 0x81, 0xbd, 0xa5])
+  const updated = formatBytesIntoSource(origSource, newBytes, 16, 8, 'adafruit', 'my_icon')
+
+  assert.ok(updated.includes('MY_ICON_WIDTH 16'))
+  assert.ok(updated.includes('0xFF, 0x81'))
+  assert.ok(updated.includes('0xBD, 0xA5'))
+})
+
+test('decodeBmpToPixels parses valid 1-bit monochrome BMP binary data', () => {
+  // Construct a minimal 8x2 1-bit BMP
+  // Row stride = ceil(8*1 / 32) * 4 = 4 bytes
+  const rowStride = 4
+  const dataSize = rowStride * 2
+  const fileSize = 14 + 40 + 8 + dataSize
+  const buffer = new ArrayBuffer(fileSize)
+  const v = new DataView(buffer)
+
+  // Header
+  v.setUint16(0, 0x424D, false) // 'BM'
+  v.setUint32(2, fileSize, true)
+  v.setUint32(10, 62, true) // offset to data
+
+  // DIB Header
+  v.setUint32(14, 40, true) // header size
+  v.setInt32(18, 8, true)   // width
+  v.setInt32(22, 2, true)   // height (bottom-up)
+  v.setUint16(26, 1, true)  // planes
+  v.setUint16(28, 1, true)  // 1 bpp
+  v.setUint32(34, dataSize, true)
+
+  // Color table (0: black, 1: white)
+  v.setUint32(54, 0x00000000, true)
+  v.setUint32(58, 0x00ffffff, true)
+
+  // Pixel data: bottom row (y=1) first, then top row (y=0)
+  // Row 1 (stored first): 0x0F (00001111)
+  v.setUint8(62, 0x0f)
+  // Row 0 (stored second): 0xF0 (11110000)
+  v.setUint8(62 + rowStride, 0xf0)
+
+  const bmp = decodeBmpToPixels(buffer)
+  assert.equal(bmp.width, 8)
+  assert.equal(bmp.height, 2)
+  // Top row (y=0) was 0xF0: pixels 0..3 ON, 4..7 OFF
+  assert.equal(bmp.pixels[0 * 8 + 0], 1)
+  assert.equal(bmp.pixels[0 * 8 + 3], 1)
+  assert.equal(bmp.pixels[0 * 8 + 4], 0)
+  // Bottom row (y=1) was 0x0F: pixels 0..3 OFF, 4..7 ON
+  assert.equal(bmp.pixels[1 * 8 + 0], 0)
+  assert.equal(bmp.pixels[1 * 8 + 4], 1)
+  assert.equal(bmp.pixels[1 * 8 + 7], 1)
+})
+

@@ -3,7 +3,8 @@
 
 [![Deploy to GitHub Pages](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml/badge.svg)](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml)
 [![Live Studio](https://img.shields.io/badge/🚀%20Live%20Studio-Online-4ade80?style=for-the-badge&logo=googlechrome&logoColor=white)](https://mitrazahiri.github.io/lcd-mockup-studio/)
-[![Tests](https://img.shields.io/badge/Tests-97%2F97%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
+[![Tests](https://img.shields.io/badge/Tests-105%2F105%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
+[![Buy Me A Coffee](https://img.shields.io/badge/☕%20Buy%20Me%20A%20Coffee-Donate-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mitrazahiri)
 [![License: MIT](https://img.shields.io/badge/License-MIT-facc15?style=for-the-badge)](LICENSE)
 
 **[👉 Launch Studio in Browser (No Install Needed)](https://mitrazahiri.github.io/lcd-mockup-studio/)**  
@@ -60,8 +61,18 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
 ## ⚡ Key Capabilities
 
 * 🚀 **Zero Install Live Web App**: Built with Vite, Canvas, Web Workers, and WebAssembly OCR. Nothing is sent to any server.
-* 📥 **Hex to Image Decoder & Previewer (Two-Way Embedded Workflow)**:
-  * Reconstruct and view images directly from C headers (`const unsigned char ...[] = { 0x00, 0xFF, ... };`), XBM bitmaps (`#define ..._bits[]`), MicroPython `bytearray([...])`, or raw hex byte streams.
+* 📥 **Interactive Hex Decoder & Two-Way Bitmap Pixel Editor (KasperCalc Inspired)**:
+  * **Real-Time Two-Way Code ↔ Canvas Synchronization**: Click, draw, or erase pixels directly on the screen canvas — your C byte array, XBM header, or hex code in the editor **instantly updates in real time**! Conversely, typing or pasting new hex updates the canvas immediately.
+  * **Full Pixel Art & Bitmap Toolkit**:
+    * **✏️ Draw (D)**: Set bits to 1 (active) with left-click drag, or erase with right-click.
+    * **🧹 Erase (E)**: Clear bits to 0 with left-click drag.
+    * **🪣 Flood Fill (F)**: Fill connected 1-bit or 0-bit regions instantly.
+    * **📏 Line (L)**: Bresenham straight line drawing with live drag preview.
+    * **⬜ Rect (R)**: Geometric rectangle outline tool.
+    * **Transformations**: **⟳ 90° Clockwise Rotation** (auto-swaps width/height), **↔ Flip X**, **↕ Flip Y**, **⌽ Invert All Bits**, and **🗑 Clear Canvas**.
+    * **Undo & Redo**: 50-step undo history with keyboard shortcuts (`Ctrl+Z`, `Ctrl+Y` / `Ctrl+Shift+Z`).
+  * **Precision Hardware Bit & Byte Inspector**:
+    * Live inspector status bar displays exact **Cursor coordinates (X, Y)**, **Byte address in hex & dec (`0x00A4 / #164`)**, **Bit index (Bit 0–7)**, **Flat pixel index**, and **Set pixels count with percentage**.
   * **Complete Hardware Format Coverage**:
     * **Adafruit_GFX**: Horizontal MSB-first (.h)
     * **U8g2 / SSD1306**: Vertical 8-px page mode (.h)
@@ -69,11 +80,12 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
     * **Vertical MSB**: Column-major MSB-first
     * **RGB565 Color**: 16-bit Big-Endian & Little-Endian for TFT displays
     * **Grayscale**: 8-bit (1 byte per pixel)
-  * **Smart Auto-Detection**: Auto-detects dimensions from `#define ..._width` / `height` directives, computes total byte/bit statistics, and suggests standard display resolutions (SSD1306 128×64 / 128×32, Nokia 5110 84×48, ST7735 128×128, ST7789 240×240).
-  * **Interactive Screen Emulation**: Switch between OLED Cyan, Matrix Green, Amber Yellow, Nokia Teal, or custom themes; inspect individual pixel bits and coordinates on hover, toggle pixel grids, and zoom up to 8×.
+  * **Drag & Drop Binary & Text Importer**:
+    * Drag & drop `.bmp`, `.bin`, `.xbm`, `.pbm`, `.h`, `.c`, or `.txt` files directly onto the preview canvas. Built-in binary BMP parser handles 1-bit, 8-bit, 24-bit, and 32-bit BMP files automatically.
+  * **Interactive Screen Emulation**: Switch between OLED Cyan, Matrix Green, Amber Yellow, Nokia Teal, or custom themes; toggle pixel grids, and zoom from 1× up to 16×.
   * **Seamless Studio Actions & Full Vectorization**:
     * **🖥️ Create Editable Mockup From This**: Automatically updates display size, saves the decoded image as a persistent 1:1 trace reference, and runs computer vision to vectorize the screen into fully editable Text, Rectangle frames, Lines, and Symbol layers!
-    * **Layer Bitmap Controls**: If kept as a bitmap, fine-tune with 1-click Invert, Recolor/Tint to theme color, Opacity slider (10%–100%), or convert to editable vector elements at any time.
+    * **Layer Bitmap Controls**: Fine-tune with 1-click Invert, Recolor/Tint to theme color, Opacity slider (10%–100%), or convert to editable vector elements.
     * Copy decoded image to clipboard, download PNG, or insert as canvas layer.
 * 📡 **1-Bit Retro Wirephoto & Telegraphic Scanline Engraving Engine**:
   * Transform real photographic portraits, faces, and technical schematics into authentic 20th-century **Belinograph facsimile & wirephoto scanline engravings**.
@@ -217,6 +229,17 @@ npm run build
 ## 🤝 Contributing
 
 Contributions, bug reports, and suggestions are warmly welcome! Please check out [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
+
+---
+
+## ☕ Support the Project
+
+If **LCD Mockup Studio** saved you time designing embedded displays, editing bitmaps, or writing Arduino/ESP32 C firmware, consider supporting its open-source development!
+
+[![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=☕&slug=mitrazahiri&button_colour=FFDD00&font_colour=000000&font_family=Inter&outline_colour=000000&coffee_colour=ffffff)](https://buymeacoffee.com/mitrazahiri)
+
+* ☕ **Buy Me a Coffee:** [buymeacoffee.com/mitrazahiri](https://buymeacoffee.com/mitrazahiri)
+* ⭐ **Star on GitHub:** Star the project on [GitHub](https://github.com/MitraZahiri/lcd-mockup-studio) to help other makers find it!
 
 ---
 

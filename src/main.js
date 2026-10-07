@@ -176,6 +176,19 @@ document.querySelector('#app').innerHTML = `
           ⌨️ Shortcuts
         </button>
 
+        <div class="separator"></div>
+
+        <a
+          href="https://buymeacoffee.com/mitrazahiri"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="coffee-button"
+          id="buy-me-coffee-btn"
+          title="☕ Buy Me a Coffee — Support Mitra Zahiri's development"
+        >
+          ☕ Buy Me a Coffee
+        </a>
+
       </div>
 
       <input id="project-file-input" type="file" accept=".json,.lcd.json,application/json" hidden>
@@ -1504,22 +1517,58 @@ document.querySelector('#app').innerHTML = `
           <!-- RIGHT COLUMN: LIVE SCREEN PREVIEW & ACTIONS -->
           <div class="hex-preview-column">
             <div class="hex-column-header">
-              <span class="column-title">Live Hardware Screen Preview</span>
+              <span class="column-title">Live Screen &amp; Interactive Pixel Editor</span>
               <div class="hex-zoom-group">
                 <span style="font-size: 11px; color: #8fa394; margin-right: 4px;">Zoom:</span>
                 <button type="button" class="hex-zoom-btn" data-zoom="1">1×</button>
                 <button type="button" class="hex-zoom-btn active" data-zoom="2">2×</button>
                 <button type="button" class="hex-zoom-btn" data-zoom="4">4×</button>
                 <button type="button" class="hex-zoom-btn" data-zoom="8">8×</button>
+                <button type="button" class="hex-zoom-btn" data-zoom="12">12×</button>
+                <button type="button" class="hex-zoom-btn" data-zoom="16">16×</button>
               </div>
             </div>
 
-            <div class="hex-preview-container">
-              <canvas id="hex-decoder-preview" class="hex-preview-canvas"></canvas>
+            <!-- BITMAP PIXEL EDITING TOOLBAR (KasperCalc Inspired) -->
+            <div class="hex-canvas-toolbar">
+              <div class="hex-tool-btn-group" id="hex-tools-group">
+                <button type="button" class="hex-tool-btn active" data-tool="draw" id="hex-tool-draw" title="Draw Pixel [D] (Left click/drag: set bit 1, Right click: erase 0)">✏️ Draw</button>
+                <button type="button" class="hex-tool-btn" data-tool="erase" id="hex-tool-erase" title="Erase Pixel [E] (Left click/drag: clear bit 0)">🧹 Erase</button>
+                <button type="button" class="hex-tool-btn" data-tool="fill" id="hex-tool-fill" title="Flood Fill [F] (Fill connected region)">🪣 Fill</button>
+                <button type="button" class="hex-tool-btn" data-tool="line" id="hex-tool-line" title="Line Tool [L] (Draw straight bit lines)">📏 Line</button>
+                <button type="button" class="hex-tool-btn" data-tool="rect" id="hex-tool-rect" title="Rectangle Tool [R] (Draw bit box outline)">⬜ Rect</button>
+              </div>
+
+              <div class="hex-toolbar-separator"></div>
+
+              <div class="hex-tool-btn-group">
+                <button type="button" class="hex-tool-btn" id="hex-tool-undo" title="Undo bit edit (Ctrl+Z)">↩ Undo</button>
+                <button type="button" class="hex-tool-btn" id="hex-tool-redo" title="Redo bit edit (Ctrl+Y)">↪ Redo</button>
+              </div>
+
+              <div class="hex-toolbar-separator"></div>
+
+              <div class="hex-tool-btn-group">
+                <button type="button" class="hex-tool-btn" id="hex-tool-rot90" title="Rotate 90° Clockwise">⟳ 90°</button>
+                <button type="button" class="hex-tool-btn" id="hex-tool-flipx" title="Flip Horizontally (Flip X)">↔ Flip X</button>
+                <button type="button" class="hex-tool-btn" id="hex-tool-flipy" title="Flip Vertically (Flip Y)">↕ Flip Y</button>
+                <button type="button" class="hex-tool-btn" id="hex-tool-invert-bits" title="Invert All Bits (0 ↔ 1)">⌽ Invert</button>
+                <button type="button" class="hex-tool-btn" id="hex-tool-clear-canvas" title="Clear All Pixels to 0">🗑 Clear</button>
+              </div>
             </div>
 
-            <div id="hex-decoder-pixel-info" class="hex-pixel-info">
-              Hover over canvas to inspect individual bits and coordinates
+            <div class="hex-preview-container" id="hex-preview-wrap">
+              <canvas id="hex-decoder-preview" class="hex-preview-canvas" style="touch-action: none;"></canvas>
+            </div>
+
+            <!-- KASPERCALC STYLE LIVE INSPECTION BAR -->
+            <div id="hex-decoder-pixel-info" class="hex-pixel-info hex-info-grid">
+              <span>Size: <b id="hex-info-size">128×64</b></span>
+              <span>Cursor: <b id="hex-info-xy">—</b></span>
+              <span>Byte: <b id="hex-info-byte">—</b></span>
+              <span>Bit: <b id="hex-info-bit">—</b></span>
+              <span>Index: <b id="hex-info-idx">—</b></span>
+              <span>Pixels ON: <b id="hex-info-count">0</b></span>
             </div>
 
             <div class="hex-appearance-bar">
