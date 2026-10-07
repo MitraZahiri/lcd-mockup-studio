@@ -1144,13 +1144,14 @@ export function initHexDecoder(state, options = {}) {
   // Core Editor State
   let currentWidth = 128
   let currentHeight = 64
-  let currentZoom = 2
+  let currentZoom = 4
   let currentTool = 'draw' // 'draw' | 'erase' | 'fill' | 'line' | 'rect'
   let pixels = new Uint8Array(currentWidth * currentHeight)
   let currentBytes = new Uint8Array(0)
   let detectedVarName = 'bitmap'
 
   let isPainting = false
+  let activePaintVal = 1
   let isInternalSync = false
   let lineStart = null
   let rectStart = null
@@ -1375,9 +1376,13 @@ export function initHexDecoder(state, options = {}) {
       : currentTool
 
     if (effectiveTool === 'draw') {
-      pixels[y * currentWidth + x] = 1
+      const curVal = pixels[y * currentWidth + x]
+      // Click toggles: 1 becomes 0, 0 becomes 1. While dragging, continue painting activePaintVal.
+      activePaintVal = curVal === 1 ? 0 : 1
+      pixels[y * currentWidth + x] = activePaintVal
       syncCanvasToCode()
     } else if (effectiveTool === 'erase') {
+      activePaintVal = 0
       pixels[y * currentWidth + x] = 0
       syncCanvasToCode()
     } else if (effectiveTool === 'fill') {
@@ -1408,7 +1413,7 @@ export function initHexDecoder(state, options = {}) {
       : currentTool
 
     if (effectiveTool === 'draw') {
-      pixels[y * currentWidth + x] = 1
+      pixels[y * currentWidth + x] = activePaintVal
       syncCanvasToCode()
     } else if (effectiveTool === 'erase') {
       pixels[y * currentWidth + x] = 0
@@ -1654,7 +1659,7 @@ export function initHexDecoder(state, options = {}) {
     btn.addEventListener('click', () => {
       zoomBtns.forEach(b => b.classList.remove('active'))
       btn.classList.add('active')
-      currentZoom = parseInt(btn.dataset.zoom, 10) || 2
+      currentZoom = parseInt(btn.dataset.zoom, 10) || 4
       renderPreview()
     })
   })
@@ -1833,6 +1838,15 @@ export function initHexDecoder(state, options = {}) {
     modal.classList.remove('open')
     modal.style.display = 'none'
   }
+
+  const maximizeBtn = modal.querySelector('#hex-decoder-maximize')
+  const modalDialog = modal.querySelector('.modal-dialog')
+  maximizeBtn?.addEventListener('click', () => {
+    modalDialog?.classList.toggle('fullscreen')
+    const isFull = modalDialog?.classList.contains('fullscreen')
+    maximizeBtn.textContent = isFull ? '🗗' : '⛶'
+    maximizeBtn.title = isFull ? 'Pencereyi Küçült' : 'Tam Ekran Yap'
+  })
 
   openBtn?.addEventListener('click', () => openModal())
   refFromHexBtn?.addEventListener('click', () => openModal())

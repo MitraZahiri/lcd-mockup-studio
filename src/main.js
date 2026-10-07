@@ -1433,7 +1433,10 @@ document.querySelector('#app').innerHTML = `
             <span id="hex-decoder-resolution-badge" class="badge">128 × 64 px</span>
             <span id="hex-decoder-status-badge" class="badge status-match">Ready</span>
           </div>
-          <button type="button" class="icon-button modal-close" id="hex-decoder-close" title="Close (Esc)">✕</button>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button type="button" class="icon-button" id="hex-decoder-maximize" title="Toggle Fullscreen / Maximize">⛶</button>
+            <button type="button" class="icon-button modal-close" id="hex-decoder-close" title="Close (Esc)">✕</button>
+          </div>
         </div>
         <div class="modal-body hex-modal-body">
           <!-- LEFT COLUMN: CODE INPUT & CONTROLS -->
@@ -1521,8 +1524,10 @@ document.querySelector('#app').innerHTML = `
               <div class="hex-zoom-group">
                 <span style="font-size: 11px; color: #8fa394; margin-right: 4px;">Zoom:</span>
                 <button type="button" class="hex-zoom-btn" data-zoom="1">1×</button>
-                <button type="button" class="hex-zoom-btn active" data-zoom="2">2×</button>
-                <button type="button" class="hex-zoom-btn" data-zoom="4">4×</button>
+                <button type="button" class="hex-zoom-btn" data-zoom="2">2×</button>
+                <button type="button" class="hex-zoom-btn" data-zoom="3">3×</button>
+                <button type="button" class="hex-zoom-btn active" data-zoom="4">4×</button>
+                <button type="button" class="hex-zoom-btn" data-zoom="6">6×</button>
                 <button type="button" class="hex-zoom-btn" data-zoom="8">8×</button>
                 <button type="button" class="hex-zoom-btn" data-zoom="12">12×</button>
                 <button type="button" class="hex-zoom-btn" data-zoom="16">16×</button>
@@ -1532,11 +1537,11 @@ document.querySelector('#app').innerHTML = `
             <!-- BITMAP PIXEL EDITING TOOLBAR (KasperCalc Inspired) -->
             <div class="hex-canvas-toolbar">
               <div class="hex-tool-btn-group" id="hex-tools-group">
-                <button type="button" class="hex-tool-btn active" data-tool="draw" id="hex-tool-draw" title="Draw Pixel [D] (Left click/drag: set bit 1, Right click: erase 0)">✏️ Draw</button>
-                <button type="button" class="hex-tool-btn" data-tool="erase" id="hex-tool-erase" title="Erase Pixel [E] (Left click/drag: clear bit 0)">🧹 Erase</button>
-                <button type="button" class="hex-tool-btn" data-tool="fill" id="hex-tool-fill" title="Flood Fill [F] (Fill connected region)">🪣 Fill</button>
-                <button type="button" class="hex-tool-btn" data-tool="line" id="hex-tool-line" title="Line Tool [L] (Draw straight bit lines)">📏 Line</button>
-                <button type="button" class="hex-tool-btn" data-tool="rect" id="hex-tool-rect" title="Rectangle Tool [R] (Draw bit box outline)">⬜ Rect</button>
+                <button type="button" class="hex-tool-btn active" data-tool="draw" id="hex-tool-draw" title="Draw Pixel [D] (Tıkla/Sürükle: pikselleri değiştir, Sağ tık: sil)">✏️ Draw</button>
+                <button type="button" class="hex-tool-btn" data-tool="erase" id="hex-tool-erase" title="Erase Pixel [E] (Sol tık/sürükle: pikselleri sıfırla)">🧹 Erase</button>
+                <button type="button" class="hex-tool-btn" data-tool="fill" id="hex-tool-fill" title="Flood Fill [F] (Bölgeyi doldur)">🪣 Fill</button>
+                <button type="button" class="hex-tool-btn" data-tool="line" id="hex-tool-line" title="Line Tool [L] (Düz çizgi çiz)">📏 Line</button>
+                <button type="button" class="hex-tool-btn" data-tool="rect" id="hex-tool-rect" title="Rectangle Tool [R] (Kutu çerçeve çiz)">⬜ Rect</button>
               </div>
 
               <div class="hex-toolbar-separator"></div>
@@ -1569,6 +1574,10 @@ document.querySelector('#app').innerHTML = `
               <span>Bit: <b id="hex-info-bit">—</b></span>
               <span>Index: <b id="hex-info-idx">—</b></span>
               <span>Pixels ON: <b id="hex-info-count">0</b></span>
+            </div>
+
+            <div class="hex-quick-tip">
+              💡 <b>Hızlı İpucu:</b> Ekrana doğrudan tıklayarak veya sürükleyerek pikselleri anında değiştirin (C/Hex kodu senkronize güncellenir). Tek tıkla 0/1 geçişi yapabilir, daha geniş ve rahat çizim için Zoom'u <b>4×</b>, <b>6×</b> veya <b>8×</b> seçebilirsiniz.
             </div>
 
             <div class="hex-appearance-bar">
