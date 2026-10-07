@@ -1,16 +1,19 @@
-# 📺 LCD Mockup Studio
-### Turn photos of real LCD / OLED / HMI screens into editable vector mockups & microcontroller C code.
+# 📺 LCD Mockup Studio — Embedded Display Designer & C Bitmap Hex Editor
+### 🚀 The all-in-one browser tool to convert images to C bitmaps, decode hex bytecode back into images, edit pixels in real-time, and create editable vector mockups for Arduino, ESP32, OLED (SSD1306), Nokia 5110 & LCD displays.
 
 [![Deploy to GitHub Pages](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml/badge.svg)](https://github.com/MitraZahiri/lcd-mockup-studio/actions/workflows/deploy.yml)
 [![Live Studio](https://img.shields.io/badge/🚀%20Live%20Studio-Online-4ade80?style=for-the-badge&logo=googlechrome&logoColor=white)](https://mitrazahiri.github.io/lcd-mockup-studio/)
 [![Tests](https://img.shields.io/badge/Tests-105%2F105%20Passing-38bdf8?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/MitraZahiri/lcd-mockup-studio)
-[![Buy Me A Coffee](https://img.shields.io/badge/☕%20Buy%20Me%20A%20Coffee-Donate-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mitrazahiri)
 [![License: MIT](https://img.shields.io/badge/License-MIT-facc15?style=for-the-badge)](LICENSE)
+
+<a href="https://buymeacoffee.com/mitra.zahiri" target="_blank" rel="noopener noreferrer">
+  <img align="right" src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=☕&slug=mitra.zahiri&button_colour=FFDD00&font_colour=000000&font_family=Inter&outline_colour=000000&coffee_colour=ffffff" alt="Buy Me A Coffee" height="48" />
+</a>
 
 **[👉 Launch Studio in Browser (No Install Needed)](https://mitrazahiri.github.io/lcd-mockup-studio/)**  
 *100% Client-Side · Zero Server Uploads · Runs Entirely in Your Browser*
 
-<br />
+<br clear="right" />
 
 <div align="center">
 
@@ -52,9 +55,14 @@
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-Recreating physical LCD and HMI screens for documentation, reverse engineering, and embedded firmware traditionally required measuring pixels by hand and redrawing every box and glyph.
+Recreating physical LCD and HMI screens for documentation, reverse engineering, and embedded firmware traditionally required measuring pixels by hand, writing cumbersome bitmap conversion scripts, or using outdated desktop tools.
 
-**LCD Mockup Studio automates the tedious work:** Drop a photo or paste a screenshot, let the vision engine extract geometry and text into layered vectors, or engrave portraits using the historical telegraphic wirephoto facsimile engine, and immediately export production-ready C byte arrays for your microcontroller firmware.
+**LCD Mockup Studio combines a modern embedded UI mockup suite with a powerful C Bitmap Generator & Hex Bytecode Editor:**
+* 🖼️ **Image to C Bitmap Converter:** Drop any PNG, JPG, BMP, or SVG logo, photo, or icon and instantly convert it into production-ready 1-bit monochrome byte arrays for Arduino, ESP32, STM32, and Raspberry Pi Pico.
+* 🔄 **Hex to Image Decoder & Reverse Engineering:** Paste any existing C array (`0x00, 0xFF, ...`), XBM header, or raw hex byte stream from firmware dumps to decode it back into an image with 100% pixel fidelity.
+* ✏️ **Interactive Two-Way Pixel Editor (KasperCalc Alternative):** Draw, erase, flood-fill, or toggle bits directly on the live screen preview with instantaneous two-way synchronization to your C code.
+* 📐 **Automatic Vectorization & Screen Mockups:** Extract geometry, frames, battery indicators, progress bars, and OCR text into fully editable layered vectors.
+* 📦 **Multi-Format Firmware Export:** Instant export to Arduino IDE `.ino` sketches, C headers `.h` (Adafruit_GFX, U8g2 / SSD1306, XBM), MicroPython `framebuf`, JSON, 1:1 Pixel PNG, and vector SVG.
 
 ---
 
@@ -236,9 +244,9 @@ Contributions, bug reports, and suggestions are warmly welcome! Please check out
 
 If **LCD Mockup Studio** saved you time designing embedded displays, editing bitmaps, or writing Arduino/ESP32 C firmware, consider supporting its open-source development!
 
-[![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=☕&slug=mitrazahiri&button_colour=FFDD00&font_colour=000000&font_family=Inter&outline_colour=000000&coffee_colour=ffffff)](https://buymeacoffee.com/mitrazahiri)
+[![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=☕&slug=mitra.zahiri&button_colour=FFDD00&font_colour=000000&font_family=Inter&outline_colour=000000&coffee_colour=ffffff)](https://buymeacoffee.com/mitra.zahiri)
 
-* ☕ **Buy Me a Coffee:** [buymeacoffee.com/mitrazahiri](https://buymeacoffee.com/mitrazahiri)
+* ☕ **Buy Me a Coffee:** [buymeacoffee.com/mitra.zahiri](https://buymeacoffee.com/mitra.zahiri)
 * ⭐ **Star on GitHub:** Star the project on [GitHub](https://github.com/MitraZahiri/lcd-mockup-studio) to help other makers find it!
 
 ---

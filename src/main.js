@@ -179,7 +179,7 @@ document.querySelector('#app').innerHTML = `
         <div class="separator"></div>
 
         <a
-          href="https://buymeacoffee.com/mitrazahiri"
+          href="https://buymeacoffee.com/mitra.zahiri"
           target="_blank"
           rel="noopener noreferrer"
           class="coffee-button"

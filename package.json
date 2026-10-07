@@ -1,6 +1,22 @@
 {
   "name": "lcd-mockup-studio",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Turn photos of LCD/OLED screens into editable mockups, convert images to C bitmaps, and decode/edit hex bytecode for Arduino, ESP32, and microcontrollers.",
+  "author": "Mitra Zahiri",
+  "keywords": [
+    "lcd",
+    "oled",
+    "ssd1306",
+    "u8g2",
+    "adafruit-gfx",
+    "bitmap-generator",
+    "hex-decoder",
+    "c-array",
+    "pixel-editor",
+    "arduino",
+    "esp32",
+    "dithering"
+  ],
   "private": true,
   "type": "module",
   "scripts": {
