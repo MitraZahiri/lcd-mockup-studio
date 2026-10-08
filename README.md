@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-facc15?style=for-the-badge)](LICENSE)
 
 <a href="https://buymeacoffee.com/mitra.zahiri" target="_blank" rel="noopener noreferrer">
-  <img align="right" src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=☕&slug=mitra.zahiri&button_colour=FFDD00&font_colour=000000&font_family=Inter&outline_colour=000000&coffee_colour=ffffff" alt="Buy Me A Coffee" height="48" />
+  <img align="right" src="docs/assets/buymeacoffee.png" alt="Buy Me A Coffee" height="44" />
 </a>
 
 **[👉 Launch Studio in Browser (No Install Needed)](https://mitrazahiri.github.io/lcd-mockup-studio/)**  
@@ -244,7 +244,9 @@ Contributions, bug reports, and suggestions are warmly welcome! Please check out
 
 If **LCD Mockup Studio** saved you time designing embedded displays, editing bitmaps, or writing Arduino/ESP32 C firmware, consider supporting its open-source development!
 
-[![Buy Me A Coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=☕&slug=mitra.zahiri&button_colour=FFDD00&font_colour=000000&font_family=Inter&outline_colour=000000&coffee_colour=ffffff)](https://buymeacoffee.com/mitra.zahiri)
+<a href="https://buymeacoffee.com/mitra.zahiri" target="_blank" rel="noopener noreferrer">
+  <img src="docs/assets/buymeacoffee.png" alt="Buy Me A Coffee" height="48" />
+</a>
 
 * ☕ **Buy Me a Coffee:** [buymeacoffee.com/mitra.zahiri](https://buymeacoffee.com/mitra.zahiri)
 * ⭐ **Star on GitHub:** Star the project on [GitHub](https://github.com/MitraZahiri/lcd-mockup-studio) to help other makers find it!
