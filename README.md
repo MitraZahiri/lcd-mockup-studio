@@ -66,6 +66,44 @@ Recreating physical LCD and HMI screens for documentation, reverse engineering, 
 
 ---
 
+## 🏆 Why LCD Mockup Studio? (Feature Comparison)
+
+Looking for a modern **image2cpp**, **LCD Assistant**, or **KasperCalc** alternative? Here is how LCD Mockup Studio compares:
+
+| Feature / Capability | **LCD Mockup Studio** | **image2cpp** | **LCD Assistant** | **KasperCalc** |
+| :--- | :---: | :---: | :---: | :---: |
+| **Real-Time Code ↔ Canvas Two-Way Sync** | ✅ **Instant Two-Way** | ❌ (One-way export only) | ❌ (Static binary) | ✅ (Web bit editor) |
+| **Interactive Pixel Editor (Draw, Erase, Fill, Line, Rect)** | ✅ **Full In-Browser Studio** | ❌ None | ❌ None | ⚠️ Basic bit toggle |
+| **Reverse Engineer Existing Hex / C Arrays to Image** | ✅ **1-Click Decoder & Live Edit** | ❌ Not supported | ❌ Not supported | ✅ Supported |
+| **AI / Vision OCR & Vectorize from Screen Photos** | ✅ **Full Vector Extraction** | ❌ None | ❌ None | ❌ None |
+| **1-Bit Dithering Algorithms** | ✅ **Atkinson, Floyd-Steinberg, Bayer, Telegraphic** | ⚠️ Floyd-Steinberg & Threshold | ⚠️ Threshold only | ❌ None |
+| **Microcontroller Formats** | ✅ **Adafruit_GFX, U8g2, XBM, RGB565, MicroPython** | ⚠️ Adafruit_GFX only | ⚠️ Byte / Table only | ⚠️ Byte table |
+| **Export Options** | ✅ **Arduino .ino, C .h, PNG, SVG, JSON** | ⚠️ C array only | ⚠️ C array only | ⚠️ C array / Text |
+| **Live Display Simulation & Themes** | ✅ **OLED Cyan, Matrix Green, Nokia Teal, Paper** | ❌ Black & White only | ❌ None | ❌ Black & White only |
+| **Zero Install / 100% Client-Side Web App** | ✅ **Runs in Browser** | ✅ Runs in Browser | ❌ Windows Desktop .exe | ✅ Runs in Browser |
+| **1-Click Shareable Project Permalinks** | ✅ **Lossless Deflate URL** | ❌ None | ❌ None | ❌ None |
+
+---
+
+## 📖 Step-by-Step Quick Recipes
+
+### 1. How to Convert Any Logo or Image to Arduino SSD1306 OLED C Code
+1. Open **[LCD Mockup Studio](https://mitrazahiri.github.io/lcd-mockup-studio/)**.
+2. Click **Upload** under *Reference Display* on the left, or simply paste an image with <kbd>Ctrl</kbd> + <kbd>V</kbd>.
+3. In *Retro Dither / Scanline*, pick your dithering style (**Atkinson** for high-contrast logos, **Floyd-Steinberg** for photos).
+4. Click **Export Code** in the top navigation bar.
+5. Select your target framework (**Adafruit_GFX**, **U8g2 / SSD1306**, or **MicroPython**).
+6. Copy the generated `PROGMEM` array or click **Download Arduino .ino** to flash immediately!
+
+### 2. How to Decode & Edit Existing C Array Hex Code Back into an Image
+1. Click **Hex to Image** in the left sidebar or press <kbd>Ctrl</kbd> + <kbd>H</kbd>.
+2. Paste any C code array (e.g. `static const unsigned char logo[] = { 0x00, 0xFF, ... };`) or raw hex string.
+3. The image is instantly decoded on the live screen preview with 100% pixel fidelity.
+4. Click or drag with **✏️ Draw**, **🧹 Erase**, **🪣 Fill**, or **📏 Line** to edit bits directly. The C source code updates synchronously in real time.
+5. Click **⭳ Download PNG**, **📋 Copy Image**, or **🖥️ Create Mockup From This** to continue designing.
+
+---
+
 ## ⚡ Key Capabilities
 
 * 🚀 **Zero Install Live Web App**: Built with Vite, Canvas, Web Workers, and WebAssembly OCR. Nothing is sent to any server.

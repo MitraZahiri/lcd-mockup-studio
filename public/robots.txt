@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mitrazahiri.github.io/lcd-mockup-studio/sitemap.xml
