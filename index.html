@@ -29,14 +29,100 @@
     <meta name="twitter:description" content="Design embedded LCD/OLED screens, convert images to C bitmaps, and decode C hex arrays back to images. Live pixel editor and instant C export for Arduino & ESP32." />
     <meta name="twitter:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
 
+    <link rel="canonical" href="https://mitrazahiri.github.io/lcd-mockup-studio/" />
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#161b22" />
+
+    <!-- Schema.org JSON-LD Structured Data for Google Search -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://mitrazahiri.github.io/lcd-mockup-studio/#webapp",
+          "url": "https://mitrazahiri.github.io/lcd-mockup-studio/",
+          "name": "LCD Mockup Studio & C Bitmap Hex Editor",
+          "alternateName": ["Image2cpp Alternative", "KasperCalc Online", "SSD1306 Bitmap Generator", "LCD Assistant Web"],
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "All, Web Browser",
+          "browserRequirements": "Requires HTML5 Canvas and JavaScript",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Mitra Zahiri",
+            "url": "https://github.com/MitraZahiri"
+          },
+          "description": "Free online browser studio to design embedded LCD & OLED displays, convert images to 1-bit monochrome C byte arrays, and decode/edit hex bytecode with a live interactive pixel editor for Arduino, ESP32, STM32, and Raspberry Pi Pico.",
+          "featureList": [
+            "Image to C Bitmap Converter (Adafruit_GFX, U8g2, XBM)",
+            "C Hex Array to Image Decoder with 100% pixel fidelity",
+            "Interactive Two-Way Code and Canvas Pixel Editor",
+            "1-Bit Monochrome Dithering (Floyd-Steinberg, Atkinson, Bayer)",
+            "Automatic Computer Vision Vectorization from Screen Photos",
+            "Zero-install client-side web application with 1-click URL sharing"
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://mitrazahiri.github.io/lcd-mockup-studio/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How to convert an image to a C array bitmap for Arduino SSD1306 OLED?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Open LCD Mockup Studio, click 'Upload Reference / Logo', choose your image, and select your preferred dithering method (Atkinson, Floyd-Steinberg, or Bayer). Then click 'Export Code' to copy production-ready C code formatted for Adafruit_GFX or U8g2."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How to decode C byte arrays or hex code back into an image?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Open the 'Hex to Image' tool in LCD Mockup Studio, paste your C array or raw hex code, select your display resolution (e.g., 128x64), and view the decoded bitmap instantly. You can edit pixels directly on the screen to update the hex code in real time."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is LCD Mockup Studio an alternative to image2cpp and LCD Assistant?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, LCD Mockup Studio is a modern, zero-install web alternative to image2cpp and LCD Assistant. It provides real-time two-way synchronization between canvas and C code, multiple dithering algorithms, full vector OCR, and instant browser permalinks."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="./assets/index-ChdKFANw.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CgEU59BC.css">
+    <script type="module" crossorigin src="./assets/index-BpXivVG0.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CXvAhMnq.css">
   </head>
 
   <body>
-    <div id="app"></div>
+    <!-- Semantic Indexable Overview for Search Engines & Accessibility -->
+    <header class="sr-only">
+      <h1>LCD Mockup Studio — Free Embedded LCD / OLED Designer & C Bitmap Hex Editor</h1>
+      <p>The modern browser-based alternative to image2cpp, LCD Assistant, and KasperCalc. Turn photos into vector mockups, convert images to 1-bit C arrays, and decode hex bytecode for Arduino, ESP32, and Raspberry Pi Pico.</p>
+    </header>
+
+    <main id="app"></main>
+
+    <noscript>
+      <div style="padding: 24px; font-family: sans-serif; background: #0d1117; color: #c9d1d9;">
+        <h2>LCD Mockup Studio requires JavaScript enabled</h2>
+        <p>This web application is a 100% client-side tool to design embedded LCD/OLED screens, convert images to C bitmaps, and decode hex code for Arduino and ESP32.</p>
+      </div>
+    </noscript>
+
   </body>
 </html>
