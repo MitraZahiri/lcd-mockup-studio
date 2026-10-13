@@ -4,6 +4,7 @@ import { initPngExport, setBitmapCache } from './export/pngExport.js'
 import { initSvgExport } from './export/svgExport.js'
 import { initCExport } from './export/cExport.js'
 import { initHexDecoder } from './display/hexDecoder.js'
+import { initAnalytics, trackPageView, trackEvent } from './analytics.js'
 
 import {
   editorState,
@@ -2191,6 +2192,7 @@ function insertImageElementFromFile(file) {
         naturalWidth,
         naturalHeight,
       })
+      trackEvent('image_upload', { name: cleanName, width: naturalWidth, height: naturalHeight })
       showToast(`✨ Added "${cleanName}" (${element.width}×${element.height}px) to canvas!`, 'info')
     }
     img.src = dataUrl
@@ -3737,6 +3739,14 @@ initSvgExport(editorState)
 initCExport(editorState)
 initHexDecoder(editorState, { showToast })
 
+// Initialize Private Owner Analytics (GA4 + GoatCounter)
+initAnalytics()
+trackPageView()
+
+document.querySelector('#buy-me-coffee-btn')?.addEventListener('click', () => {
+  trackEvent('coffee_click', { location: 'header' })
+})
+
 // ======================================================
 // PRO FEATURES: TOASTS, PRESETS, QUICKSTART & SHORTCUTS
 // ======================================================
@@ -3766,6 +3776,7 @@ function initHardwarePresets() {
     if (val && HARDWARE_PRESETS[val]) {
       applyHardwarePreset(val)
       const p = HARDWARE_PRESETS[val]
+      trackEvent('preset_apply', { name: val, title: p.name })
       showToast(`Target display set to ${p.name}`, 'info')
     }
   })
@@ -3833,6 +3844,7 @@ function initShareUrl() {
         return
       }
       window.location.hash = `p=${hash}`
+      trackEvent('share_link_create')
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(window.location.href)
         showToast('🔗 Share URL copied to clipboard! (Lossless permalink)', 'info')
@@ -4109,6 +4121,13 @@ function initDitheringStudio() {
         threshold,
         invert
       }
+
+      trackEvent('dither_apply', {
+        algorithm: algo,
+        width: targetW,
+        height: targetH,
+        avatar: isAvatarOnly,
+      })
 
       if (isAvatarOnly) {
         editorState.elements.push(newElement)

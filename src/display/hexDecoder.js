@@ -8,6 +8,7 @@ import { updateDisplay, updateReference, addElement, createId, notify } from '..
 import { setBitmapCache } from '../export/pngExport.js'
 import { analyzeReferenceImage } from '../analysis/imageAnalyzer.js'
 import { createElementFromAnalysis } from '../editor/elements.js'
+import { trackEvent } from '../analytics.js'
 
 /**
  * Parses raw text input containing C arrays, hex dumps, XBM, or raw hex byte streams.
@@ -1279,6 +1280,15 @@ export function initHexDecoder(state, options = {}) {
     // Decode bytes to internal pixel buffer
     pixels = decodeBytesToPixels(currentBytes, currentWidth, currentHeight, formatSelect.value)
 
+    if (currentBytes.length > 0) {
+      trackEvent('hex_decode_execute', {
+        format: formatSelect.value,
+        width: currentWidth,
+        height: currentHeight,
+        bytes: currentBytes.length,
+      })
+    }
+
     updateBadges()
     renderPreview()
   }
@@ -1715,6 +1725,7 @@ export function initHexDecoder(state, options = {}) {
       dataUrl,
     }
 
+    trackEvent('hex_insert_layer', { width: currentWidth, height: currentHeight })
     addElement(newElement)
     closeModal()
   })
@@ -1723,6 +1734,7 @@ export function initHexDecoder(state, options = {}) {
   setRefBtn.addEventListener('click', () => {
     if (!previewCanvas) return
     const dataUrl = previewCanvas.toDataURL('image/png')
+    trackEvent('hex_set_reference', { width: currentWidth, height: currentHeight })
     updateReference({
       src: dataUrl,
       fileName: `hex_${currentWidth}x${currentHeight}.png`,
@@ -1737,6 +1749,7 @@ export function initHexDecoder(state, options = {}) {
     if (!previewCanvas) return
     const dataUrl = previewCanvas.toDataURL('image/png')
     setBitmapCache(dataUrl, previewCanvas)
+    trackEvent('hex_set_project', { width: currentWidth, height: currentHeight })
 
     const origLabel = setProjectBtn.textContent
     setProjectBtn.textContent = '⏳ Creating Mockup...'
@@ -1820,6 +1833,7 @@ export function initHexDecoder(state, options = {}) {
     modal.hidden = false
     modal.classList.add('open')
     modal.style.display = 'flex'
+    trackEvent('hex_decoder_open')
     if (typeof customText === 'string') {
       inputArea.value = customText
     } else if (!inputArea.value.trim()) {

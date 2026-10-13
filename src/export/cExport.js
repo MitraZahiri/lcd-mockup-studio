@@ -1,5 +1,6 @@
 import { renderProjectCanvas } from './pngExport.js'
 import { snapshotProject } from '../project/projectFormat.js'
+import { trackEvent } from '../analytics.js'
 
 export function generateMonochromeBytes(imageData, options = {}) {
   const { width, height, data } = imageData
@@ -544,6 +545,7 @@ export function initCExport(state) {
     modal.hidden = false
     modal.classList.add('open')
     modal.style.display = 'flex'
+    trackEvent('export_modal_open', { category: currentCategory })
   }
 
   function closeModal() {
@@ -570,6 +572,7 @@ export function initCExport(state) {
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       setCategory(btn.dataset.tab)
+      trackEvent('export_tab_change', { category: btn.dataset.tab })
     })
   })
 
@@ -580,6 +583,7 @@ export function initCExport(state) {
 
   copyBtn?.addEventListener('click', async () => {
     if (!currentCode) return
+    trackEvent('export_code_copy', { category: currentCategory, format: formatSelect ? formatSelect.value : 'default' })
     try {
       await navigator.clipboard.writeText(currentCode)
       const origText = copyBtn.textContent
@@ -597,6 +601,7 @@ export function initCExport(state) {
     if (!currentCode) return
     const { width, height } = state.display
     const format = formatSelect ? formatSelect.value : 'c'
+    trackEvent('export_code_download', { category: currentCategory, format, width, height })
     let ext = 'h'
     if (currentCategory === 'json') ext = 'json'
     else if (currentCategory === 'hex') ext = 'hex'
