@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>C Array to Image — View PROGMEM Bitmap Arrays from Arduino Code</title>
+    <meta name="description" content="Paste a C/C++ bitmap array (const unsigned char PROGMEM) from an Arduino, ESP32 or STM32 project and see the image instantly. Reverse engineer OLED logos and icons, then export PNG or edit the pixels." />
+    <meta name="author" content="Mitra Zahiri" />
+    <link rel="canonical" href="https://mitrazahiri.github.io/lcd-mockup-studio/tools/c-array-to-image/" />
+
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <meta name="theme-color" content="#161b22" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LCD Mockup Studio" />
+    <meta property="og:url" content="https://mitrazahiri.github.io/lcd-mockup-studio/tools/c-array-to-image/" />
+    <meta property="og:title" content="C Array to Image — View PROGMEM Bitmap Arrays from Arduino Code" />
+    <meta property="og:description" content="Paste a C/C++ bitmap array (const unsigned char PROGMEM) from an Arduino, ESP32 or STM32 project and see the image instantly. Reverse engineer OLED logos and icons, then export PNG or edit the pixels." />
+    <meta property="og:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="C Array to Image — View PROGMEM Bitmap Arrays from Arduino Code" />
+    <meta name="twitter:description" content="Paste a C/C++ bitmap array (const unsigned char PROGMEM) from an Arduino, ESP32 or STM32 project and see the image instantly. Reverse engineer OLED logos and icons, then export PNG or edit the pixels." />
+    <meta name="twitter:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <script>
+      window.LCD_ANALYTICS_CONFIG = { gaMeasurementId: '', goatCounterCode: '', debug: false };
+    </script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","@id":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/c-array-to-image/#app","name":"C Array to Image Viewer","url":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/c-array-to-image/","description":"Paste a C/C++ bitmap array (const unsigned char PROGMEM) from an Arduino, ESP32 or STM32 project and see the image instantly. Reverse engineer OLED logos and icons, then export PNG or edit the pixels.","applicationCategory":"DeveloperApplication","operatingSystem":"Any (web browser)","browserRequirements":"Requires JavaScript","inLanguage":"en","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Mitra Zahiri","url":"https://github.com/MitraZahiri"},"isPartOf":{"@id":"https://mitrazahiri.github.io/lcd-mockup-studio/#webapp"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"LCD Mockup Studio","item":"https://mitrazahiri.github.io/lcd-mockup-studio/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/"},{"@type":"ListItem","position":3,"name":"C Array to Image Viewer","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/c-array-to-image/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I find the width and height of a C bitmap array?","acceptedAnswer":{"@type":"Answer","text":"Look for #define …_WIDTH / …_HEIGHT macros or the drawBitmap() call that uses the array. If there are none, divide the byte count: for 1-bit horizontal data, bytes = ceil(width/8) × height. The auto-detect button tries common display sizes for you."}},{"@type":"Question","name":"Can I edit the image and get a new C array back?","acceptedAnswer":{"@type":"Answer","text":"Yes. Click \"Open in full editor\" to load the array into LCD Mockup Studio, draw or erase pixels, and the C code updates live in the same format."}},{"@type":"Question","name":"Does it work with STM32, ESP-IDF or plain C projects?","acceptedAnswer":{"@type":"Answer","text":"Yes. The parser only looks for the byte values, so the platform does not matter."}}]}]}</script>
+    <script type="module" crossorigin src="../../assets/dithering-D2desjM0.js"></script>
+    <script type="module" crossorigin src="../../assets/landing-BIHmK3fu.js"></script>
+    <link rel="stylesheet" crossorigin href="../../assets/landing-COKeVsWp.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="../../">LCD Mockup <span>Studio</span></a>
+        <nav aria-label="Main">
+          <a href="../hex-to-image/">Hex → Image</a>
+          <a href="../image-to-c-array/">Image → C Array</a>
+          <a href="../ssd1306-bitmap-converter/">SSD1306</a>
+          <a href="../">Tools</a>
+          <a href="../../">Studio</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <p class="breadcrumb"><a href="../../">LCD Mockup Studio</a> › <a href="../">Tools</a> › C Array to Image Viewer</p>
+      <h1>C Array to Image Viewer</h1>
+      <p class="lead">Found a <code>static const unsigned char PROGMEM logo[]</code> in someone's firmware and want to see what it draws? Paste the whole array here.</p>
+<div class="tool" data-tool="hex">
+  <div class="tool-grid">
+    <div>
+      <label for="hex-input">Hex bytes / C array</label>
+      <textarea id="hex-input" data-role="input" spellcheck="false" aria-label="Hex bytes / C array"></textarea>
+    </div>
+    <div>
+      <div class="preview-box"><canvas data-role="preview" aria-label="Decoded bitmap preview"></canvas></div>
+      <div class="status" data-role="status" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="controls">
+    <label>Byte format<select data-role="format"><option value="adafruit">Adafruit GFX (horizontal, MSB first)</option><option value="xbm">XBM / U8g2 (horizontal, LSB first)</option><option value="u8g2">Vertical pages (SSD1306, LSB = top)</option><option value="vertical_msb">Vertical, MSB first</option><option value="rgb565_be">RGB565 color (big-endian)</option><option value="rgb565_le">RGB565 color (little-endian)</option><option value="gray8">Grayscale (1 byte per pixel)</option></select></label>
+    <label>Width<input type="number" data-role="width" min="1" max="1024"></label>
+    <label>Height<input type="number" data-role="height" min="1" max="1024"></label>
+    <label class="inline"><input type="checkbox" data-role="lock" checked> Auto height</label>
+    <label class="inline"><input type="checkbox" data-role="invert"> Invert</label>
+  </div>
+  <div class="controls">
+    <button type="button" class="btn" data-role="detect">Auto-detect size</button>
+    <button type="button" class="btn" data-role="clear">Clear</button>
+    <button type="button" class="btn" data-role="download">⬇ Download PNG</button>
+    <button type="button" class="btn btn-primary" data-role="open-studio">Open in full editor →</button>
+  </div>
+</div>
+      <section>
+        <h2>Reverse engineering bitmaps in firmware source</h2>
+        <p>Arduino and embedded projects store splash screens, icons and fonts as C arrays in header files. Reading <code>0x3c, 0x42, 0x81...</code> by eye is impossible, so this viewer renders them for you. It understands:</p>
+<ul>
+  <li><code>uint8_t</code>, <code>unsigned char</code>, <code>char</code> and <code>byte</code> arrays, with or without <code>PROGMEM</code> / <code>U8X8_PROGMEM</code></li>
+  <li>Array size declarations like <code>logo[1024]</code> (the 1024 is not mistaken for data)</li>
+  <li><code>// line</code> and <code>/* block */</code> comments, and <code>#define LOGO_WIDTH 128</code> dimension macros</li>
+  <li>Multiple formats: Adafruit_GFX, XBM, U8g2 vertical pages, RGB565 and 8-bit grayscale</li>
+</ul>
+      </section>
+      <section>
+        <h2>Example input</h2>
+        <pre>#define logo_width 16
+#define logo_height 16
+static const unsigned char logo_bits[] PROGMEM = {
+  0xe0, 0x07, 0x18, 0x18, 0x04, 0x20, 0x02, 0x40,
+  0x32, 0x4c, 0x31, 0x8c, 0x01, 0x80, 0x01, 0x80,
+  0x01, 0x80, 0x09, 0x90, 0x12, 0x48, 0xe2, 0x47,
+  0x04, 0x20, 0x18, 0x18, 0xe0, 0x07, 0x00, 0x00 };</pre>
+<p>This is a 16 × 16 XBM smiley. Paste it into the tool above, pick <strong>XBM</strong> and it appears immediately.</p>
+      </section>
+      <section>
+        <h2>Byte layouts explained</h2>
+        
+<table>
+  <thead><tr><th>Format</th><th>Byte layout</th><th>Bit order</th><th>Used by</th></tr></thead>
+  <tbody>
+    <tr><td>Adafruit_GFX</td><td>Horizontal rows, <code>ceil(w/8)</code> bytes per row</td><td>MSB = leftmost pixel</td><td><code>drawBitmap()</code>, MicroPython <code>MONO_HLSB</code></td></tr>
+    <tr><td>XBM</td><td>Horizontal rows</td><td>LSB = leftmost pixel</td><td>U8g2 <code>drawXBM()</code> / <code>drawXBMP()</code>, X11, GIMP export</td></tr>
+    <tr><td>Vertical pages</td><td>8-pixel tall pages, one byte per column</td><td>LSB = top pixel</td><td>SSD1306 / SH1106 GDDRAM, PCD8544, U8x8</td></tr>
+    <tr><td>RGB565</td><td>2 bytes per pixel</td><td>5 bits R, 6 G, 5 B (BE or LE)</td><td>ST7735, ST7789, ILI9341 TFT</td></tr>
+  </tbody>
+</table>
+      </section>
+      <section class="faq">
+        <h2>Frequently asked questions</h2>
+        <details><summary>How do I find the width and height of a C bitmap array?</summary><p>Look for #define …_WIDTH / …_HEIGHT macros or the drawBitmap() call that uses the array. If there are none, divide the byte count: for 1-bit horizontal data, bytes = ceil(width/8) × height. The auto-detect button tries common display sizes for you.</p></details>
+        <details><summary>Can I edit the image and get a new C array back?</summary><p>Yes. Click &quot;Open in full editor&quot; to load the array into LCD Mockup Studio, draw or erase pixels, and the C code updates live in the same format.</p></details>
+        <details><summary>Does it work with STM32, ESP-IDF or plain C projects?</summary><p>Yes. The parser only looks for the byte values, so the platform does not matter.</p></details>
+      </section>
+      <section class="cta">
+        <h2>Open the full LCD Mockup Studio</h2>
+        <p>Design complete LCD/OLED screens with text, icons and gauges, edit pixels, simulate the display and export C, SVG or PNG.</p>
+        <p><a class="btn btn-primary" href="../../">Launch Studio →</a></p>
+      </section>
+      <section>
+        <h2>Related tools</h2>
+        <ul class="related">
+          <li><a href="../hex-to-image/">Hex to Image</a></li>
+          <li><a href="../byte-array-to-image/">Byte Array to Image</a></li>
+          <li><a href="../image-to-c-array/">Image to C Array</a></li>
+          <li><a href="../image-to-byte-array/">Image to Byte Array</a></li>
+          <li><a href="../ssd1306-bitmap-converter/">SSD1306 Bitmap</a></li>
+          <li><a href="../u8g2-xbm-converter/">U8g2 XBM</a></li>
+          <li><a href="../adafruit-gfx-bitmap-converter/">Adafruit GFX</a></li>
+          <li><a href="../nokia-5110-bitmap-converter/">Nokia 5110</a></li>
+          <li><a href="../rgb565-converter/">RGB565 Viewer</a></li>
+          <li><a href="../image2cpp-alternative/">image2cpp Alternative</a></li>
+          <li><a href="../micropython-framebuf-converter/">MicroPython framebuf</a></li>
+        </ul>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Free, open-source and 100% client-side. Your images and code never leave your browser.</p>
+        <p><a href="../../">LCD Mockup Studio</a> · <a href="https://github.com/MitraZahiri/lcd-mockup-studio">GitHub</a> · <a href="https://buymeacoffee.com/mitra.zahiri">Buy me a coffee</a></p>
+      </div>
+    </footer>
+  </body>
+</html>

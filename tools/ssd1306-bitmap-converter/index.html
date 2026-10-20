@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SSD1306 OLED Bitmap Converter — 128x64 &amp; 128x32 Image to Code</title>
+    <meta name="description" content="Convert images to SSD1306 OLED bitmaps for Arduino and ESP32. 128x64 and 128x32 presets, dithering, Adafruit_SSD1306 drawBitmap and U8g2 output, plus a hex viewer to decode existing SSD1306 arrays." />
+    <meta name="author" content="Mitra Zahiri" />
+    <link rel="canonical" href="https://mitrazahiri.github.io/lcd-mockup-studio/tools/ssd1306-bitmap-converter/" />
+
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <meta name="theme-color" content="#161b22" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LCD Mockup Studio" />
+    <meta property="og:url" content="https://mitrazahiri.github.io/lcd-mockup-studio/tools/ssd1306-bitmap-converter/" />
+    <meta property="og:title" content="SSD1306 OLED Bitmap Converter — 128x64 &amp; 128x32 Image to Code" />
+    <meta property="og:description" content="Convert images to SSD1306 OLED bitmaps for Arduino and ESP32. 128x64 and 128x32 presets, dithering, Adafruit_SSD1306 drawBitmap and U8g2 output, plus a hex viewer to decode existing SSD1306 arrays." />
+    <meta property="og:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SSD1306 OLED Bitmap Converter — 128x64 &amp; 128x32 Image to Code" />
+    <meta name="twitter:description" content="Convert images to SSD1306 OLED bitmaps for Arduino and ESP32. 128x64 and 128x32 presets, dithering, Adafruit_SSD1306 drawBitmap and U8g2 output, plus a hex viewer to decode existing SSD1306 arrays." />
+    <meta name="twitter:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <script>
+      window.LCD_ANALYTICS_CONFIG = { gaMeasurementId: '', goatCounterCode: '', debug: false };
+    </script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","@id":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/ssd1306-bitmap-converter/#app","name":"SSD1306 OLED Bitmap Converter","url":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/ssd1306-bitmap-converter/","description":"Convert images to SSD1306 OLED bitmaps for Arduino and ESP32. 128x64 and 128x32 presets, dithering, Adafruit_SSD1306 drawBitmap and U8g2 output, plus a hex viewer to decode existing SSD1306 arrays.","applicationCategory":"DeveloperApplication","operatingSystem":"Any (web browser)","browserRequirements":"Requires JavaScript","inLanguage":"en","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Mitra Zahiri","url":"https://github.com/MitraZahiri"},"isPartOf":{"@id":"https://mitrazahiri.github.io/lcd-mockup-studio/#webapp"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"LCD Mockup Studio","item":"https://mitrazahiri.github.io/lcd-mockup-studio/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/"},{"@type":"ListItem","position":3,"name":"SSD1306 OLED Bitmap Converter","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/ssd1306-bitmap-converter/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What size should an SSD1306 bitmap be?","acceptedAnswer":{"@type":"Answer","text":"128 × 64 pixels (1024 bytes) for the 0.96\" module and 128 × 32 (512 bytes) for the 0.91\" module. Smaller icons can be drawn anywhere on screen."}},{"@type":"Question","name":"My SSD1306 image is shifted by 2 pixels.","acceptedAnswer":{"@type":"Answer","text":"Your module probably has an SH1106 controller (132-column RAM). Use an SH1106 driver or the U8g2 SH1106 constructor."}},{"@type":"Question","name":"Does this work with ESP32 and ESP8266?","acceptedAnswer":{"@type":"Answer","text":"Yes. The generated header uses PROGMEM guards that compile on AVR, ESP8266, ESP32 and ARM."}}]}]}</script>
+    <script type="module" crossorigin src="../../assets/dithering-D2desjM0.js"></script>
+    <script type="module" crossorigin src="../../assets/landing-BIHmK3fu.js"></script>
+    <link rel="stylesheet" crossorigin href="../../assets/landing-COKeVsWp.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="../../">LCD Mockup <span>Studio</span></a>
+        <nav aria-label="Main">
+          <a href="../hex-to-image/">Hex → Image</a>
+          <a href="../image-to-c-array/">Image → C Array</a>
+          <a href="../ssd1306-bitmap-converter/">SSD1306</a>
+          <a href="../">Tools</a>
+          <a href="../../">Studio</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <p class="breadcrumb"><a href="../../">LCD Mockup Studio</a> › <a href="../">Tools</a> › SSD1306 OLED Bitmap Converter</p>
+      <h1>SSD1306 OLED Bitmap Converter</h1>
+      <p class="lead">Make a splash screen or icon for your 0.96" or 0.91" SSD1306 OLED. Upload an image, preview it at real pixel size and paste the code into your sketch.</p>
+<div class="tool" data-tool="image" data-width="128" data-height="64">
+  <label class="drop" data-role="drop">📁 Click, drop or paste (Ctrl+V) an image<input type="file" accept="image/*" data-role="file"></label>
+  <div class="controls">
+    <label>Width<input type="number" data-role="width" min="1" max="1024"></label>
+    <label>Height<input type="number" data-role="height" min="1" max="1024"></label>
+    <label class="inline"><input type="checkbox" data-role="keep" checked> Keep aspect</label>
+    <label>Dithering<select data-role="dither"><option value="threshold">Threshold (logos, text)</option><option value="atkinson">Atkinson (photos)</option><option value="floyd-steinberg">Floyd–Steinberg</option><option value="bayer4">Bayer 4×4</option><option value="bayer8">Bayer 8×8</option></select></label>
+    <label>Threshold<input type="range" data-role="threshold" min="1" max="254" value="128"></label>
+    <label class="inline"><input type="checkbox" data-role="invert"> Invert</label>
+    <label>Output<select data-role="format"><option value="adafruit">Adafruit GFX drawBitmap (.h)</option><option value="xbm">U8g2 drawXBMP / XBM (.h)</option><option value="u8g2">Vertical pages / SSD1306 RAM (.h)</option><option value="micropython">MicroPython framebuf (.py)</option><option value="arduino_sketch">Complete Arduino sketch (.ino)</option></select></label>
+    <label>Variable name<input type="text" data-role="var" value="bitmap" size="12"></label>
+  </div>
+  <div class="tool-grid">
+    <div>
+      <div class="preview-box"><canvas data-role="preview" aria-label="1-bit preview"></canvas></div>
+      <div class="status" data-role="status" aria-live="polite"></div>
+    </div>
+    <div>
+      <textarea data-role="output" readonly spellcheck="false" aria-label="Generated code"></textarea>
+      <div class="controls">
+        <button type="button" class="btn btn-primary" data-role="copy" data-label="📋 Copy code">📋 Copy code</button>
+        <button type="button" class="btn" data-role="download">⬇ Download file</button>
+      </div>
+    </div>
+  </div>
+</div>
+      <section>
+        <h2>SSD1306 memory layout</h2>
+        <p>The SSD1306 controller stores its GDDRAM in 8 horizontal <em>pages</em>. Each byte is a vertical strip of 8 pixels with the least significant bit at the top. Libraries hide this:</p>
+<ul>
+  <li><strong>Adafruit_SSD1306</strong> takes horizontal MSB-first bitmaps in <code>drawBitmap()</code> and converts them itself – choose the <em>Adafruit GFX</em> output.</li>
+  <li><strong>U8g2</strong> <code>drawXBMP()</code> takes XBM (horizontal LSB-first) – choose <em>XBM</em>.</li>
+  <li>Writing straight to the controller over I²C (no library) needs the <em>vertical pages</em> layout.</li>
+</ul>
+      </section>
+      <section>
+        <h2>Arduino example (Adafruit_SSD1306)</h2>
+        <pre>#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+Adafruit_SSD1306 display(128, 64, &Wire, -1);
+
+// Paste the array generated above:
+static const uint8_t PROGMEM bitmap[] = { 0xff, 0x80, /* ... */ };
+
+void setup() {
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
+  display.drawBitmap(0, 0, bitmap, 128, 64, SSD1306_WHITE);
+  display.display();
+}
+
+void loop() {}</pre>
+      </section>
+      <section>
+        <h2>Arduino example (U8g2)</h2>
+        <pre>#include <U8g2lib.h>
+
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
+
+// XBM output (LSB-first, horizontal):
+static const unsigned char bitmap[] U8X8_PROGMEM = { 0xff, 0x01, /* ... */ };
+
+void setup() {
+  u8g2.begin();
+  u8g2.clearBuffer();
+  u8g2.drawXBMP(0, 0, 128, 64, bitmap);
+  u8g2.sendBuffer();
+}
+
+void loop() {}</pre>
+      </section>
+      <section>
+        <h2>Decode an existing SSD1306 bitmap</h2>
+        <p>Have an array already and want to see it? Use the <a href="../hex-to-image/">hex to image converter</a> with the 128 × 64 preset.</p>
+      </section>
+      <section class="faq">
+        <h2>Frequently asked questions</h2>
+        <details><summary>What size should an SSD1306 bitmap be?</summary><p>128 × 64 pixels (1024 bytes) for the 0.96&quot; module and 128 × 32 (512 bytes) for the 0.91&quot; module. Smaller icons can be drawn anywhere on screen.</p></details>
+        <details><summary>My SSD1306 image is shifted by 2 pixels.</summary><p>Your module probably has an SH1106 controller (132-column RAM). Use an SH1106 driver or the U8g2 SH1106 constructor.</p></details>
+        <details><summary>Does this work with ESP32 and ESP8266?</summary><p>Yes. The generated header uses PROGMEM guards that compile on AVR, ESP8266, ESP32 and ARM.</p></details>
+      </section>
+      <section class="cta">
+        <h2>Open the full LCD Mockup Studio</h2>
+        <p>Design complete LCD/OLED screens with text, icons and gauges, edit pixels, simulate the display and export C, SVG or PNG.</p>
+        <p><a class="btn btn-primary" href="../../">Launch Studio →</a></p>
+      </section>
+      <section>
+        <h2>Related tools</h2>
+        <ul class="related">
+          <li><a href="../hex-to-image/">Hex to Image</a></li>
+          <li><a href="../c-array-to-image/">C Array to Image</a></li>
+          <li><a href="../byte-array-to-image/">Byte Array to Image</a></li>
+          <li><a href="../image-to-c-array/">Image to C Array</a></li>
+          <li><a href="../image-to-byte-array/">Image to Byte Array</a></li>
+          <li><a href="../u8g2-xbm-converter/">U8g2 XBM</a></li>
+          <li><a href="../adafruit-gfx-bitmap-converter/">Adafruit GFX</a></li>
+          <li><a href="../nokia-5110-bitmap-converter/">Nokia 5110</a></li>
+          <li><a href="../rgb565-converter/">RGB565 Viewer</a></li>
+          <li><a href="../image2cpp-alternative/">image2cpp Alternative</a></li>
+          <li><a href="../micropython-framebuf-converter/">MicroPython framebuf</a></li>
+        </ul>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Free, open-source and 100% client-side. Your images and code never leave your browser.</p>
+        <p><a href="../../">LCD Mockup Studio</a> · <a href="https://github.com/MitraZahiri/lcd-mockup-studio">GitHub</a> · <a href="https://buymeacoffee.com/mitra.zahiri">Buy me a coffee</a></p>
+      </div>
+    </footer>
+  </body>
+</html>

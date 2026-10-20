@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RGB565 Hex to Image Viewer — Decode 16-bit TFT Color Arrays</title>
+    <meta name="description" content="Decode RGB565 hex arrays (uint16_t or byte pairs) into a color image online. Big- and little-endian, for ST7735, ST7789, ILI9341 and TFT_eSPI images. Preview and download PNG." />
+    <meta name="author" content="Mitra Zahiri" />
+    <link rel="canonical" href="https://mitrazahiri.github.io/lcd-mockup-studio/tools/rgb565-converter/" />
+
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <meta name="theme-color" content="#161b22" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LCD Mockup Studio" />
+    <meta property="og:url" content="https://mitrazahiri.github.io/lcd-mockup-studio/tools/rgb565-converter/" />
+    <meta property="og:title" content="RGB565 Hex to Image Viewer — Decode 16-bit TFT Color Arrays" />
+    <meta property="og:description" content="Decode RGB565 hex arrays (uint16_t or byte pairs) into a color image online. Big- and little-endian, for ST7735, ST7789, ILI9341 and TFT_eSPI images. Preview and download PNG." />
+    <meta property="og:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="RGB565 Hex to Image Viewer — Decode 16-bit TFT Color Arrays" />
+    <meta name="twitter:description" content="Decode RGB565 hex arrays (uint16_t or byte pairs) into a color image online. Big- and little-endian, for ST7735, ST7789, ILI9341 and TFT_eSPI images. Preview and download PNG." />
+    <meta name="twitter:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <script>
+      window.LCD_ANALYTICS_CONFIG = { gaMeasurementId: '', goatCounterCode: '', debug: false };
+    </script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","@id":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/rgb565-converter/#app","name":"RGB565 Hex to Image Viewer","url":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/rgb565-converter/","description":"Decode RGB565 hex arrays (uint16_t or byte pairs) into a color image online. Big- and little-endian, for ST7735, ST7789, ILI9341 and TFT_eSPI images. Preview and download PNG.","applicationCategory":"DeveloperApplication","operatingSystem":"Any (web browser)","browserRequirements":"Requires JavaScript","inLanguage":"en","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Mitra Zahiri","url":"https://github.com/MitraZahiri"},"isPartOf":{"@id":"https://mitrazahiri.github.io/lcd-mockup-studio/#webapp"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"LCD Mockup Studio","item":"https://mitrazahiri.github.io/lcd-mockup-studio/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/"},{"@type":"ListItem","position":3,"name":"RGB565 Hex to Image Viewer","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/rgb565-converter/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I paste uint16_t arrays like 0xF800?","acceptedAnswer":{"@type":"Answer","text":"Paste them as byte pairs (F8 00) or split 0xF800 into 0xF8, 0x00. A uint16_t parser is on the roadmap."}},{"@type":"Question","name":"Can I convert an image to RGB565 here?","acceptedAnswer":{"@type":"Answer","text":"This page only decodes RGB565 data back into an image. For converting images, use the 1-bit image to C array converter."}}]}]}</script>
+    <script type="module" crossorigin src="../../assets/dithering-D2desjM0.js"></script>
+    <script type="module" crossorigin src="../../assets/landing-BIHmK3fu.js"></script>
+    <link rel="stylesheet" crossorigin href="../../assets/landing-COKeVsWp.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="../../">LCD Mockup <span>Studio</span></a>
+        <nav aria-label="Main">
+          <a href="../hex-to-image/">Hex → Image</a>
+          <a href="../image-to-c-array/">Image → C Array</a>
+          <a href="../ssd1306-bitmap-converter/">SSD1306</a>
+          <a href="../">Tools</a>
+          <a href="../../">Studio</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <p class="breadcrumb"><a href="../../">LCD Mockup Studio</a> › <a href="../">Tools</a> › RGB565 Hex to Image Viewer</p>
+      <h1>RGB565 Hex to Image Viewer</h1>
+      <p class="lead">Paste RGB565 color data from a TFT_eSPI, Adafruit or LVGL project and see the image. Switch endianness if the colors look wrong.</p>
+<div class="tool" data-tool="hex" data-format="rgb565_be" data-width="32" data-height="32">
+  <div class="tool-grid">
+    <div>
+      <label for="hex-input">Hex bytes / C array</label>
+      <textarea id="hex-input" data-role="input" spellcheck="false" aria-label="Hex bytes / C array"></textarea>
+    </div>
+    <div>
+      <div class="preview-box"><canvas data-role="preview" aria-label="Decoded bitmap preview"></canvas></div>
+      <div class="status" data-role="status" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="controls">
+    <label>Byte format<select data-role="format"><option value="adafruit">Adafruit GFX (horizontal, MSB first)</option><option value="xbm">XBM / U8g2 (horizontal, LSB first)</option><option value="u8g2">Vertical pages (SSD1306, LSB = top)</option><option value="vertical_msb">Vertical, MSB first</option><option value="rgb565_be">RGB565 color (big-endian)</option><option value="rgb565_le">RGB565 color (little-endian)</option><option value="gray8">Grayscale (1 byte per pixel)</option></select></label>
+    <label>Width<input type="number" data-role="width" min="1" max="1024"></label>
+    <label>Height<input type="number" data-role="height" min="1" max="1024"></label>
+    <label class="inline"><input type="checkbox" data-role="lock" checked> Auto height</label>
+    <label class="inline"><input type="checkbox" data-role="invert"> Invert</label>
+  </div>
+  <div class="controls">
+    <button type="button" class="btn" data-role="detect">Auto-detect size</button>
+    <button type="button" class="btn" data-role="clear">Clear</button>
+    <button type="button" class="btn" data-role="download">⬇ Download PNG</button>
+    <button type="button" class="btn btn-primary" data-role="open-studio">Open in full editor →</button>
+  </div>
+</div>
+      <section>
+        <h2>How RGB565 works</h2>
+        <p>Each pixel is 16 bits: 5 bits red, 6 bits green, 5 bits blue. <code>0xF800</code> is red, <code>0x07E0</code> green, <code>0x001F</code> blue and <code>0xFFFF</code> white. A 240 × 320 ILI9341 frame is 153,600 bytes.</p>
+      </section>
+      <section>
+        <h2>Big-endian vs little-endian</h2>
+        <p>If reds look blue-green or the picture is noisy, the two bytes of each pixel are swapped. Toggle between <em>RGB565 BE</em> and <em>RGB565 LE</em>. TFT_eSPI <code>pushImage()</code> data is usually stored little-endian in memory; SPI transfers are big-endian.</p>
+      </section>
+      <section class="faq">
+        <h2>Frequently asked questions</h2>
+        <details><summary>Can I paste uint16_t arrays like 0xF800?</summary><p>Paste them as byte pairs (F8 00) or split 0xF800 into 0xF8, 0x00. A uint16_t parser is on the roadmap.</p></details>
+        <details><summary>Can I convert an image to RGB565 here?</summary><p>This page only decodes RGB565 data back into an image. For converting images, use the 1-bit image to C array converter.</p></details>
+      </section>
+      <section class="cta">
+        <h2>Open the full LCD Mockup Studio</h2>
+        <p>Design complete LCD/OLED screens with text, icons and gauges, edit pixels, simulate the display and export C, SVG or PNG.</p>
+        <p><a class="btn btn-primary" href="../../">Launch Studio →</a></p>
+      </section>
+      <section>
+        <h2>Related tools</h2>
+        <ul class="related">
+          <li><a href="../hex-to-image/">Hex to Image</a></li>
+          <li><a href="../c-array-to-image/">C Array to Image</a></li>
+          <li><a href="../byte-array-to-image/">Byte Array to Image</a></li>
+          <li><a href="../image-to-c-array/">Image to C Array</a></li>
+          <li><a href="../image-to-byte-array/">Image to Byte Array</a></li>
+          <li><a href="../ssd1306-bitmap-converter/">SSD1306 Bitmap</a></li>
+          <li><a href="../u8g2-xbm-converter/">U8g2 XBM</a></li>
+          <li><a href="../adafruit-gfx-bitmap-converter/">Adafruit GFX</a></li>
+          <li><a href="../nokia-5110-bitmap-converter/">Nokia 5110</a></li>
+          <li><a href="../image2cpp-alternative/">image2cpp Alternative</a></li>
+          <li><a href="../micropython-framebuf-converter/">MicroPython framebuf</a></li>
+        </ul>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Free, open-source and 100% client-side. Your images and code never leave your browser.</p>
+        <p><a href="../../">LCD Mockup Studio</a> · <a href="https://github.com/MitraZahiri/lcd-mockup-studio">GitHub</a> · <a href="https://buymeacoffee.com/mitra.zahiri">Buy me a coffee</a></p>
+      </div>
+    </footer>
+  </body>
+</html>

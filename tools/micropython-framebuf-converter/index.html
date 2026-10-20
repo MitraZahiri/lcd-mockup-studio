@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MicroPython framebuf Image Converter — Image to bytearray (MONO_HLSB)</title>
+    <meta name="description" content="Convert images to MicroPython framebuf bytearrays for SSD1306 OLEDs on ESP32 and Raspberry Pi Pico. MONO_HLSB output with ready-to-run blit() example. Free online." />
+    <meta name="author" content="Mitra Zahiri" />
+    <link rel="canonical" href="https://mitrazahiri.github.io/lcd-mockup-studio/tools/micropython-framebuf-converter/" />
+
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <meta name="theme-color" content="#161b22" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LCD Mockup Studio" />
+    <meta property="og:url" content="https://mitrazahiri.github.io/lcd-mockup-studio/tools/micropython-framebuf-converter/" />
+    <meta property="og:title" content="MicroPython framebuf Image Converter — Image to bytearray (MONO_HLSB)" />
+    <meta property="og:description" content="Convert images to MicroPython framebuf bytearrays for SSD1306 OLEDs on ESP32 and Raspberry Pi Pico. MONO_HLSB output with ready-to-run blit() example. Free online." />
+    <meta property="og:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MicroPython framebuf Image Converter — Image to bytearray (MONO_HLSB)" />
+    <meta name="twitter:description" content="Convert images to MicroPython framebuf bytearrays for SSD1306 OLEDs on ESP32 and Raspberry Pi Pico. MONO_HLSB output with ready-to-run blit() example. Free online." />
+    <meta name="twitter:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <script>
+      window.LCD_ANALYTICS_CONFIG = { gaMeasurementId: '', goatCounterCode: '', debug: false };
+    </script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","@id":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/micropython-framebuf-converter/#app","name":"MicroPython framebuf Image Converter","url":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/micropython-framebuf-converter/","description":"Convert images to MicroPython framebuf bytearrays for SSD1306 OLEDs on ESP32 and Raspberry Pi Pico. MONO_HLSB output with ready-to-run blit() example. Free online.","applicationCategory":"DeveloperApplication","operatingSystem":"Any (web browser)","browserRequirements":"Requires JavaScript","inLanguage":"en","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Mitra Zahiri","url":"https://github.com/MitraZahiri"},"isPartOf":{"@id":"https://mitrazahiri.github.io/lcd-mockup-studio/#webapp"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"LCD Mockup Studio","item":"https://mitrazahiri.github.io/lcd-mockup-studio/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/"},{"@type":"ListItem","position":3,"name":"MicroPython framebuf Image Converter","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/micropython-framebuf-converter/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Does it work with CircuitPython?","acceptedAnswer":{"@type":"Answer","text":"CircuitPython uses displayio and bitmap files, but the raw bytes from this tool can be loaded into a displayio.Bitmap with a small loop."}}]}]}</script>
+    <script type="module" crossorigin src="../../assets/dithering-D2desjM0.js"></script>
+    <script type="module" crossorigin src="../../assets/landing-BIHmK3fu.js"></script>
+    <link rel="stylesheet" crossorigin href="../../assets/landing-COKeVsWp.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="../../">LCD Mockup <span>Studio</span></a>
+        <nav aria-label="Main">
+          <a href="../hex-to-image/">Hex → Image</a>
+          <a href="../image-to-c-array/">Image → C Array</a>
+          <a href="../ssd1306-bitmap-converter/">SSD1306</a>
+          <a href="../">Tools</a>
+          <a href="../../">Studio</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <p class="breadcrumb"><a href="../../">LCD Mockup Studio</a> › <a href="../">Tools</a> › MicroPython framebuf Image Converter</p>
+      <h1>MicroPython framebuf Image Converter</h1>
+      <p class="lead">Get a <code>bytearray</code> and a <code>framebuf.FrameBuffer</code> you can <code>blit()</code> straight onto an SSD1306 from MicroPython on ESP32 or Raspberry Pi Pico.</p>
+<div class="tool" data-tool="image" data-format="micropython">
+  <label class="drop" data-role="drop">📁 Click, drop or paste (Ctrl+V) an image<input type="file" accept="image/*" data-role="file"></label>
+  <div class="controls">
+    <label>Width<input type="number" data-role="width" min="1" max="1024"></label>
+    <label>Height<input type="number" data-role="height" min="1" max="1024"></label>
+    <label class="inline"><input type="checkbox" data-role="keep" checked> Keep aspect</label>
+    <label>Dithering<select data-role="dither"><option value="threshold">Threshold (logos, text)</option><option value="atkinson">Atkinson (photos)</option><option value="floyd-steinberg">Floyd–Steinberg</option><option value="bayer4">Bayer 4×4</option><option value="bayer8">Bayer 8×8</option></select></label>
+    <label>Threshold<input type="range" data-role="threshold" min="1" max="254" value="128"></label>
+    <label class="inline"><input type="checkbox" data-role="invert"> Invert</label>
+    <label>Output<select data-role="format"><option value="adafruit">Adafruit GFX drawBitmap (.h)</option><option value="xbm">U8g2 drawXBMP / XBM (.h)</option><option value="u8g2">Vertical pages / SSD1306 RAM (.h)</option><option value="micropython">MicroPython framebuf (.py)</option><option value="arduino_sketch">Complete Arduino sketch (.ino)</option></select></label>
+    <label>Variable name<input type="text" data-role="var" value="bitmap" size="12"></label>
+  </div>
+  <div class="tool-grid">
+    <div>
+      <div class="preview-box"><canvas data-role="preview" aria-label="1-bit preview"></canvas></div>
+      <div class="status" data-role="status" aria-live="polite"></div>
+    </div>
+    <div>
+      <textarea data-role="output" readonly spellcheck="false" aria-label="Generated code"></textarea>
+      <div class="controls">
+        <button type="button" class="btn btn-primary" data-role="copy" data-label="📋 Copy code">📋 Copy code</button>
+        <button type="button" class="btn" data-role="download">⬇ Download file</button>
+      </div>
+    </div>
+  </div>
+</div>
+      <section>
+        <h2>Using the output</h2>
+        <pre>from machine import Pin, I2C
+import framebuf, ssd1306
+
+i2c = I2C(0, scl=Pin(22), sda=Pin(21))   # Pico: I2C(0, scl=Pin(1), sda=Pin(0))
+oled = ssd1306.SSD1306_I2C(128, 64, i2c)
+
+bitmap = bytearray([0xff, 0x80, ...])    # from the converter
+fb = framebuf.FrameBuffer(bitmap, 128, 64, framebuf.MONO_HLSB)
+oled.blit(fb, 0, 0)
+oled.show()</pre>
+      </section>
+      <section>
+        <h2>MONO_HLSB, MONO_HMSB and MONO_VLSB</h2>
+        <p>The converter emits <code>MONO_HLSB</code> (horizontal, MSB = leftmost pixel), which matches the Adafruit layout. <code>MONO_VLSB</code> corresponds to the vertical pages layout used internally by the SSD1306.</p>
+      </section>
+      <section class="faq">
+        <h2>Frequently asked questions</h2>
+        <details><summary>Does it work with CircuitPython?</summary><p>CircuitPython uses displayio and bitmap files, but the raw bytes from this tool can be loaded into a displayio.Bitmap with a small loop.</p></details>
+      </section>
+      <section class="cta">
+        <h2>Open the full LCD Mockup Studio</h2>
+        <p>Design complete LCD/OLED screens with text, icons and gauges, edit pixels, simulate the display and export C, SVG or PNG.</p>
+        <p><a class="btn btn-primary" href="../../">Launch Studio →</a></p>
+      </section>
+      <section>
+        <h2>Related tools</h2>
+        <ul class="related">
+          <li><a href="../hex-to-image/">Hex to Image</a></li>
+          <li><a href="../c-array-to-image/">C Array to Image</a></li>
+          <li><a href="../byte-array-to-image/">Byte Array to Image</a></li>
+          <li><a href="../image-to-c-array/">Image to C Array</a></li>
+          <li><a href="../image-to-byte-array/">Image to Byte Array</a></li>
+          <li><a href="../ssd1306-bitmap-converter/">SSD1306 Bitmap</a></li>
+          <li><a href="../u8g2-xbm-converter/">U8g2 XBM</a></li>
+          <li><a href="../adafruit-gfx-bitmap-converter/">Adafruit GFX</a></li>
+          <li><a href="../nokia-5110-bitmap-converter/">Nokia 5110</a></li>
+          <li><a href="../rgb565-converter/">RGB565 Viewer</a></li>
+          <li><a href="../image2cpp-alternative/">image2cpp Alternative</a></li>
+        </ul>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Free, open-source and 100% client-side. Your images and code never leave your browser.</p>
+        <p><a href="../../">LCD Mockup Studio</a> · <a href="https://github.com/MitraZahiri/lcd-mockup-studio">GitHub</a> · <a href="https://buymeacoffee.com/mitra.zahiri">Buy me a coffee</a></p>
+      </div>
+    </footer>
+  </body>
+</html>

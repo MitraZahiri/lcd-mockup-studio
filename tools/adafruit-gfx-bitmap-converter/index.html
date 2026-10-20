@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adafruit GFX drawBitmap Converter — Image to Bitmap Array</title>
+    <meta name="description" content="Create bitmap arrays for Adafruit_GFX drawBitmap() on SSD1306, ST7735, ILI9341 and other Adafruit display libraries. Upload an image, dither, preview and copy the PROGMEM array." />
+    <meta name="author" content="Mitra Zahiri" />
+    <link rel="canonical" href="https://mitrazahiri.github.io/lcd-mockup-studio/tools/adafruit-gfx-bitmap-converter/" />
+
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <meta name="theme-color" content="#161b22" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LCD Mockup Studio" />
+    <meta property="og:url" content="https://mitrazahiri.github.io/lcd-mockup-studio/tools/adafruit-gfx-bitmap-converter/" />
+    <meta property="og:title" content="Adafruit GFX drawBitmap Converter — Image to Bitmap Array" />
+    <meta property="og:description" content="Create bitmap arrays for Adafruit_GFX drawBitmap() on SSD1306, ST7735, ILI9341 and other Adafruit display libraries. Upload an image, dither, preview and copy the PROGMEM array." />
+    <meta property="og:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Adafruit GFX drawBitmap Converter — Image to Bitmap Array" />
+    <meta name="twitter:description" content="Create bitmap arrays for Adafruit_GFX drawBitmap() on SSD1306, ST7735, ILI9341 and other Adafruit display libraries. Upload an image, dither, preview and copy the PROGMEM array." />
+    <meta name="twitter:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <script>
+      window.LCD_ANALYTICS_CONFIG = { gaMeasurementId: '', goatCounterCode: '', debug: false };
+    </script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","@id":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/adafruit-gfx-bitmap-converter/#app","name":"Adafruit GFX Bitmap Converter","url":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/adafruit-gfx-bitmap-converter/","description":"Create bitmap arrays for Adafruit_GFX drawBitmap() on SSD1306, ST7735, ILI9341 and other Adafruit display libraries. Upload an image, dither, preview and copy the PROGMEM array.","applicationCategory":"DeveloperApplication","operatingSystem":"Any (web browser)","browserRequirements":"Requires JavaScript","inLanguage":"en","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Mitra Zahiri","url":"https://github.com/MitraZahiri"},"isPartOf":{"@id":"https://mitrazahiri.github.io/lcd-mockup-studio/#webapp"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"LCD Mockup Studio","item":"https://mitrazahiri.github.io/lcd-mockup-studio/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/"},{"@type":"ListItem","position":3,"name":"Adafruit GFX Bitmap Converter","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/adafruit-gfx-bitmap-converter/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the difference between drawBitmap and drawXBitmap?","acceptedAnswer":{"@type":"Answer","text":"drawBitmap() expects MSB-first bytes (this tool's Adafruit GFX output). drawXBitmap() expects XBM, LSB-first – choose the XBM output for it."}},{"@type":"Question","name":"Do I need PROGMEM?","acceptedAnswer":{"@type":"Answer","text":"On AVR boards yes, otherwise the array is copied into scarce RAM. On ESP32 and ARM const arrays stay in flash anyway, and PROGMEM is harmless."}}]}]}</script>
+    <script type="module" crossorigin src="../../assets/dithering-D2desjM0.js"></script>
+    <script type="module" crossorigin src="../../assets/landing-BIHmK3fu.js"></script>
+    <link rel="stylesheet" crossorigin href="../../assets/landing-COKeVsWp.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="../../">LCD Mockup <span>Studio</span></a>
+        <nav aria-label="Main">
+          <a href="../hex-to-image/">Hex → Image</a>
+          <a href="../image-to-c-array/">Image → C Array</a>
+          <a href="../ssd1306-bitmap-converter/">SSD1306</a>
+          <a href="../">Tools</a>
+          <a href="../../">Studio</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <p class="breadcrumb"><a href="../../">LCD Mockup Studio</a> › <a href="../">Tools</a> › Adafruit GFX Bitmap Converter</p>
+      <h1>Adafruit GFX Bitmap Converter</h1>
+      <p class="lead">Generate the horizontal, MSB-first byte arrays that <code>display.drawBitmap()</code> expects, for any display that uses the Adafruit_GFX library.</p>
+<div class="tool" data-tool="image">
+  <label class="drop" data-role="drop">📁 Click, drop or paste (Ctrl+V) an image<input type="file" accept="image/*" data-role="file"></label>
+  <div class="controls">
+    <label>Width<input type="number" data-role="width" min="1" max="1024"></label>
+    <label>Height<input type="number" data-role="height" min="1" max="1024"></label>
+    <label class="inline"><input type="checkbox" data-role="keep" checked> Keep aspect</label>
+    <label>Dithering<select data-role="dither"><option value="threshold">Threshold (logos, text)</option><option value="atkinson">Atkinson (photos)</option><option value="floyd-steinberg">Floyd–Steinberg</option><option value="bayer4">Bayer 4×4</option><option value="bayer8">Bayer 8×8</option></select></label>
+    <label>Threshold<input type="range" data-role="threshold" min="1" max="254" value="128"></label>
+    <label class="inline"><input type="checkbox" data-role="invert"> Invert</label>
+    <label>Output<select data-role="format"><option value="adafruit">Adafruit GFX drawBitmap (.h)</option><option value="xbm">U8g2 drawXBMP / XBM (.h)</option><option value="u8g2">Vertical pages / SSD1306 RAM (.h)</option><option value="micropython">MicroPython framebuf (.py)</option><option value="arduino_sketch">Complete Arduino sketch (.ino)</option></select></label>
+    <label>Variable name<input type="text" data-role="var" value="bitmap" size="12"></label>
+  </div>
+  <div class="tool-grid">
+    <div>
+      <div class="preview-box"><canvas data-role="preview" aria-label="1-bit preview"></canvas></div>
+      <div class="status" data-role="status" aria-live="polite"></div>
+    </div>
+    <div>
+      <textarea data-role="output" readonly spellcheck="false" aria-label="Generated code"></textarea>
+      <div class="controls">
+        <button type="button" class="btn btn-primary" data-role="copy" data-label="📋 Copy code">📋 Copy code</button>
+        <button type="button" class="btn" data-role="download">⬇ Download file</button>
+      </div>
+    </div>
+  </div>
+</div>
+      <section>
+        <h2>drawBitmap() signature</h2>
+        <pre>void drawBitmap(int16_t x, int16_t y,
+                const uint8_t bitmap[], int16_t w, int16_t h,
+                uint16_t color);
+void drawBitmap(int16_t x, int16_t y,
+                const uint8_t bitmap[], int16_t w, int16_t h,
+                uint16_t color, uint16_t bg);</pre>
+<p>The array must be <code>ceil(w / 8) × h</code> bytes long. Each row starts on a new byte, so a 10-pixel wide icon uses 2 bytes per row.</p>
+      </section>
+      <section>
+        <h2>Full example</h2>
+        <pre>#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+Adafruit_SSD1306 display(128, 64, &Wire, -1);
+
+// Paste the array generated above:
+static const uint8_t PROGMEM bitmap[] = { 0xff, 0x80, /* ... */ };
+
+void setup() {
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
+  display.drawBitmap(0, 0, bitmap, 128, 64, SSD1306_WHITE);
+  display.display();
+}
+
+void loop() {}</pre>
+      </section>
+      <section>
+        <h2>Color TFT displays</h2>
+        <p>On ST7735, ST7789 and ILI9341, <code>drawBitmap()</code> paints the 1-bits in any 16-bit color you choose, which is perfect for icons. For full-color images use <code>drawRGBBitmap()</code> with RGB565 data – the <a href="../rgb565-converter/">RGB565 viewer</a> decodes that format.</p>
+      </section>
+      <section class="faq">
+        <h2>Frequently asked questions</h2>
+        <details><summary>What is the difference between drawBitmap and drawXBitmap?</summary><p>drawBitmap() expects MSB-first bytes (this tool's Adafruit GFX output). drawXBitmap() expects XBM, LSB-first – choose the XBM output for it.</p></details>
+        <details><summary>Do I need PROGMEM?</summary><p>On AVR boards yes, otherwise the array is copied into scarce RAM. On ESP32 and ARM const arrays stay in flash anyway, and PROGMEM is harmless.</p></details>
+      </section>
+      <section class="cta">
+        <h2>Open the full LCD Mockup Studio</h2>
+        <p>Design complete LCD/OLED screens with text, icons and gauges, edit pixels, simulate the display and export C, SVG or PNG.</p>
+        <p><a class="btn btn-primary" href="../../">Launch Studio →</a></p>
+      </section>
+      <section>
+        <h2>Related tools</h2>
+        <ul class="related">
+          <li><a href="../hex-to-image/">Hex to Image</a></li>
+          <li><a href="../c-array-to-image/">C Array to Image</a></li>
+          <li><a href="../byte-array-to-image/">Byte Array to Image</a></li>
+          <li><a href="../image-to-c-array/">Image to C Array</a></li>
+          <li><a href="../image-to-byte-array/">Image to Byte Array</a></li>
+          <li><a href="../ssd1306-bitmap-converter/">SSD1306 Bitmap</a></li>
+          <li><a href="../u8g2-xbm-converter/">U8g2 XBM</a></li>
+          <li><a href="../nokia-5110-bitmap-converter/">Nokia 5110</a></li>
+          <li><a href="../rgb565-converter/">RGB565 Viewer</a></li>
+          <li><a href="../image2cpp-alternative/">image2cpp Alternative</a></li>
+          <li><a href="../micropython-framebuf-converter/">MicroPython framebuf</a></li>
+        </ul>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Free, open-source and 100% client-side. Your images and code never leave your browser.</p>
+        <p><a href="../../">LCD Mockup Studio</a> · <a href="https://github.com/MitraZahiri/lcd-mockup-studio">GitHub</a> · <a href="https://buymeacoffee.com/mitra.zahiri">Buy me a coffee</a></p>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image to Byte Array / Hex Converter — PNG &amp; JPG to 0x Bytes</title>
+    <meta name="description" content="Convert an image to a byte array of hex values (0x00–0xFF) online. Monochrome 1-bit output with dithering for displays, e-paper, LED matrices and thermal printers. Copy as C, Arduino or MicroPython." />
+    <meta name="author" content="Mitra Zahiri" />
+    <link rel="canonical" href="https://mitrazahiri.github.io/lcd-mockup-studio/tools/image-to-byte-array/" />
+
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <meta name="theme-color" content="#161b22" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LCD Mockup Studio" />
+    <meta property="og:url" content="https://mitrazahiri.github.io/lcd-mockup-studio/tools/image-to-byte-array/" />
+    <meta property="og:title" content="Image to Byte Array / Hex Converter — PNG &amp; JPG to 0x Bytes" />
+    <meta property="og:description" content="Convert an image to a byte array of hex values (0x00–0xFF) online. Monochrome 1-bit output with dithering for displays, e-paper, LED matrices and thermal printers. Copy as C, Arduino or MicroPython." />
+    <meta property="og:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Image to Byte Array / Hex Converter — PNG &amp; JPG to 0x Bytes" />
+    <meta name="twitter:description" content="Convert an image to a byte array of hex values (0x00–0xFF) online. Monochrome 1-bit output with dithering for displays, e-paper, LED matrices and thermal printers. Copy as C, Arduino or MicroPython." />
+    <meta name="twitter:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <script>
+      window.LCD_ANALYTICS_CONFIG = { gaMeasurementId: '', goatCounterCode: '', debug: false };
+    </script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","@id":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/image-to-byte-array/#app","name":"Image to Byte Array Converter","url":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/image-to-byte-array/","description":"Convert an image to a byte array of hex values (0x00–0xFF) online. Monochrome 1-bit output with dithering for displays, e-paper, LED matrices and thermal printers. Copy as C, Arduino or MicroPython.","applicationCategory":"DeveloperApplication","operatingSystem":"Any (web browser)","browserRequirements":"Requires JavaScript","inLanguage":"en","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Mitra Zahiri","url":"https://github.com/MitraZahiri"},"isPartOf":{"@id":"https://mitrazahiri.github.io/lcd-mockup-studio/#webapp"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"LCD Mockup Studio","item":"https://mitrazahiri.github.io/lcd-mockup-studio/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/"},{"@type":"ListItem","position":3,"name":"Image to Byte Array Converter","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/image-to-byte-array/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I get the bytes without the C wrapper?","acceptedAnswer":{"@type":"Answer","text":"Copy just the lines between the braces, or open the full studio, which also exports raw hex, Base64 and JSON."}},{"@type":"Question","name":"What image formats can I upload?","acceptedAnswer":{"@type":"Answer","text":"Anything your browser can display: PNG, JPG, GIF, BMP, WebP and SVG."}}]}]}</script>
+    <script type="module" crossorigin src="../../assets/dithering-D2desjM0.js"></script>
+    <script type="module" crossorigin src="../../assets/landing-BIHmK3fu.js"></script>
+    <link rel="stylesheet" crossorigin href="../../assets/landing-COKeVsWp.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="../../">LCD Mockup <span>Studio</span></a>
+        <nav aria-label="Main">
+          <a href="../hex-to-image/">Hex → Image</a>
+          <a href="../image-to-c-array/">Image → C Array</a>
+          <a href="../ssd1306-bitmap-converter/">SSD1306</a>
+          <a href="../">Tools</a>
+          <a href="../../">Studio</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <p class="breadcrumb"><a href="../../">LCD Mockup Studio</a> › <a href="../">Tools</a> › Image to Byte Array Converter</p>
+      <h1>Image to Byte Array Converter</h1>
+      <p class="lead">Turn any picture into a compact array of hex bytes. Each byte stores 8 pixels, ready for microcontrollers, e-paper, LED matrices and thermal printers.</p>
+<div class="tool" data-tool="image">
+  <label class="drop" data-role="drop">📁 Click, drop or paste (Ctrl+V) an image<input type="file" accept="image/*" data-role="file"></label>
+  <div class="controls">
+    <label>Width<input type="number" data-role="width" min="1" max="1024"></label>
+    <label>Height<input type="number" data-role="height" min="1" max="1024"></label>
+    <label class="inline"><input type="checkbox" data-role="keep" checked> Keep aspect</label>
+    <label>Dithering<select data-role="dither"><option value="threshold">Threshold (logos, text)</option><option value="atkinson">Atkinson (photos)</option><option value="floyd-steinberg">Floyd–Steinberg</option><option value="bayer4">Bayer 4×4</option><option value="bayer8">Bayer 8×8</option></select></label>
+    <label>Threshold<input type="range" data-role="threshold" min="1" max="254" value="128"></label>
+    <label class="inline"><input type="checkbox" data-role="invert"> Invert</label>
+    <label>Output<select data-role="format"><option value="adafruit">Adafruit GFX drawBitmap (.h)</option><option value="xbm">U8g2 drawXBMP / XBM (.h)</option><option value="u8g2">Vertical pages / SSD1306 RAM (.h)</option><option value="micropython">MicroPython framebuf (.py)</option><option value="arduino_sketch">Complete Arduino sketch (.ino)</option></select></label>
+    <label>Variable name<input type="text" data-role="var" value="bitmap" size="12"></label>
+  </div>
+  <div class="tool-grid">
+    <div>
+      <div class="preview-box"><canvas data-role="preview" aria-label="1-bit preview"></canvas></div>
+      <div class="status" data-role="status" aria-live="polite"></div>
+    </div>
+    <div>
+      <textarea data-role="output" readonly spellcheck="false" aria-label="Generated code"></textarea>
+      <div class="controls">
+        <button type="button" class="btn btn-primary" data-role="copy" data-label="📋 Copy code">📋 Copy code</button>
+        <button type="button" class="btn" data-role="download">⬇ Download file</button>
+      </div>
+    </div>
+  </div>
+</div>
+      <section>
+        <h2>What the output looks like</h2>
+        <pre>// 16 × 8 px, 16 bytes, horizontal MSB-first
+static const uint8_t PROGMEM bitmap[] = {
+  0x3c, 0x3c, 0x42, 0x42, 0x81, 0x81, 0xa5, 0xa5,
+  0x81, 0x81, 0x99, 0x99, 0x42, 0x42, 0x3c, 0x3c
+};</pre>
+<p>Each <code>1</code> bit is a lit pixel and each <code>0</code> bit is dark. Choose a different output format above if your driver expects vertical bytes or LSB-first order.</p>
+      </section>
+      <section>
+        <h2>Typical uses</h2>
+        <ul>
+  <li>Splash screens and icons for SSD1306, SH1106 and ST7920 displays</li>
+  <li>Images for Waveshare / GxEPD2 e-paper panels</li>
+  <li>Sprites for MAX7219 LED matrices and HUB75 panels</li>
+  <li>Logos for ESC/POS thermal receipt printers</li>
+</ul>
+      </section>
+      <section>
+        <h2>Byte formats</h2>
+        
+<table>
+  <thead><tr><th>Format</th><th>Byte layout</th><th>Bit order</th><th>Used by</th></tr></thead>
+  <tbody>
+    <tr><td>Adafruit_GFX</td><td>Horizontal rows, <code>ceil(w/8)</code> bytes per row</td><td>MSB = leftmost pixel</td><td><code>drawBitmap()</code>, MicroPython <code>MONO_HLSB</code></td></tr>
+    <tr><td>XBM</td><td>Horizontal rows</td><td>LSB = leftmost pixel</td><td>U8g2 <code>drawXBM()</code> / <code>drawXBMP()</code>, X11, GIMP export</td></tr>
+    <tr><td>Vertical pages</td><td>8-pixel tall pages, one byte per column</td><td>LSB = top pixel</td><td>SSD1306 / SH1106 GDDRAM, PCD8544, U8x8</td></tr>
+    <tr><td>RGB565</td><td>2 bytes per pixel</td><td>5 bits R, 6 G, 5 B (BE or LE)</td><td>ST7735, ST7789, ILI9341 TFT</td></tr>
+  </tbody>
+</table>
+      </section>
+      <section class="faq">
+        <h2>Frequently asked questions</h2>
+        <details><summary>Can I get the bytes without the C wrapper?</summary><p>Copy just the lines between the braces, or open the full studio, which also exports raw hex, Base64 and JSON.</p></details>
+        <details><summary>What image formats can I upload?</summary><p>Anything your browser can display: PNG, JPG, GIF, BMP, WebP and SVG.</p></details>
+      </section>
+      <section class="cta">
+        <h2>Open the full LCD Mockup Studio</h2>
+        <p>Design complete LCD/OLED screens with text, icons and gauges, edit pixels, simulate the display and export C, SVG or PNG.</p>
+        <p><a class="btn btn-primary" href="../../">Launch Studio →</a></p>
+      </section>
+      <section>
+        <h2>Related tools</h2>
+        <ul class="related">
+          <li><a href="../hex-to-image/">Hex to Image</a></li>
+          <li><a href="../c-array-to-image/">C Array to Image</a></li>
+          <li><a href="../byte-array-to-image/">Byte Array to Image</a></li>
+          <li><a href="../image-to-c-array/">Image to C Array</a></li>
+          <li><a href="../ssd1306-bitmap-converter/">SSD1306 Bitmap</a></li>
+          <li><a href="../u8g2-xbm-converter/">U8g2 XBM</a></li>
+          <li><a href="../adafruit-gfx-bitmap-converter/">Adafruit GFX</a></li>
+          <li><a href="../nokia-5110-bitmap-converter/">Nokia 5110</a></li>
+          <li><a href="../rgb565-converter/">RGB565 Viewer</a></li>
+          <li><a href="../image2cpp-alternative/">image2cpp Alternative</a></li>
+          <li><a href="../micropython-framebuf-converter/">MicroPython framebuf</a></li>
+        </ul>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Free, open-source and 100% client-side. Your images and code never leave your browser.</p>
+        <p><a href="../../">LCD Mockup Studio</a> · <a href="https://github.com/MitraZahiri/lcd-mockup-studio">GitHub</a> · <a href="https://buymeacoffee.com/mitra.zahiri">Buy me a coffee</a></p>
+      </div>
+    </footer>
+  </body>
+</html>

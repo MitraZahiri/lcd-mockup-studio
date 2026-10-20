@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>image2cpp Alternative — Modern Image to C Array &amp; Hex Editor</title>
+    <meta name="description" content="Looking for an image2cpp or LCD Assistant alternative? LCD Mockup Studio converts images to C arrays, decodes hex back to images, and adds a pixel editor, dithering and UI mockups. Free and open source." />
+    <meta name="author" content="Mitra Zahiri" />
+    <link rel="canonical" href="https://mitrazahiri.github.io/lcd-mockup-studio/tools/image2cpp-alternative/" />
+
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <meta name="theme-color" content="#161b22" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LCD Mockup Studio" />
+    <meta property="og:url" content="https://mitrazahiri.github.io/lcd-mockup-studio/tools/image2cpp-alternative/" />
+    <meta property="og:title" content="image2cpp Alternative — Modern Image to C Array &amp; Hex Editor" />
+    <meta property="og:description" content="Looking for an image2cpp or LCD Assistant alternative? LCD Mockup Studio converts images to C arrays, decodes hex back to images, and adds a pixel editor, dithering and UI mockups. Free and open source." />
+    <meta property="og:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="image2cpp Alternative — Modern Image to C Array &amp; Hex Editor" />
+    <meta name="twitter:description" content="Looking for an image2cpp or LCD Assistant alternative? LCD Mockup Studio converts images to C arrays, decodes hex back to images, and adds a pixel editor, dithering and UI mockups. Free and open source." />
+    <meta name="twitter:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <script>
+      window.LCD_ANALYTICS_CONFIG = { gaMeasurementId: '', goatCounterCode: '', debug: false };
+    </script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","@id":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/image2cpp-alternative/#app","name":"A Modern image2cpp & LCD Assistant Alternative","url":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/image2cpp-alternative/","description":"Looking for an image2cpp or LCD Assistant alternative? LCD Mockup Studio converts images to C arrays, decodes hex back to images, and adds a pixel editor, dithering and UI mockups. Free and open source.","applicationCategory":"DeveloperApplication","operatingSystem":"Any (web browser)","browserRequirements":"Requires JavaScript","inLanguage":"en","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Mitra Zahiri","url":"https://github.com/MitraZahiri"},"isPartOf":{"@id":"https://mitrazahiri.github.io/lcd-mockup-studio/#webapp"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"LCD Mockup Studio","item":"https://mitrazahiri.github.io/lcd-mockup-studio/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/"},{"@type":"ListItem","position":3,"name":"A Modern image2cpp & LCD Assistant Alternative","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/image2cpp-alternative/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is LCD Mockup Studio free?","acceptedAnswer":{"@type":"Answer","text":"Yes, it is free and MIT-licensed. The source is on GitHub."}},{"@type":"Question","name":"Will my existing image2cpp arrays work?","acceptedAnswer":{"@type":"Answer","text":"Yes. Paste them into the hex to image tool to view or edit them; the byte formats are identical."}}]}]}</script>
+    <script type="module" crossorigin src="../../assets/dithering-D2desjM0.js"></script>
+    <script type="module" crossorigin src="../../assets/landing-BIHmK3fu.js"></script>
+    <link rel="stylesheet" crossorigin href="../../assets/landing-COKeVsWp.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="../../">LCD Mockup <span>Studio</span></a>
+        <nav aria-label="Main">
+          <a href="../hex-to-image/">Hex → Image</a>
+          <a href="../image-to-c-array/">Image → C Array</a>
+          <a href="../ssd1306-bitmap-converter/">SSD1306</a>
+          <a href="../">Tools</a>
+          <a href="../../">Studio</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <p class="breadcrumb"><a href="../../">LCD Mockup Studio</a> › <a href="../">Tools</a> › A Modern image2cpp &amp; LCD Assistant Alternative</p>
+      <h1>A Modern image2cpp &amp; LCD Assistant Alternative</h1>
+      <p class="lead">image2cpp and LCD Assistant are classics. LCD Mockup Studio does the same job, works in both directions (image → code and code → image) and lets you edit the result.</p>
+<div class="tool" data-tool="image">
+  <label class="drop" data-role="drop">📁 Click, drop or paste (Ctrl+V) an image<input type="file" accept="image/*" data-role="file"></label>
+  <div class="controls">
+    <label>Width<input type="number" data-role="width" min="1" max="1024"></label>
+    <label>Height<input type="number" data-role="height" min="1" max="1024"></label>
+    <label class="inline"><input type="checkbox" data-role="keep" checked> Keep aspect</label>
+    <label>Dithering<select data-role="dither"><option value="threshold">Threshold (logos, text)</option><option value="atkinson">Atkinson (photos)</option><option value="floyd-steinberg">Floyd–Steinberg</option><option value="bayer4">Bayer 4×4</option><option value="bayer8">Bayer 8×8</option></select></label>
+    <label>Threshold<input type="range" data-role="threshold" min="1" max="254" value="128"></label>
+    <label class="inline"><input type="checkbox" data-role="invert"> Invert</label>
+    <label>Output<select data-role="format"><option value="adafruit">Adafruit GFX drawBitmap (.h)</option><option value="xbm">U8g2 drawXBMP / XBM (.h)</option><option value="u8g2">Vertical pages / SSD1306 RAM (.h)</option><option value="micropython">MicroPython framebuf (.py)</option><option value="arduino_sketch">Complete Arduino sketch (.ino)</option></select></label>
+    <label>Variable name<input type="text" data-role="var" value="bitmap" size="12"></label>
+  </div>
+  <div class="tool-grid">
+    <div>
+      <div class="preview-box"><canvas data-role="preview" aria-label="1-bit preview"></canvas></div>
+      <div class="status" data-role="status" aria-live="polite"></div>
+    </div>
+    <div>
+      <textarea data-role="output" readonly spellcheck="false" aria-label="Generated code"></textarea>
+      <div class="controls">
+        <button type="button" class="btn btn-primary" data-role="copy" data-label="📋 Copy code">📋 Copy code</button>
+        <button type="button" class="btn" data-role="download">⬇ Download file</button>
+      </div>
+    </div>
+  </div>
+</div>
+      <section>
+        <h2>Feature comparison</h2>
+        <table>
+  <thead><tr><th>Feature</th><th>LCD Mockup Studio</th><th>image2cpp</th><th>LCD Assistant</th></tr></thead>
+  <tbody>
+    <tr><td>Runs in the browser, no install</td><td>✅</td><td>✅</td><td>❌ Windows only</td></tr>
+    <tr><td>Image → C array</td><td>✅</td><td>✅</td><td>✅</td></tr>
+    <tr><td>Hex / C array → image</td><td>✅</td><td>Partial</td><td>❌</td></tr>
+    <tr><td>Pixel editor with live code sync</td><td>✅</td><td>❌</td><td>❌</td></tr>
+    <tr><td>Atkinson, Floyd–Steinberg, Bayer dithering</td><td>✅</td><td>Floyd–Steinberg, Atkinson</td><td>❌</td></tr>
+    <tr><td>U8g2 XBM, MicroPython, RGB565 decode</td><td>✅</td><td>Partial</td><td>❌</td></tr>
+    <tr><td>Multi-element LCD UI mockups &amp; SVG export</td><td>✅</td><td>❌</td><td>❌</td></tr>
+    <tr><td>Open source</td><td>✅ MIT</td><td>✅</td><td>❌</td></tr>
+  </tbody>
+</table>
+      </section>
+      <section>
+        <h2>Moving over from image2cpp</h2>
+        <p>Settings map directly: "Horizontal – 1 bit per pixel" is the <em>Adafruit GFX</em> output, "Vertical – 1 bit per pixel" is <em>vertical pages</em>, and "Arduino code" is the default header with PROGMEM. Try it with the converter at the top of this page.</p>
+      </section>
+      <section class="faq">
+        <h2>Frequently asked questions</h2>
+        <details><summary>Is LCD Mockup Studio free?</summary><p>Yes, it is free and MIT-licensed. The source is on GitHub.</p></details>
+        <details><summary>Will my existing image2cpp arrays work?</summary><p>Yes. Paste them into the hex to image tool to view or edit them; the byte formats are identical.</p></details>
+      </section>
+      <section class="cta">
+        <h2>Open the full LCD Mockup Studio</h2>
+        <p>Design complete LCD/OLED screens with text, icons and gauges, edit pixels, simulate the display and export C, SVG or PNG.</p>
+        <p><a class="btn btn-primary" href="../../">Launch Studio →</a></p>
+      </section>
+      <section>
+        <h2>Related tools</h2>
+        <ul class="related">
+          <li><a href="../hex-to-image/">Hex to Image</a></li>
+          <li><a href="../c-array-to-image/">C Array to Image</a></li>
+          <li><a href="../byte-array-to-image/">Byte Array to Image</a></li>
+          <li><a href="../image-to-c-array/">Image to C Array</a></li>
+          <li><a href="../image-to-byte-array/">Image to Byte Array</a></li>
+          <li><a href="../ssd1306-bitmap-converter/">SSD1306 Bitmap</a></li>
+          <li><a href="../u8g2-xbm-converter/">U8g2 XBM</a></li>
+          <li><a href="../adafruit-gfx-bitmap-converter/">Adafruit GFX</a></li>
+          <li><a href="../nokia-5110-bitmap-converter/">Nokia 5110</a></li>
+          <li><a href="../rgb565-converter/">RGB565 Viewer</a></li>
+          <li><a href="../micropython-framebuf-converter/">MicroPython framebuf</a></li>
+        </ul>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Free, open-source and 100% client-side. Your images and code never leave your browser.</p>
+        <p><a href="../../">LCD Mockup Studio</a> · <a href="https://github.com/MitraZahiri/lcd-mockup-studio">GitHub</a> · <a href="https://buymeacoffee.com/mitra.zahiri">Buy me a coffee</a></p>
+      </div>
+    </footer>
+  </body>
+</html>

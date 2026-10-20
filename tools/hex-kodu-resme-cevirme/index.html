@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hex Kodunu Resme Çevirme — Online Hex / C Dizisi Görüntüleyici</title>
+    <meta name="description" content="Hex baytlarını veya C bitmap dizisini yapıştırın, resmi anında görün. Arduino, ESP32 ve SSD1306 OLED için Adafruit GFX, XBM, U8g2 ve RGB565 desteği. Ücretsiz, tarayıcıda çalışır, PNG indirin." />
+    <meta name="author" content="Mitra Zahiri" />
+    <link rel="canonical" href="https://mitrazahiri.github.io/lcd-mockup-studio/tools/hex-kodu-resme-cevirme/" />
+    <link rel="alternate" hreflang="tr" href="https://mitrazahiri.github.io/lcd-mockup-studio/tools/hex-kodu-resme-cevirme/" />
+    <link rel="alternate" hreflang="en" href="https://mitrazahiri.github.io/lcd-mockup-studio/tools/hex-to-image/" />
+    <link rel="alternate" hreflang="x-default" href="https://mitrazahiri.github.io/lcd-mockup-studio/tools/hex-to-image/" />
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <meta name="theme-color" content="#161b22" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LCD Mockup Studio" />
+    <meta property="og:url" content="https://mitrazahiri.github.io/lcd-mockup-studio/tools/hex-kodu-resme-cevirme/" />
+    <meta property="og:title" content="Hex Kodunu Resme Çevirme — Online Hex / C Dizisi Görüntüleyici" />
+    <meta property="og:description" content="Hex baytlarını veya C bitmap dizisini yapıştırın, resmi anında görün. Arduino, ESP32 ve SSD1306 OLED için Adafruit GFX, XBM, U8g2 ve RGB565 desteği. Ücretsiz, tarayıcıda çalışır, PNG indirin." />
+    <meta property="og:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Hex Kodunu Resme Çevirme — Online Hex / C Dizisi Görüntüleyici" />
+    <meta name="twitter:description" content="Hex baytlarını veya C bitmap dizisini yapıştırın, resmi anında görün. Arduino, ESP32 ve SSD1306 OLED için Adafruit GFX, XBM, U8g2 ve RGB565 desteği. Ücretsiz, tarayıcıda çalışır, PNG indirin." />
+    <meta name="twitter:image" content="https://mitrazahiri.github.io/lcd-mockup-studio/og-image.png" />
+    <script>
+      window.LCD_ANALYTICS_CONFIG = { gaMeasurementId: '', goatCounterCode: '', debug: false };
+    </script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","@id":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/hex-kodu-resme-cevirme/#app","name":"Hex Kodunu Resme Çevirme","url":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/hex-kodu-resme-cevirme/","description":"Hex baytlarını veya C bitmap dizisini yapıştırın, resmi anında görün. Arduino, ESP32 ve SSD1306 OLED için Adafruit GFX, XBM, U8g2 ve RGB565 desteği. Ücretsiz, tarayıcıda çalışır, PNG indirin.","applicationCategory":"DeveloperApplication","operatingSystem":"Any (web browser)","browserRequirements":"Requires JavaScript","inLanguage":"tr","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Mitra Zahiri","url":"https://github.com/MitraZahiri"},"isPartOf":{"@id":"https://mitrazahiri.github.io/lcd-mockup-studio/#webapp"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"LCD Mockup Studio","item":"https://mitrazahiri.github.io/lcd-mockup-studio/"},{"@type":"ListItem","position":2,"name":"Araçlar","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/"},{"@type":"ListItem","position":3,"name":"Hex Kodunu Resme Çevirme","item":"https://mitrazahiri.github.io/lcd-mockup-studio/tools/hex-kodu-resme-cevirme/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Bu araç ücretsiz mi?","acceptedAnswer":{"@type":"Answer","text":"Evet. Ücretsiz ve açık kaynaklıdır (MIT). Tamamen tarayıcınızda çalışır, verileriniz yüklenmez."}},{"@type":"Question","name":"Hex kodunu PNG olarak indirebilir miyim?","acceptedAnswer":{"@type":"Answer","text":"Evet. Çözülen bitmap, gerçek piksel boyutunda kayıpsız PNG olarak indirilir."}},{"@type":"Question","name":"Renkli (RGB565) verileri çözebilir mi?","acceptedAnswer":{"@type":"Answer","text":"Evet. TFT ekranlar için RGB565 (BE/LE) ve 8-bit gri tonlama seçenekleri vardır."}}]}]}</script>
+    <script type="module" crossorigin src="../../assets/dithering-D2desjM0.js"></script>
+    <script type="module" crossorigin src="../../assets/landing-BIHmK3fu.js"></script>
+    <link rel="stylesheet" crossorigin href="../../assets/landing-COKeVsWp.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="../../">LCD Mockup <span>Studio</span></a>
+        <nav aria-label="Main">
+          <a href="../hex-to-image/">Hex → Image</a>
+          <a href="../image-to-c-array/">Image → C Array</a>
+          <a href="../ssd1306-bitmap-converter/">SSD1306</a>
+          <a href="../">Araçlar</a>
+          <a href="../../">Stüdyo</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <p class="breadcrumb"><a href="../../">LCD Mockup Studio</a> › <a href="../">Araçlar</a> › Hex Kodunu Resme Çevirme</p>
+      <h1>Hex Kodunu Resme Çevirme</h1>
+      <p class="lead">Ham hex baytlarını, <code>0x..</code> listesini veya tam bir C dizisini aşağıya yapıştırın. Bitmap tarayıcınızda anında çözülür; hiçbir veri sunucuya gönderilmez.</p>
+<div class="tool" data-tool="hex">
+  <div class="tool-grid">
+    <div>
+      <label for="hex-input">Hex baytları / C dizisi</label>
+      <textarea id="hex-input" data-role="input" spellcheck="false" aria-label="Hex baytları / C dizisi"></textarea>
+    </div>
+    <div>
+      <div class="preview-box"><canvas data-role="preview" aria-label="Decoded bitmap preview"></canvas></div>
+      <div class="status" data-role="status" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="controls">
+    <label>Bayt formatı<select data-role="format"><option value="adafruit">Adafruit GFX (horizontal, MSB first)</option><option value="xbm">XBM / U8g2 (horizontal, LSB first)</option><option value="u8g2">Vertical pages (SSD1306, LSB = top)</option><option value="vertical_msb">Vertical, MSB first</option><option value="rgb565_be">RGB565 color (big-endian)</option><option value="rgb565_le">RGB565 color (little-endian)</option><option value="gray8">Grayscale (1 byte per pixel)</option></select></label>
+    <label>Genişlik<input type="number" data-role="width" min="1" max="1024"></label>
+    <label>Yükseklik<input type="number" data-role="height" min="1" max="1024"></label>
+    <label class="inline"><input type="checkbox" data-role="lock" checked> Otomatik yükseklik</label>
+    <label class="inline"><input type="checkbox" data-role="invert"> Ters çevir</label>
+  </div>
+  <div class="controls">
+    <button type="button" class="btn" data-role="detect">Boyutu algıla</button>
+    <button type="button" class="btn" data-role="clear">Temizle</button>
+    <button type="button" class="btn" data-role="download">⬇ PNG indir</button>
+    <button type="button" class="btn btn-primary" data-role="open-studio">Tam editörde aç →</button>
+  </div>
+</div>
+      <section>
+        <h2>Hex kodu nasıl resme çevrilir?</h2>
+        <ol>
+  <li>Hex verinizi kutuya yapıştırın. <code>0xFF, 0x81</code>, <code>FF 81 7E</code>, <code>\xff\x81</code>, bitişik <code>FF817E</code> ve yorum satırlı C başlık dosyaları desteklenir.</li>
+  <li>Araç bayt sayısına bakarak çözünürlüğü tahmin eder: 1024 bayt → 128 × 64, 504 bayt → 84 × 48. <code>#define ..._width</code> satırları otomatik okunur.</li>
+  <li>Görüntü karışık çıkarsa <strong>bayt formatını</strong> değiştirin: yatay (Adafruit), XBM (LSB önce) ve dikey sayfa (SSD1306) aynı baytlardan farklı resimler üretir.</li>
+  <li><strong>PNG indir</strong> ile birebir piksel resmi kaydedin ya da <strong>Tam editörde aç</strong> ile pikselleri düzenleyip yeni C kodu alın.</li>
+</ol>
+      </section>
+      <section>
+        <h2>Resim neden bozuk görünüyor?</h2>
+        <ul>
+  <li><strong>Çapraz çizgiler / kaymış resim:</strong> genişlik yanlış. Otomatik algılayı deneyin veya 128, 84, 64, 32 gibi genişlikler girin.</li>
+  <li><strong>8 piksellik dikey bloklar:</strong> veri yatay ama dikey sayfa seçili (veya tersi).</li>
+  <li><strong>Her 8 piksel ayna gibi ters:</strong> bit sırası ters. Adafruit (MSB) ile XBM (LSB) arasında geçiş yapın.</li>
+</ul>
+
+<table>
+  <thead><tr><th>Display</th><th>Resolution</th><th>1-bit array size</th></tr></thead>
+  <tbody>
+    <tr><td>SSD1306 0.96"</td><td>128 × 64</td><td>1024 bytes</td></tr>
+    <tr><td>SSD1306 0.91"</td><td>128 × 32</td><td>512 bytes</td></tr>
+    <tr><td>SH1106 1.3"</td><td>128 × 64 (132 RAM)</td><td>1024 / 1056 bytes</td></tr>
+    <tr><td>Nokia 5110 (PCD8544)</td><td>84 × 48</td><td>504 bytes</td></tr>
+    <tr><td>ST7920 12864</td><td>128 × 64</td><td>1024 bytes</td></tr>
+    <tr><td>64 × 64 icon</td><td>64 × 64</td><td>512 bytes</td></tr>
+    <tr><td>16 × 16 icon</td><td>16 × 16</td><td>32 bytes</td></tr>
+  </tbody>
+</table>
+      </section>
+      <section class="faq">
+        <h2>Sıkça sorulan sorular</h2>
+        <details><summary>Bu araç ücretsiz mi?</summary><p>Evet. Ücretsiz ve açık kaynaklıdır (MIT). Tamamen tarayıcınızda çalışır, verileriniz yüklenmez.</p></details>
+        <details><summary>Hex kodunu PNG olarak indirebilir miyim?</summary><p>Evet. Çözülen bitmap, gerçek piksel boyutunda kayıpsız PNG olarak indirilir.</p></details>
+        <details><summary>Renkli (RGB565) verileri çözebilir mi?</summary><p>Evet. TFT ekranlar için RGB565 (BE/LE) ve 8-bit gri tonlama seçenekleri vardır.</p></details>
+      </section>
+      <section class="cta">
+        <h2>Tam LCD Mockup Studio'yu açın</h2>
+        <p>Yazı, ikon ve göstergelerle eksiksiz LCD/OLED ekranlar tasarlayın, pikselleri düzenleyin, ekranı simüle edin ve C, SVG veya PNG olarak dışa aktarın.</p>
+        <p><a class="btn btn-primary" href="../../">Stüdyoyu Aç →</a></p>
+      </section>
+      <section>
+        <h2>İlgili araçlar</h2>
+        <ul class="related">
+          <li><a href="../resmi-c-dizisine-cevirme/">Resim → C Dizisi</a></li>
+          <li><a href="../hex-to-image/">Hex to Image</a></li>
+        </ul>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Ücretsiz, açık kaynak ve tamamen tarayıcıda çalışır. Resimleriniz ve kodunuz cihazınızdan çıkmaz.</p>
+        <p><a href="../../">LCD Mockup Studio</a> · <a href="https://github.com/MitraZahiri/lcd-mockup-studio">GitHub</a> · <a href="https://buymeacoffee.com/mitra.zahiri">Buy me a coffee</a></p>
+      </div>
+    </footer>
+  </body>
+</html>
