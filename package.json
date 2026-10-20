@@ -20,7 +20,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node scripts/generate_seo_pages.js",
     "dev": "vite",
+    "prebuild": "node scripts/generate_seo_pages.js",
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --test tests/*.test.js"

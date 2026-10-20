@@ -71,6 +71,9 @@ import { startSimulation, stopSimulation, isSimulating } from './editor/simulati
 import { processDithering, generateTelegraphicVectorLines } from './analysis/dithering.js'
 import { loadImage } from './analysis/imageProcessing.js'
 
+// Shared with src/seo/landing.js for passing hex code into the studio.
+const HEX_HANDOFF_KEY = 'lcd_hex_handoff'
+
 
 // ======================================================
 // APP
@@ -176,6 +179,18 @@ document.querySelector('#app').innerHTML = `
         >
           ⌨️ Shortcuts
         </button>
+
+        <div class="separator"></div>
+
+        <a
+          href="./tools/"
+          class="shortcuts-button"
+          id="free-tools-link"
+          title="Free online tools: hex to image, image to C array, SSD1306 bitmap converter"
+          style="text-decoration: none;"
+        >
+          🧰 Free Tools
+        </a>
 
         <div class="separator"></div>
 
@@ -3737,7 +3752,35 @@ initProjectControls({
 initPngExport(editorState)
 initSvgExport(editorState)
 initCExport(editorState)
-initHexDecoder(editorState, { showToast })
+const hexDecoder = initHexDecoder(editorState, { showToast })
+
+// Deep links from the SEO landing pages: ?tool=hex opens the hex decoder
+// (optionally pre-filled via sessionStorage), ?tool=export opens C export.
+openToolFromUrl()
+
+function openToolFromUrl() {
+  const tool = new URLSearchParams(window.location.search).get('tool')
+  if (tool === 'hex' && hexDecoder) {
+    let handoff = null
+    try {
+      handoff = JSON.parse(sessionStorage.getItem(HEX_HANDOFF_KEY) || 'null')
+      sessionStorage.removeItem(HEX_HANDOFF_KEY)
+    } catch {
+      handoff = null
+    }
+    if (handoff?.code) {
+      const modal = document.querySelector('#hex-decoder-modal')
+      modal.querySelector('#hex-decoder-format').value = handoff.format || 'adafruit'
+      modal.querySelector('#hex-decoder-width').value = handoff.width || 128
+      modal.querySelector('#hex-decoder-height').value = handoff.height || 64
+      hexDecoder.openModal(handoff.code)
+    } else {
+      hexDecoder.openModal()
+    }
+  } else if (tool === 'export') {
+    document.querySelector('#export-c')?.click()
+  }
+}
 
 // Initialize Private Owner Analytics (GA4 + GoatCounter)
 initAnalytics()
